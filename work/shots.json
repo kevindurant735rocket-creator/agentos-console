@@ -1,0 +1,38 @@
+{
+ "tool": "shoot.py",
+ "method": "playwright-cdp-real-viewport",
+ "html_sha256": "e8bd8c9cd5ac2b52",
+ "sizes": {
+  "375": {
+   "innerW": 375,
+   "docScrollW": 375,
+   "docClientW": 375,
+   "overflow": false,
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 86516
+  },
+  "768": {
+   "innerW": 768,
+   "docScrollW": 768,
+   "docClientW": 768,
+   "overflow": false,
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 139213
+  },
+  "1440": {
+   "innerW": 1440,
+   "docScrollW": 1440,
+   "docClientW": 1440,
+   "overflow": false,
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 267719
+  }
+ },
+ "pageerrors": [],
+ "url": "http://127.0.0.1:62623/index.html",
+ "served": true,
+ "transport": "real-http"
+}

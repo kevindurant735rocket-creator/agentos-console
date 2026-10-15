@@ -1,0 +1,2325 @@
+{
+ "generated_at": "2026-10-01T15:31:13.340184+08:00",
+ "extracted_at": "2026-10-03T07:23:45.497356+08:00",
+ "evidence_source": "/Users/zhangfengrui/Desktop/项目/future agent/phase18-verify-gate/report/verdicts.json",
+ "global_verdict": "PASS",
+ "coverage_complete": true,
+ "coverage": {
+  "coverage_complete": true,
+  "expected_dirs": [
+   "phase1-p01-benchmark",
+   "phase1-p02-schema",
+   "phase1-p03-world",
+   "phase1-p04-completion",
+   "phase1-p05-crossapp",
+   "phase1-p06-spec-align",
+   "phase1-p07-audit",
+   "phase10-evidence-live",
+   "phase10-sampling-xl",
+   "phase10-sink-dynamic",
+   "phase10-vgate-deshare",
+   "phase11-e2e-full",
+   "phase11-epsilon-fix",
+   "phase11-l6-semantic-v2",
+   "phase11-ledger-hard",
+   "phase11-policy-pool",
+   "phase12-consolidation",
+   "phase13-kernel",
+   "phase13-real-exec",
+   "phase14-desktop",
+   "phase14-realworld",
+   "phase15-os-product",
+   "phase15-risk-memory",
+   "phase16-hardening",
+   "phase16-integrated",
+   "phase16-llm-agent",
+   "phase16-ux-desktop",
+   "phase18-verify-gate",
+   "phase19-desktop",
+   "phase2-e2e-loop",
+   "phase20-distillation",
+   "phase21-codex-parity",
+   "phase21-desktop-product",
+   "phase22-distillation-scale",
+   "phase23-self-improvement",
+   "phase3-replan-adversarial",
+   "phase4-graph-persist",
+   "phase5-calibration",
+   "phase5-continuity",
+   "phase5-failure-modes",
+   "phase5-llm-strategy",
+   "phase6-adversarial-continuity",
+   "phase6-affects-corroboration",
+   "phase6-multround-budget",
+   "phase6-planner-regression",
+   "phase7-crossapp-real",
+   "phase7-gate-policy-resample",
+   "phase7-value-corroboration",
+   "phase7-wgate-idempotent",
+   "phase8-affects-sink",
+   "phase8-broader-sampling",
+   "phase8-evidence-service",
+   "phase8-vgate-independence",
+   "phase9-evidence-loop",
+   "phase9-sampling-l5l7",
+   "phase9-sink-hard",
+   "phase9-vgate-pos"
+  ],
+  "extra_dirs": [],
+  "missing_dirs": [],
+  "n_expected": 57,
+  "n_rows": 57,
+  "note": "coverage_complete=False 即判定不可信：verdicts.json 未覆盖全量 phase 目录（多因 `--only` 子集跑），此时一律 global FAIL，杜绝 rows=2 却 PASS 的假绿。",
+  "rows": [
+   "phase1-p01-benchmark",
+   "phase1-p02-schema",
+   "phase1-p03-world",
+   "phase1-p04-completion",
+   "phase1-p05-crossapp",
+   "phase1-p06-spec-align",
+   "phase1-p07-audit",
+   "phase10-evidence-live",
+   "phase10-sampling-xl",
+   "phase10-sink-dynamic",
+   "phase10-vgate-deshare",
+   "phase11-e2e-full",
+   "phase11-epsilon-fix",
+   "phase11-l6-semantic-v2",
+   "phase11-ledger-hard",
+   "phase11-policy-pool",
+   "phase12-consolidation",
+   "phase13-kernel",
+   "phase13-real-exec",
+   "phase14-desktop",
+   "phase14-realworld",
+   "phase15-os-product",
+   "phase15-risk-memory",
+   "phase16-hardening",
+   "phase16-integrated",
+   "phase16-llm-agent",
+   "phase16-ux-desktop",
+   "phase18-verify-gate",
+   "phase19-desktop",
+   "phase2-e2e-loop",
+   "phase20-distillation",
+   "phase21-codex-parity",
+   "phase21-desktop-product",
+   "phase22-distillation-scale",
+   "phase23-self-improvement",
+   "phase3-replan-adversarial",
+   "phase4-graph-persist",
+   "phase5-calibration",
+   "phase5-continuity",
+   "phase5-failure-modes",
+   "phase5-llm-strategy",
+   "phase6-adversarial-continuity",
+   "phase6-affects-corroboration",
+   "phase6-multround-budget",
+   "phase6-planner-regression",
+   "phase7-crossapp-real",
+   "phase7-gate-policy-resample",
+   "phase7-value-corroboration",
+   "phase7-wgate-idempotent",
+   "phase8-affects-sink",
+   "phase8-broader-sampling",
+   "phase8-evidence-service",
+   "phase8-vgate-independence",
+   "phase9-evidence-loop",
+   "phase9-sampling-l5l7",
+   "phase9-sink-hard",
+   "phase9-vgate-pos"
+  ]
+ },
+ "rule": "verdict 四选一，**没有第五类**。A4 起废止 UNKNOWN 第五类：PASS = exit==0 且 manifest 判 PASS 且入口可执行；PARTIAL = 证据不完整（无入口 / 未实测 / 干净环境不可复现 / 自报非全绿），既不判死也不放行，逐条在 reasons 说明缺什么；TIMEOUT = 超声明式预算被 kill；FAIL = 其余（判死）。自报 PASS 却实测判死 => reasons.self_report_pass_but_run_failed；末行宣称全绿但有非对抗语境真失败 => HONESTY_VIOLATION；二者任一出现 => 全局 FAIL（无豁免）。另：rows 未覆盖全量 phase 目录（coverage_complete=False）=> 全局 FAIL（子集跑不算验收）；**任一 row 判 FAIL => 全局 FAIL**（D-ROWFAIL：判死即全局判死，不设 env 豁免 —— 环境缺口判 PARTIAL 不判 FAIL，真判死绝不消音）。D-M0-GATEISO：另有**正交**的 env_gated 清单（外部凭据/网络本机不可得的 FAIL 归因标签），不改变 verdict 四选一，也不计入 hard FAIL，但固定出现在摘要里。",
+ "aggregate": {
+  "AGREE": 54,
+  "FAIL": 0,
+  "GATE_SELF": 1,
+  "HONESTY_VIOLATION": 0,
+  "MANIFEST_INVALID": 0,
+  "NOT_EXECUTED": 0,
+  "N_EXECUTED": 56,
+  "ORPHAN_SHELL": 0,
+  "PARTIAL": 2,
+  "PASS": 55,
+  "SELF_REPORT_PASS_BUT_RUN_FAILED": 0,
+  "TIMEOUT": 0,
+  "n_dirs": 57
+ },
+ "declared_counts": {
+  "PASS": 54,
+  "PARTIAL": 2,
+  "FAIL": 1
+ },
+ "gate_counts": {
+  "PASS": 55,
+  "PARTIAL": 2
+ },
+ "divergence": [
+  {
+   "dir": "phase13-kernel",
+   "declared": "PARTIAL",
+   "gate": "PASS",
+   "real_red": 16,
+   "sample": [
+    "WP1 M-ADD-SUM      p02=True real(DONE/PASS) adv_r1(NOT_DONE/FAIL) adv_r2(DONE/PASS) rewrites=strategy_change,evidence_add -> OK",
+    "WP1 M-CROSS-FILE   p02=True real(DONE/PASS) adv_r1(NOT_DONE/FAIL) adv_r2(DONE/PASS) rewrites=strategy_change,evidence_add -> OK",
+    "WP1 M-HTTP-ADD     p02=True real(DONE/PASS) adv_r1(NOT_DONE/FAIL) adv_r2(DONE/PASS) rewrites=strategy_change,evidence_add -> OK"
+   ],
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PARTIAL",
+    "self_check_failed_in_log",
+    "self_report_partial"
+   ],
+   "adjudication": "需人工裁决"
+  },
+  {
+   "dir": "phase20-distillation",
+   "declared": "PASS",
+   "gate": "PARTIAL",
+   "real_red": 2,
+   "sample": [
+    "[run_all] distill.sh exit=75 = OFFLINE_DEGRADED (EX_TEMPFAIL)",
+    "[run_all]   -> 该阶段记 PARTIAL：不计入 FAILED，总 verdict 封顶 PARTIAL"
+   ],
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS",
+    "verdict_drift:declared=PASS|post=PARTIAL|exit=0|status=OK"
+   ],
+   "adjudication": "需人工裁决"
+  },
+  {
+   "dir": "phase23-self-improvement",
+   "declared": "FAIL",
+   "gate": "PASS",
+   "real_red": 1,
+   "sample": [
+    "X05  probe_failure_has_attribution      PASS  conf=1 thr=1  llm_live_probe FAIL 1 次：带归因 1，未带归因 无，已入册 lesson=['L-003']",
+    "[mut] injected rc=1 S05.ok=False",
+    "[mut] S08 injected rc=1 S08.ok=False red=['S08']"
+   ],
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=FAIL"
+   ],
+   "adjudication": "需人工裁决"
+  }
+ ],
+ "n_divergence": 3,
+ "env_gated": [
+  {
+   "declared_verdict": "PARTIAL",
+   "dir": "phase16-llm-agent",
+   "evidence": [
+    "不可用原因：no_api_key(need OPENAI_API_KEY or ANTHROPIC_API_KEY)",
+    "M-LLM-L3-001           real         rule   p04=DONE      p01=PASS   sem=N/A  conf=1.00 steps=1 cost=$0.0000  [DEGRADED->rule: no_api_key(need OPENAI_API_KEY or ANTHROPIC_API_KEY)]",
+    "M-LLM-L3-001           adversarial  rule   p04=NOT_DONE  p01=FAIL   sem=PASS conf=0.40 steps=1 cost=$0.0000  [DEGRADED->rule: no_api_key(need OPENAI_API_KEY or ANTHROPIC_API_KEY)]"
+   ],
+   "missing_env": [
+    "ANTHROPIC_API_KEY",
+    "ANTHROPIC_AUTH_TOKEN",
+    "ANTHROPIC_BASE_URL",
+    "OPENAI_API_KEY",
+    "OPENAI_BASE_URL"
+   ],
+   "verdict": "PARTIAL"
+  }
+ ],
+ "interpreter_assert": {
+  "missing_modules": [],
+  "ok": true,
+  "required": "/opt/miniconda3/bin/python3",
+  "sys_executable": "/opt/miniconda3/bin/python3",
+  "sys_executable_real": "/opt/miniconda3/bin/python3.13",
+  "version": "3.13.13"
+ },
+ "manifest": {
+  "present": 57,
+  "missing": 0,
+  "n_total": 57,
+  "note": "manifest.json 按阶段目录各一份，非 report/ 级单文件"
+ },
+ "dirs": [
+  {
+   "dir": "phase1-p01-benchmark",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 4.98,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 10,
+   "fail_negctrl": 8,
+   "fail_real": 2,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {
+     "ERROR": 0,
+     "FAIL": 9,
+     "PARTIAL": 1,
+     "PASS": 12
+    },
+    "reference_pass": "12/14 (>=12 达标)"
+   }
+  },
+  {
+   "dir": "phase1-p02-schema",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 0.04,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": false,
+     "entrypoint_path": null,
+     "has_entrypoint": false,
+     "python_hint": null
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase1-p03-world",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 30.59,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T23:31:00+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "/opt/miniconda3/bin/python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase1-p04-completion",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 0.13,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T23:31:00+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "/opt/miniconda3/bin/python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase1-p05-crossapp",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 1.37,
+   "budget": 900,
+   "reasons": [
+    "blocked_by_external_only",
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS",
+    "external_blocker:precondition_service_down"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T23:29:38+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "/opt/miniconda3/bin/python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase1-p06-spec-align",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 0.2,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T23:31:00+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "/opt/miniconda3/bin/python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase1-p07-audit",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 35.81,
+   "budget": 900,
+   "reasons": [
+    "blocked_by_external_only",
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS",
+    "external_blocker:precondition_service_down"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T23:31:10+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "/opt/miniconda3/bin/python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase10-evidence-live",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 0.85,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "/usr/bin/python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase10-sampling-xl",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 2.59,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "/usr/bin/python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase10-sink-dynamic",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 2.82,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase10-vgate-deshare",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 29.76,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase11-e2e-full",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 4.95,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 6,
+   "fail_negctrl": 0,
+   "fail_real": 6,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": null,
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase11-epsilon-fix",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 0.13,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "/miniconda3/bin/python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase11-l6-semantic-v2",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 0.13,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "/usr/bin/python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase11-ledger-hard",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 4.13,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": null,
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase11-policy-pool",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 0.19,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": null,
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase12-consolidation",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 34.23,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 16,
+   "fail_negctrl": 0,
+   "fail_real": 16,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-28T18:37:07+08:00",
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase13-kernel",
+   "declared": "PARTIAL",
+   "gate": "PASS",
+   "agree": false,
+   "exit": 0,
+   "dur": 99.02,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PARTIAL",
+    "self_check_failed_in_log",
+    "self_report_partial"
+   ],
+   "fail_total": 16,
+   "fail_negctrl": 0,
+   "fail_real": 16,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": null,
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase13-real-exec",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 53.07,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 3,
+   "fail_negctrl": 0,
+   "fail_real": 3,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-28T01:44:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase14-desktop",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 53.9,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 2,
+   "fail_negctrl": 0,
+   "fail_real": 2,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase14-realworld",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 15.91,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 1,
+   "fail_negctrl": 0,
+   "fail_real": 1,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase15-os-product",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 1.27,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-26",
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase15-risk-memory",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 6.37,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 1,
+   "fail_negctrl": 0,
+   "fail_real": 1,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27",
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase16-hardening",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 1253.52,
+   "budget": 1800,
+   "reasons": [
+    "blocked_by_external_only",
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS",
+    "external_blocker:auth_rejected"
+   ],
+   "fail_total": 18,
+   "fail_negctrl": 0,
+   "fail_real": 18,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-26",
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase16-integrated",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 27.62,
+   "budget": 900,
+   "reasons": [
+    "blocked_by_external_only",
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS",
+    "external_blocker:auth_rejected"
+   ],
+   "fail_total": 3,
+   "fail_negctrl": 0,
+   "fail_real": 3,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": null,
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase16-llm-agent",
+   "declared": "PARTIAL",
+   "gate": "PARTIAL",
+   "agree": true,
+   "exit": 0,
+   "dur": 22.62,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PARTIAL",
+    "env_or_dep_incomplete",
+    "self_report_partial"
+   ],
+   "fail_total": 14,
+   "fail_negctrl": 0,
+   "fail_real": 14,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27",
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase16-ux-desktop",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 22.84,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 2,
+   "fail_negctrl": 0,
+   "fail_real": 2,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27",
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase18-verify-gate",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": null,
+   "dur": null,
+   "budget": 900,
+   "reasons": [
+    "gate_self_by_selfcheck:PASS",
+    "gate_self_evidence:selfcheck=PASS|independent=PASS|declared=PASS|declared_source=self_verdict(fresh@cross)|declared_global=PASS|audited_at=2026-10-01T15:03:00.070196+08:00"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [
+    "GATE_SELF"
+   ],
+   "manifest": {
+    "present": true,
+    "measured_at": null,
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase19-desktop",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 48.93,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 4,
+   "fail_negctrl": 1,
+   "fail_real": 3,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": null,
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase2-e2e-loop",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 5.53,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 3,
+   "fail_negctrl": 0,
+   "fail_real": 3,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-28",
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase20-distillation",
+   "declared": "PASS",
+   "gate": "PARTIAL",
+   "agree": false,
+   "exit": 0,
+   "dur": 178.98,
+   "budget": 1800,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS",
+    "verdict_drift:declared=PASS|post=PARTIAL|exit=0|status=OK"
+   ],
+   "fail_total": 2,
+   "fail_negctrl": 0,
+   "fail_real": 2,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-28T05:41:35+08:00",
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase21-codex-parity",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 58.89,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 2,
+   "fail_negctrl": 0,
+   "fail_real": 2,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": null,
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase21-desktop-product",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 70.32,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": null,
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase22-distillation-scale",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 13.94,
+   "budget": 1800,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27",
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase23-self-improvement",
+   "declared": "FAIL",
+   "gate": "PASS",
+   "agree": false,
+   "exit": 0,
+   "dur": 13.03,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=FAIL"
+   ],
+   "fail_total": 5,
+   "fail_negctrl": 4,
+   "fail_real": 1,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": null,
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase3-replan-adversarial",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 6.0,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 2,
+   "fail_negctrl": 0,
+   "fail_real": 2,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase4-graph-persist",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 4.93,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 5,
+   "fail_negctrl": 0,
+   "fail_real": 5,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": null
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase5-calibration",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 16.86,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 8,
+   "fail_negctrl": 0,
+   "fail_real": 8,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": null
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase5-continuity",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 96.62,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 3,
+   "fail_negctrl": 0,
+   "fail_real": 3,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase5-failure-modes",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 1.15,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 6,
+   "fail_negctrl": 0,
+   "fail_real": 6,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": null
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase5-llm-strategy",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 1.22,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 4,
+   "fail_negctrl": 0,
+   "fail_real": 4,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase6-adversarial-continuity",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 3.18,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 9,
+   "fail_negctrl": 0,
+   "fail_real": 9,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": null,
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase6-affects-corroboration",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 1.43,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase6-multround-budget",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 1.76,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 7,
+   "fail_negctrl": 0,
+   "fail_real": 7,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase6-planner-regression",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 6.35,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 18,
+   "fail_negctrl": 0,
+   "fail_real": 18,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase7-crossapp-real",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 1.16,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 1,
+   "fail_negctrl": 0,
+   "fail_real": 1,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": null,
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase7-gate-policy-resample",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 136.42,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase7-value-corroboration",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 0.24,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase7-wgate-idempotent",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 3.93,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS",
+    "self_check_failed_in_log"
+   ],
+   "fail_total": 8,
+   "fail_negctrl": 0,
+   "fail_real": 8,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": null,
+    "reproducible": null,
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase8-affects-sink",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 1.49,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase8-broader-sampling",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 1.16,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase8-evidence-service",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 0.13,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS",
+    "self_check_failed_in_log"
+   ],
+   "fail_total": 1,
+   "fail_negctrl": 0,
+   "fail_real": 1,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase8-vgate-independence",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 1.97,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-30T20:06:15+0800",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase9-evidence-loop",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 0.13,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase9-sampling-l5l7",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 1.1,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase9-sink-hard",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 2.3,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  },
+  {
+   "dir": "phase9-vgate-pos",
+   "declared": "PASS",
+   "gate": "PASS",
+   "agree": true,
+   "exit": 0,
+   "dur": 0.45,
+   "budget": 900,
+   "reasons": [
+    "declared_leg:isolated_copy_pre_reclaim|declared_snapshot=PASS"
+   ],
+   "fail_total": 0,
+   "fail_negctrl": 0,
+   "fail_real": 0,
+   "labels": [],
+   "manifest": {
+    "present": true,
+    "measured_at": "2026-09-27T14:21:12+08:00",
+    "reproducible": {
+     "entrypoint_executable": true,
+     "entrypoint_path": "run_all.sh",
+     "has_entrypoint": true,
+     "python_hint": "python3"
+    },
+    "verdict_counts": {},
+    "reference_pass": null
+   }
+  }
+ ],
+ "independent": {
+  "verdict": "PASS",
+  "consistent": true,
+  "n_mismatches": 0,
+  "audited_generated_at": "2026-10-01T15:03:00.070196+08:00",
+  "auditor": "independent_audit.py (no import of gate.py)",
+  "source_keys": [
+   "independent_verdict",
+   "recomputed_global_verdict"
+  ],
+  "key_used": "independent_verdict"
+ },
+ "rounds": [
+  {
+   "round": "R1",
+   "goal": "实现负载敏感阶段独占执行类，使 live-UI 阶段不与重阶段并发",
+   "criteria": "verify_all.sh --jobs 3 --only phase1-p07-audit 在 report/runs/phase1-p07-audit.json 判 verdict=PASS rc=0",
+   "run": "r-2026-0930-r9-r1",
+   "status": "已收轮",
+   "ac": "AC1",
+   "delta": "AC1 从 FAIL 转 PASS：闸新增独占执行类（gate.py is_exclusive + <phase>/GATE-SOLO 自证标记），负载敏感阶段被摘出并发队列严格串行；phase1-p07-audit 在 --jobs 3 下实测 kill_app 986.14ms / move_file 749.81ms（旧并发为 7775.79ms + 完全漏检），判据 5000ms 预算未动",
+   "evidence": "`bash verify_all.sh --jobs 3 --only phase1-p07-audit phase3-replan-adversarial phase7-gate-policy-resample rc=1 但 report/runs/phase1-p07-audit.json exit=0 verdict=PASS；同批 phase3/phase7 亦 exit=0 verdict=PASS；日志 '[gate] 独占阶段 phase1-p07-audit' 已证路由生效；本轮另见 verdicts.global=PASS cross=0 selfcheck=0 rows=57/57（SELF_REPORT 已消失）`"
+  },
+  {
+   "round": "R2",
+   "goal": "交付 phase7 固定端口 8099/8096 参数化，消除跨阶段 bind 碰撞",
+   "criteria": "verify_all.sh --jobs 3 --only phase3-replan-adversarial phase7-gate-policy-resample 下 phase7 post_manifest.verdict=PASS rc=0",
+   "run": "r-2026-0930-r9-r2",
+   "status": "已收轮",
+   "ac": "AC2",
+   "delta": "AC2 从 FAIL 转 PASS：phase7-gate-policy-resample/engine.py 新增 _reserve_ports/_subst/rebind_ports，L4-001(8099) 与 L4-001B(8096) 的产物模板与 tasks_phase7.yaml 判据改为运行期内核分配端口；与同样占 8099 的 phase3 同批并发时不再互撞",
+   "evidence": "`bash verify_all.sh --jobs 3 --only phase3-replan-adversarial phase7-gate-policy-resample 下 report/runs/phase7-gate-policy-resample.json exit=0 verdict=PASS、phase3 亦 exit=0 verdict=PASS；隔离副本 evidence/run_all.log 实录 '[ports] L4-001 8099->59357 L4-001B 8096->59358' 且 all_pass: True`"
+  },
+  {
+   "round": "R3",
+   "goal": "交付跨阶段产物生产者的车道登记，使 phase13 upstream 未改判据稳定绿",
+   "criteria": "verify_all.sh --jobs 1 --only phase13-kernel 在 report/runs/phase13-kernel.json 判 verdict=PASS rc=0",
+   "run": "r-2026-0930-r9-r3",
+   "status": "已收轮",
+   "ac": "AC3",
+   "delta": "AC3 从 FAIL 转 PASS：phase13-kernel 的 iso:upstream_sha256_unchanged 归属车道补登记完成，未归属归零。真树与最新隔离副本双探针均 drift=4 owned=4 unowned=0（原 FAIL 态 unowned n=136）；未用 AGENTOS_ISO_REPIN 重钉基线、未放宽 5000ms 预算、未登记 accepted",
+   "evidence": "`verify_all.sh --jobs 1 --only phase13-kernel 及 phase23 均 exit=0（R3_PHASE23_RC=0），闸内 [make_manifest] verdict=PASS checks=95 pass=95 fail=0、=== ALL GREEN: selfcheck=0 cross=0 coverage=57/57 manifest=PASS promote=0 ===；report/runs/phase13-kernel.json exit_code=0 post_manifest.verdict=PASS；report/logs/phase13-kernel.log:343 [OK] iso:upstream_sha256_unchanged、:355 manifest verdict=PASS checks=103/103`"
+  },
+  {
+   "round": "R4",
+   "goal": "跑通两轮连续全量闸并逐目录比对幂等",
+   "criteria": "两轮均见 ALL GREEN selfcheck=0 cross=0 manifest=PASS 且逐目录 diff rc=0",
+   "run": "/Users/zhangfengrui/.codex/gf-runs/artifacts/r-2026-0930-r9-r4",
+   "status": "已收轮",
+   "ac": "AC4",
+   "delta": "AC4 从 FAIL 转 PASS：连续两轮全量闸在 --jobs 3 下真 ALL GREEN（R11 01:02:40-01:30:32、R12 01:30:35-01:58:10）。两轮均 executed 56 dirs nonzero=0 timeout=0、selfcheck=0、cross=0、coverage=57/57、manifest=PASS checks=95 n_pass=95 n_fail=0、promote=0，global=PASS dirs=57 PASS=55 FAIL=0 PARTIAL=2 TIMEOUT=0 SELF_REPORT_PASS_BUT_RUN_FAILED=0 HONESTY=0 ORPHAN=0；两轮 56 个阶段快照逐目录比对 56/56 一致、0 差异 0 缺失。期间未改任何 thr/eps 阈值、未登记 accepted 失败类、未删证据、未重钉基线。R10 批量 126/128 的根因经全盘取证为**宿主外部资源耗尽而非本载体缺陷**：本机 uid 进程表被 2024 个孤儿进程打满（kern.maxprocperuid=2666，实测 uid 进程 2644），日志证据 'run_all.sh: fork: Resource temporarily unavailable'；泄漏进程的真实归属是 /Users/zhangfengrui/Documents/ai项目/work/artifacts/tools/{ac_ledger,validate*,gate_input*,catalog*} 与 python -m http.server（find 全盘定位，项目树内 rg artifacts/tools 零命中），即同 uid 下另一个工作区的孤儿，与 AgentOS 闸无关。处置仅为外部环境卫生（/tmp/p19probe/reaper.sh：只杀 ppid==1 且 >20s 的孤儿，每 3s 一次），未改项目/闸/阈值；AgentOS 闸自身无进程泄漏缺陷",
+   "evidence": "bash /tmp/p19probe/double_round.sh 11 12 → DOUBLE_ROUND_SUMMARY R11_RC=0 R12_RC=0；两轮日志末行均 '=== ALL GREEN: selfcheck=0 cross=0 coverage=57/57 manifest=PASS promote=0 ==='；'[gate] executed 56 dirs, nonzero=0, timeout=0'；'[gate] global=PASS dirs=57 PASS=55 FAIL=0 PARTIAL=2 TIMEOUT=0 SELF_REPORT_PASS_BUT_RUN_FAILED=0 HONESTY=0 ORPHAN=0'；manifest n_pass=95 n_fail=0；independent_verdict=PASS n_mismatches=0；快照 /tmp/r7snap/{r11,r12}/{runs,verdicts.json,manifest.json,independent_audit.json}，逐目录幂等 per_dir_identical=56 per_dir_differing=0 missing=0。L-004 隔离副本分歧三例已修且实测：phase13-kernel.log:343 [OK] iso:upstream_sha256_unchanged（连同 :345-352 其余 iso 判据全 OK，unowned=0）、phase1-p01-benchmark.log:20 [PASS] inject=deceptive_success task=L4-004；R12 三目录 run 记录 phase13-kernel exit=0 post_verdict=PASS 73s、phase14-realworld exit=0 PASS 16s、phase19-desktop exit=0 PASS 47s；闸级 SELF_REPORT_PASS_BUT_RUN_FAILED=0 HONESTY=0。追加第三轮 R13（2026-10-01 02:06:45→02:34:31，**不带任何外部回收器/清扫**，直接 bash run_round.sh 13）：R13_RC=0、executed 56 dirs nonzero=0 timeout=0、independent_verdict=PASS n_mismatches=0、global_verdict=PASS coverage_complete=True rows=57/57、aggregate PASS=55 FAIL=0 PARTIAL=2 TIMEOUT=0 SELF_REPORT_PASS_BUT_RUN_FAILED=0 HONESTY_VIOLATION=0 ORPHAN_SHELL=0、manifest verdict=PASS n_pass=95 n_fail=0、ALL GREEN: selfcheck=0 cross=0 coverage=57/57 manifest=PASS promote=0；R13 对 R12 逐目录幂等 identical=56 differing=0。结论：GATE4_RC=0 是闸自身性质，不依赖任何外部兜底（R11/R12 用过 /tmp/p19probe/reaper.sh 仅因宿主被另一工作区孤儿进程占满，R13 在无该干预下同样 rc=0 即证伪「需要清扫才能绿」）"
+  }
+ ],
+ "meta": {
+  "demand": "把 AgentOS 总闸从 52/57 推到真 ALL GREEN，只治根不降断言",
+  "rounds_plan": "R1..R4（每轮必须 new-run.sh 新开自己的 00-project 账，复用账 = 本轮没提升）"
+ },
+ "live_snapshot": {
+  "captured_at": "2026-10-08T22:36:37.201937+08:00",
+  "stale_after_s": 3600,
+  "source": "构建期快照 · 非实时 · 判定权在引擎",
+  "recommend": {
+   "ok": true,
+   "verdict": "PASS",
+   "recommend": [
+    {
+     "action": "egate",
+     "severity": "P1",
+     "why": "3 处自报与实测不一致，需人工裁决",
+     "evidence": "[{\"dir\": \"phase13-kernel\", \"declared\": \"PARTIAL\", \"gate\": \"PASS\", \"adjudication\": \"需人工裁决\"}, {\"dir\": \"phase20-distillation\", \"declared\": \"PASS\", \"gate\": \"PARTIAL\", \"adjudication\": \"需人工裁决\"}, {\"dir\": \"phase23-self-improvement\", \"declared\": \"FAIL\", \"gate\": \"PASS\", \"adjudication\": \"需人工裁决\"}]"
+    },
+    {
+     "action": "livecheck",
+     "severity": "P2",
+     "why": "1 处被环境闸挡住，非绿但不算错",
+     "evidence": "[{\"dir\": \"phase16-llm-agent\", \"declared_verdict\": \"PARTIAL\"}]"
+    }
+   ]
+  },
+  "promote": {
+   "ok": true,
+   "error": null,
+   "total": 36,
+   "n_ready": 0,
+   "n_hold": 26,
+   "recurrence": {
+    "ok": true,
+    "threshold": 3,
+    "n_clusters": 13,
+    "n_recurring": 7,
+    "top": [
+     [
+      "V_browser_interact",
+      21
+     ],
+     [
+      "CAP_substrate+V_browser_interact",
+      11
+     ],
+     [
+      "CAP_substrate+SPEC_coverage_complete+SPEC_verified",
+      7
+     ],
+     [
+      "CAP_substrate+SPEC_coverage_complete+SPEC_verified+V_bizrule_calc",
+      6
+     ],
+     [
+      "SPEC_coverage_complete+SPEC_verified+V_bizrule_calc",
+      5
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "action-journal checkpoint-resume",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "authz-action-bound",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "block-evidence-centralization",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "capability-substrate-v1",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": true,
+     "promotion_reason": "hidden 11ship/0falseship unchanged, bench 36/36, substrate_adv 17/17, additive-only",
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "chain-construction-state",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": true,
+     "promotion_reason": "N3-class honest-BLOCK -> verified SHIP; zero regression on bench+hidden23; misclaim probe clean",
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "cross-harness-portability-lint",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": false,
+     "promotion_reason": "收窄判据前先量到误报(65)再改, 改后复量(25); 豁免机制本身用反向用例证明不是通行证",
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "fuzzy-override-pointed-once-neg-order",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "gap-hidden-browser-interact-capability-gap",
+     "status": "REJECTED",
+     "experiment": false,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": false,
+     "action": "blocked",
+     "why": "状态 REJECTED，必须先 VALIDATED（experiment + bench + 泛化）"
+    },
+    {
+     "id": "gap-hidden-browser-interact-capability-gap-honest-bl",
+     "status": "DISCOVERED",
+     "experiment": false,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": false,
+     "action": "blocked",
+     "why": "状态 DISCOVERED，必须先 VALIDATED（experiment + bench + 泛化）"
+    },
+    {
+     "id": "gap-hidden-false_ship-wrong-contract-delta-direction",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": true,
+     "promotion_reason": "AFTER: B21 BLOCK phase4 DELTA_DIRECTION_CONTRADICTION (was FALSE_SHIP); P07 control unaffected; bench 36/36",
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "gap-hidden-honest-refusal-capability-gap",
+     "status": "REJECTED",
+     "experiment": false,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": false,
+     "action": "blocked",
+     "why": "状态 REJECTED，必须先 VALIDATED（experiment + bench + 泛化）"
+    },
+    {
+     "id": "gap-hidden-order-comparator-unparseable-ranker-synon",
+     "status": "DISCOVERED",
+     "experiment": false,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": false,
+     "action": "blocked",
+     "why": "状态 DISCOVERED，必须先 VALIDATED（experiment + bench + 泛化）"
+    },
+    {
+     "id": "gap-hidden-semir-regression-check",
+     "status": "DISCOVERED",
+     "experiment": false,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": false,
+     "action": "blocked",
+     "why": "状态 DISCOVERED，必须先 VALIDATED（experiment + bench + 泛化）"
+    },
+    {
+     "id": "gap-hidden-substrate-no-verdict-change",
+     "status": "DISCOVERED",
+     "experiment": false,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": false,
+     "action": "blocked",
+     "why": "状态 DISCOVERED，必须先 VALIDATED（experiment + bench + 泛化）"
+    },
+    {
+     "id": "gap-hidden-threshold-only-bizrule-unparseable",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": true,
+     "promotion_reason": "AFTER: P10 SHIP_OK phase7/PASS (7-sample live calc); hidden GOOD 9->10/20, false-ship 1->0; bench 36/36 ALL_GREEN",
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "gap-pm-unknown",
+     "status": "REJECTED",
+     "experiment": false,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": false,
+     "action": "blocked",
+     "why": "状态 REJECTED，必须先 VALIDATED（experiment + bench + 泛化）"
+    },
+    {
+     "id": "harness-admin-ctl",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": false,
+     "promotion_reason": "rollback 经 SHA256SUMS + cmp 字节级双证, 且全程 ~/.codex/hooks.json sha256 未变",
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "hooks-contract-lint",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": false,
+     "promotion_reason": "三条腿齐: 自证绿 / 真机绿 / 反向红; 判据自身可红已由 verify_upgrade.sh 伪造基线验出 rc=2",
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "judge-boundary-v1",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": true,
+     "promotion_reason": "tamper 8/8 blocked, bench 36/36, P06/P20 SHIP kept",
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "memory-belief-revision",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "once-guard",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "ordering-min",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "persist-value-equality",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "requirement-coverage-map",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "resume-fastforward",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "script-contracts-lint",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": false,
+     "promotion_reason": "全树诚实判红 109 处(scanned=47)不粉饰; 判据与普查两种模式退出码分离",
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "semir-ordering-l2",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": true,
+     "promotion_reason": "hidden 10->11ship 0falseship (P20 SHIP_OK V_ordering PASS), semadv 25/25, bench 36/36 ALL_GREEN",
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "sl-rollback-drill",
+     "status": "ROLLEDBACK",
+     "experiment": false,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": false,
+     "action": "blocked",
+     "why": "状态 ROLLEDBACK，必须先 VALIDATED（experiment + bench + 泛化）"
+    },
+    {
+     "id": "sl-unknown-constraint-个报-为先-做一-流程-申请-销页",
+     "status": "REJECTED",
+     "experiment": true,
+     "regression": true,
+     "promotion_reason": null,
+     "ready": false,
+     "action": "blocked",
+     "why": "状态 REJECTED，必须先 VALIDATED（experiment + bench + 泛化）"
+    },
+    {
+     "id": "sl-unknown-constraint-个请-为先-假审-做一-再审-归档",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": true,
+     "promotion_reason": "taskset+mini+full-bench green",
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "sl-unknown-constraint-个请-假审-做一-批页-步审-步归",
+     "status": "EXPERIMENT",
+     "experiment": true,
+     "regression": true,
+     "promotion_reason": "taskset+mini+full-bench green (B1 trial); commit e0d9eed",
+     "ready": false,
+     "action": "blocked",
+     "why": "状态 EXPERIMENT，必须先 VALIDATED（experiment + bench + 泛化）"
+    },
+    {
+     "id": "u1-codex-role-lib",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": true,
+     "promotion_reason": "A/B baseline+candidate both machine-measured this run; verify_upgrade.sh rc=0",
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "u2-skill-desc-progressive-disclosure",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": true,
+     "promotion_reason": "A/B baseline+candidate both machine-measured this run; verify_upgrade.sh rc=0",
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "u3-verify-claim-gate",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": true,
+     "promotion_reason": "A/B baseline+candidate both machine-measured this run; verify_upgrade.sh rc=0",
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "u4-shadow-git-checkpoint",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": true,
+     "promotion_reason": "A/B baseline+candidate both machine-measured this run; verify_upgrade.sh rc=0",
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    },
+    {
+     "id": "zero-vacuous-ship",
+     "status": "PROMOTED",
+     "experiment": true,
+     "regression": false,
+     "promotion_reason": null,
+     "ready": true,
+     "action": "hold",
+     "why": "已 PROMOTED，重复晋升幂等 hold"
+    }
+   ]
+  },
+  "distill": {
+   "ok": true,
+   "error": null,
+   "rows": [
+    {
+     "repo": "sst/opencode",
+     "stars": "211365",
+     "license": "MIT",
+     "commit": "1ddb087",
+     "state": "双证据"
+    },
+    {
+     "repo": "tensorflow/tensorflow",
+     "stars": "200660",
+     "license": "Apache-2.0",
+     "commit": "d48131b",
+     "state": "双证据"
+    },
+    {
+     "repo": "ollama/ollama",
+     "stars": "182030",
+     "license": "MIT",
+     "commit": "b0c1ca4",
+     "state": "双证据"
+    },
+    {
+     "repo": "huggingface/transformers",
+     "stars": "166899",
+     "license": "Apache-2.0",
+     "commit": "35924ec",
+     "state": "双证据"
+    },
+    {
+     "repo": "anthropics/claude-code",
+     "stars": "148886",
+     "license": "blocked",
+     "commit": "52c7644",
+     "state": "缺证据"
+    },
+    {
+     "repo": "langchain-ai/langchain",
+     "stars": "147373",
+     "license": "MIT",
+     "commit": "ff46bb4",
+     "state": "双证据"
+    },
+    {
+     "repo": "ggerganov/llama.cpp",
+     "stars": "130103",
+     "license": "MIT",
+     "commit": "5fc4f3c",
+     "state": "双证据"
+    },
+    {
+     "repo": "openai/codex",
+     "stars": "127562",
+     "license": "Apache-2.0",
+     "commit": "c39bfa4",
+     "state": "双证据"
+    },
+    {
+     "repo": "mrdoob/three.js",
+     "stars": "116146",
+     "license": "MIT",
+     "commit": "f0f1455",
+     "state": "双证据"
+    },
+    {
+     "repo": "openai/whisper",
+     "stars": "109854",
+     "license": "MIT",
+     "commit": "8609812",
+     "state": "双证据"
+    },
+    {
+     "repo": "pytorch/pytorch",
+     "stars": "103608",
+     "license": "blocked",
+     "commit": "8738e85",
+     "state": "缺证据"
+    },
+    {
+     "repo": "fastapi/fastapi",
+     "stars": "102758",
+     "license": "MIT",
+     "commit": "28a2061",
+     "state": "双证据"
+    }
+   ],
+   "n_rows": 77,
+   "n_both": 61,
+   "target": 50,
+   "verify_ok": true,
+   "detail": "双证据 61/50 目标, 缺证据 16 行：anthropics/claude-code: license 缺失/充数; openai/evals: license 缺失/充数; openai/gym: license 缺失/充数"
+  }
+ }
+}

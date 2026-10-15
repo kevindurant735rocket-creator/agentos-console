@@ -1,0 +1,82 @@
+{
+  "core": "tools/agent_core.py",
+  "judgments": [
+    {
+      "detail": "subagent_in=True cap=12",
+      "gate": "D1 可 import + 符号齐（TOOLS 含 subagent、钳=12）",
+      "ok": true
+    },
+    {
+      "detail": "rc=0 tail='AGENT_CORE OK 140/140'",
+      "gate": "D2 --check 末行逐字 AGENT_CORE OK 140/140",
+      "ok": true
+    },
+    {
+      "detail": "fn=1 depth=1 cap=1 subset=1",
+      "gate": "D3 源码锚点（工具本体/嵌套闸/步数钳/子集闸 各恰 1）",
+      "ok": true
+    },
+    {
+      "detail": "seen=3 summary='子代理结论：42'",
+      "gate": "D4 可重入：外层停→内层终答→外层继续（3 请求）",
+      "ok": true
+    },
+    {
+      "detail": "err='禁止嵌套：子代理里不能再派子代理（V1 一层，fail-cl' seen=0",
+      "gate": "D5 禁嵌套：depth>0 直接拒 + 零请求（fail-closed）",
+      "ok": true
+    },
+    {
+      "detail": "steps=12 seen=12",
+      "gate": "D6 步数封顶：99 钳到 12（请求数=钳值）",
+      "ok": true
+    },
+    {
+      "detail": "why='工具 write_file 不在本次子代理的工具子集里（允许' ex=False",
+      "gate": "D7 子集强制：子集外工具拒 + 真跑不落盘",
+      "ok": true
+    },
+    {
+      "detail": "ok=True seen=2",
+      "gate": "D8 权限继承：外层 plan 内层写被拒、文件未落",
+      "ok": true
+    },
+    {
+      "detail": "ok=True n=3",
+      "gate": "D10 并行批次：barrier 三线同到（串行必 BrokenBarrier）",
+      "ok": true
+    },
+    {
+      "detail": "lim='并行子代理一次最多 4 个（得 5）'",
+      "gate": "D11 批量边界：5 个/空表拒（fail-closed）",
+      "ok": true
+    },
+    {
+      "detail": "oks=[True, False, True]",
+      "gate": "D12 失败隔离：单任务炸不拖垮其余、按输入序",
+      "ok": true
+    },
+    {
+      "detail": "ok=True handoff=True",
+      "gate": "D13 chain 交接：上一段结论进下一段 prompt、按序返回",
+      "ok": true
+    },
+    {
+      "detail": "stopped=1 n=2",
+      "gate": "D14 chain fail-closed：中途段失败即停（stopped_at=1）",
+      "ok": true
+    },
+    {
+      "detail": "digest='汇总裁决Z' n=3",
+      "gate": "D15 merge：批量后额外一次汇总出 digest（3 请求）",
+      "ok": true
+    },
+    {
+      "detail": "新增=无",
+      "gate": "D9 零污染（work/ 只多 --out；夹具已清）",
+      "ok": true
+    }
+  ],
+  "n_ok": 15,
+  "n_total": 15
+}

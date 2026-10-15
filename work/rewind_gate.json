@@ -1,0 +1,57 @@
+{
+  "core": "tools/agent_core.py",
+  "judgments": [
+    {
+      "detail": "缺=无",
+      "gate": "D1 可 import + 七符号齐",
+      "ok": true
+    },
+    {
+      "detail": "rc=0 tail='AGENT_CORE OK 140/140'",
+      "gate": "D2 --check 末行逐字 AGENT_CORE OK 140/140",
+      "ok": true
+    },
+    {
+      "detail": "v2=1 rp=1 chat=1 fb=1 rw=1 tbl=1",
+      "gate": "D3 源码锚点（v2/replay/chat/回退/分支/补全表 各恰 1）",
+      "ok": true
+    },
+    {
+      "detail": "n=1/2/3→2/4/6 条、n=0/4 拒",
+      "gate": "D4 重放对齐 + 越界 fail-closed（行为）",
+      "ok": true
+    },
+    {
+      "detail": "used=True dropped=25 len=7",
+      "gate": "D5 digest 真调用（桩）→ 摘要进头、丢弃数 25",
+      "ok": true
+    },
+    {
+      "detail": "used=False same=True",
+      "gate": "D6 provider 失败 → 与旧口径逐字相等（行为）",
+      "ok": true
+    },
+    {
+      "detail": "seen_n=1",
+      "gate": "D7 聚焦词真进摘要请求体",
+      "ok": true
+    },
+    {
+      "detail": "ok=True hist=42 head='【上下文摘要·自动压缩】\\n收尾'",
+      "gate": "D8 run_agent 自动压缩走 v2 且摘要进 history（行为）",
+      "ok": true
+    },
+    {
+      "detail": "hist=4 recs=7",
+      "gate": "D9 /rewind 端到端：重放+note+越界不动（行为）",
+      "ok": true
+    },
+    {
+      "detail": "新增=无",
+      "gate": "D10 零污染（work/ 只多 --out；夹具已清）",
+      "ok": true
+    }
+  ],
+  "n_ok": 10,
+  "n_total": 10
+}

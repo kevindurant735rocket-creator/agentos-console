@@ -1,0 +1,273 @@
+{
+ "tool": "cli_gate_selftest.py",
+ "ok": true,
+ "elapsed": 183.05,
+ "mutants": [
+  "silent0",
+  "hangq",
+  "writeok",
+  "lyingjson"
+ ],
+ "results": [
+  {
+   "gate": "BASE 生产调用 rc=0",
+   "ok": true,
+   "detail": "rc=0"
+  },
+  {
+   "gate": "BASE pre_ok=True（判据真的跑了）",
+   "ok": true,
+   "detail": "prefail=''"
+  },
+  {
+   "gate": "BASE 判据数不缩水（>=26）",
+   "ok": true,
+   "detail": "实到 59"
+  },
+  {
+   "gate": "BASE JSON ok=True",
+   "ok": true,
+   "detail": "ok=True"
+  },
+  {
+   "gate": "BASE·tty-q-exits-rc0 必须绿",
+   "ok": true,
+   "detail": "ok=True | child_rc=0（q 必须干净退出）"
+  },
+  {
+   "gate": "BASE·tty-noarg-enters-tui 必须绿",
+   "ok": true,
+   "detail": "ok=True | 首行='✻ AgentOS TUI · 18:50:37 · http://127.0.0.1:87' footer='视图 6/13 · 数据源: GET /__health +"
+  },
+  {
+   "gate": "M·silent0 整门 rc=2（有红项）",
+   "ok": true,
+   "detail": "rc=2"
+  },
+  {
+   "gate": "M·silent0 pre_ok=True（判据跑了）",
+   "ok": true,
+   "detail": "results=59"
+  },
+  {
+   "gate": "M·silent0·help-usage 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0"
+  },
+  {
+   "gate": "M·silent0·help-lists-all-subs 必须红",
+   "ok": true,
+   "detail": "ok=False | 缺 ['serve', 'health', 'open', 'tui', 'resident', 'headroom', 'gates', 'term', 'gh', 'agent"
+  },
+  {
+   "gate": "M·silent0·tui-nontty-all-views 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0 视图数=0"
+  },
+  {
+   "gate": "M·silent0·tui-nontty-has-source 必须红",
+   "ok": true,
+   "detail": "ok=False | 数据源行=False"
+  },
+  {
+   "gate": "M·silent0·term-allow-rc0 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0"
+  },
+  {
+   "gate": "M·silent0·term-deny-rc1 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0（写向量必须被拒）"
+  },
+  {
+   "gate": "M·silent0·term-zeroarg-rc2 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0（零参数=什么都没跑）"
+  },
+  {
+   "gate": "M·silent0·completion-zsh 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0 行数=0"
+  },
+  {
+   "gate": "M·silent0·completion-noarg-rc2 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0（缺 shell 参数必须是用法错）"
+  },
+  {
+   "gate": "M·silent0·resume-bogus-rc2 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0"
+  },
+  {
+   "gate": "M·silent0·gates-zeroarg-rc2 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0"
+  },
+  {
+   "gate": "M·silent0·gh-whoami-rc0 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0 sources 行=False 实跑 3 次 · stderr 尾=''"
+  },
+  {
+   "gate": "M·silent0·gh-write-denied-rc2 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0（本机零远端写）"
+  },
+  {
+   "gate": "M·silent0·gh-unknown-sub-rc2 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0"
+  },
+  {
+   "gate": "M·silent0·print-json-one-line 必须红",
+   "ok": true,
+   "detail": "ok=False | 键齐=False ok=None exit_code=None"
+  },
+  {
+   "gate": "M·silent0·print-json-ok-matches-exit 必须红",
+   "ok": true,
+   "detail": "ok=False | ok=None exit_code=None（自相矛盾的记录就是假绿）"
+  },
+  {
+   "gate": "M·silent0·print-empty-rc2 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0（空需求=什么都没干）"
+  },
+  {
+   "gate": "M·silent0·print-mix-sub-rc2 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0"
+  },
+  {
+   "gate": "M·silent0·print-gh-route 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0 route=None sources=None"
+  },
+  {
+   "gate": "M·silent0·noarg-nontty-rc2 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0"
+  },
+  {
+   "gate": "M·silent0·open-rc0-url 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0 url 打印=False"
+  },
+  {
+   "gate": "M·silent0·tty-noarg-enters-tui 必须红",
+   "ok": true,
+   "detail": "ok=False | 首行='' footer=None elapsed=0.01s"
+  },
+  {
+   "gate": "M·silent0·health-rc0 必须绿",
+   "ok": true,
+   "detail": "ok=True | rc=0"
+  },
+  {
+   "gate": "M·silent0·sub-help-all-rc0 必须绿",
+   "ok": true,
+   "detail": "ok=True | 17 面子命令 --help 全 rc=0"
+  },
+  {
+   "gate": "M·silent0·sessions-rc0 必须绿",
+   "ok": true,
+   "detail": "ok=True | rc=0"
+  },
+  {
+   "gate": "M·silent0·tty-q-exits-rc0 必须绿",
+   "ok": true,
+   "detail": "ok=True | child_rc=0（q 必须干净退出）"
+  },
+  {
+   "gate": "M·hangq 整门 rc=2（有红项）",
+   "ok": true,
+   "detail": "rc=2"
+  },
+  {
+   "gate": "M·hangq pre_ok=True（判据跑了）",
+   "ok": true,
+   "detail": "results=59"
+  },
+  {
+   "gate": "M·hangq·tty-q-exits-rc0 必须红",
+   "ok": true,
+   "detail": "ok=False | child_rc=-15（q 必须干净退出）"
+  },
+  {
+   "gate": "M·hangq·tty-noarg-enters-tui 必须绿",
+   "ok": true,
+   "detail": "ok=True | 首行='AgentOS TUI · http://127.0.0.1:8790 · 00:00:00' footer='视图 1/13 · 数据源: GET /__health' "
+  },
+  {
+   "gate": "M·writeok 整门 rc=2（有红项）",
+   "ok": true,
+   "detail": "rc=2"
+  },
+  {
+   "gate": "M·writeok pre_ok=True（判据跑了）",
+   "ok": true,
+   "detail": "results=59"
+  },
+  {
+   "gate": "M·writeok·term-deny-rc1 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0（写向量必须被拒）"
+  },
+  {
+   "gate": "M·writeok·gh-write-denied-rc2 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0（本机零远端写）"
+  },
+  {
+   "gate": "M·writeok·gh-unknown-sub-rc2 必须红",
+   "ok": true,
+   "detail": "ok=False | rc=0"
+  },
+  {
+   "gate": "M·writeok·term-allow-rc0 必须绿",
+   "ok": true,
+   "detail": "ok=True | rc=0"
+  },
+  {
+   "gate": "M·writeok·gh-whoami-rc0 必须绿",
+   "ok": true,
+   "detail": "ok=True | rc=0 sources 行=True 实跑 1 次"
+  },
+  {
+   "gate": "M·lyingjson 整门 rc=2（有红项）",
+   "ok": true,
+   "detail": "rc=2"
+  },
+  {
+   "gate": "M·lyingjson pre_ok=True（判据跑了）",
+   "ok": true,
+   "detail": "results=59"
+  },
+  {
+   "gate": "M·lyingjson·print-json-ok-matches-exit 必须红",
+   "ok": true,
+   "detail": "ok=False | ok=True exit_code=1（自相矛盾的记录就是假绿）"
+  },
+  {
+   "gate": "M·lyingjson·print-json-one-line 必须绿",
+   "ok": true,
+   "detail": "ok=True | 键齐=True ok=True exit_code=1"
+  },
+  {
+   "gate": "M·lyingjson·print-gh-route 必须绿",
+   "ok": true,
+   "detail": "ok=True | rc=0 route=gh sources=['gh repo list --limit 15']"
+  },
+  {
+   "gate": "M·lyingjson·print-empty-rc2 必须绿",
+   "ok": true,
+   "detail": "ok=True | rc=2（空需求=什么都没干）"
+  },
+  {
+   "gate": "M·lyingjson·print-mix-sub-rc2 必须绿",
+   "ok": true,
+   "detail": "ok=True | rc=2"
+  }
+ ]
+}

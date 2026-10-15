@@ -1,0 +1,41 @@
+{
+  "judgments": [
+    {
+      "detail": "good=True paths=True zero=True multi=True wr=True/True wf=True",
+      "gate": "D1 纯面闸：好过 / 坏路径全拒（含 work/ 实存文件专属探针） / 锚点 0与2处拒 / write 闸",
+      "ok": true
+    },
+    {
+      "detail": "rc=2 sha同=True sandbox=True verdicts=['rejected']",
+      "gate": "D2 拒绝面：坏提案 rejected + 真树零改动 + 沙箱留坏编辑证据",
+      "ok": true
+    },
+    {
+      "detail": "rc=0 tree=True lg=0 cg=0 verdicts=['merged']",
+      "gate": "D3 合入面：merged + 真树含标记 + leader_gate 复验绿 + capability_gate 10/10",
+      "ok": true
+    },
+    {
+      "detail": "闸=True rc=2 复原=True roll账=1",
+      "gate": "D4 回退面：合入中途失败 → rolled_back + 第一文件逐字复原",
+      "ok": true
+    },
+    {
+      "detail": "rows=3",
+      "gate": "D5 账本面：rejected/merged 两行齐、字段对（含 gates 证据）",
+      "ok": true
+    },
+    {
+      "detail": "help=0 missing=3",
+      "gate": "D6 CLI 面：--help rc=0；提案不可读 rc=3",
+      "ok": true
+    },
+    {
+      "detail": "还原=True 新增work=无 新增tools=无",
+      "gate": "D7 还原与零污染：leader.py 逐字同位；work/ 只多 --out；沙箱清、tools/ 零残留",
+      "ok": true
+    }
+  ],
+  "n_ok": 7,
+  "n_total": 7
+}

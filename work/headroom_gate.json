@@ -1,0 +1,334 @@
+{
+ "ok": true,
+ "port": 8787,
+ "profile": "init-zhangfengrui-3ba60337",
+ "checks": [
+  {
+   "name": "profile-resolved",
+   "ok": true,
+   "detail": "profile=init-zhangfengrui-3ba60337 manifest在盘=True"
+  },
+  {
+   "name": "manifest-in-sync",
+   "ok": true,
+   "detail": "port=8787 health=http://127.0.0.1:8787/readyz preset=persistent-task 自报supervisor=none"
+  },
+  {
+   "name": "live-listen",
+   "ok": true,
+   "detail": "pid=61263 /opt/miniconda3/bin/python3.13 -m headroom.cli proxy --host 127.0.0.1 --port 8787 --mode token --backend anthr"
+  },
+  {
+   "name": "supervisor-measured",
+   "ok": true,
+   "detail": "实测=headroom-agent vs 自报=none · 祖先 pid=61262 argv=/opt/miniconda3/bin/python3.13 -m headroom.cli install agent run"
+  },
+  {
+   "name": "readyz-200",
+   "ok": true,
+   "detail": "HTTP=200 {\"service\":\"headroom-proxy\",\"status\":\"healthy\",\"ready\":true, [attempt 1/41 HTTP=200 pid 61263->61263]"
+  },
+  {
+   "name": "params-no-drift",
+   "ok": true,
+   "detail": "一致 {\"host\": \"127.0.0.1\", \"port\": 8787, \"mode\": \"token\", \"backend\": \"anthropic\", \"telemetry\": true}"
+  },
+  {
+   "name": "install-status-healthy",
+   "ok": true,
+   "detail": "rc=0 Healthy=yes"
+  },
+  {
+   "name": "recovery-cmd-works",
+   "ok": true,
+   "detail": "ensure rc=0 Deployment 'init-zhangfengrui-3ba60337' is already healthy."
+  },
+  {
+   "name": "recovery-hook-registered",
+   "ok": true,
+   "detail": "注册齐 {'PreToolUse': 1, 'SessionStart': 1}"
+  },
+  {
+   "name": "client-upstream-alive",
+   "ok": true,
+   "detail": "本机上游 [15721, 15799, 23333] 全在监听 {\"codex config.toml\": [15799], \"claude settings.json\": [15721, 23333]}"
+  },
+  {
+   "name": "stale-sse-hop",
+   "ok": true,
+   "detail": "活配置未引用 8799（残留层，死了无害）"
+  },
+  {
+   "name": "headroom-load-bearing",
+   "ok": true,
+   "detail": "客户端走 [15721, 15799, 23333]，未走 8787 -> 8787 死寂无声（实测常态）"
+  },
+  {
+   "name": "readyz-selfheal-noted",
+   "ok": true,
+   "detail": "首探即 200，无抖动"
+  },
+  {
+   "name": "readyz-settle-realpath",
+   "ok": true,
+   "detail": "真 server 503 窗口 4.5s -> 4.5s 后转 200 · 预算 60s · attempt 1/41 HTTPError attempt 2/41 HTTPError attempt 3/41 HTTPError a"
+  },
+  {
+   "name": "readyz-settle-covers-log",
+   "ok": true,
+   "detail": "当日 readyz 899 事件（读 6 个轮转文件）/ 生命周期 0 段 最坏 0.0s / 非生命周期 9 段 最坏 30352.8s（网络出口抖动，不计入预算） · 预算 60s vs 实测最坏 0.0s + 余量 6s = 需 6.0s"
+  },
+  {
+   "name": "restart-loop-no-flap",
+   "ok": true,
+   "detail": "当日 0 段重启循环（>=3 次 start 挤在一段里），最长 0.0s；最近 1800s 内 0 段 -> 已停止，不再抖 · 重启循环不计入 settle 预算（那会把门调宽去容忍第三方缺陷）"
+  },
+  {
+   "name": "autostart-or-unused",
+   "ok": true,
+   "detail": "autostart · 关键路径=False · 真自启，重启后自己回来 · 通道=['launchd', '/Users/zhangfengrui/Library/LaunchAgents', 'shell+plist:.zshrc'] · loginitem=无"
+  },
+  {
+   "name": "launchd-channel-real",
+   "ok": true,
+   "detail": "plist 在盘且 launchd 已认领"
+  }
+ ],
+ "mutants": [
+  {
+   "name": "M1 params_match 原样必须绿",
+   "ok": true,
+   "detail": "一致 {\"host\": \"127.0.0.1\", \"port\": 8787, \"mode\": \"token\", \"backend\": \"anthropic\", \"telemetry\": true}"
+  },
+  {
+   "name": "M2 params_match 抓 port 漂移",
+   "ok": true,
+   "detail": "port 9999 vs 8787"
+  },
+  {
+   "name": "M3 params_match 抓 backend 漂移",
+   "ok": true,
+   "detail": "openai vs anthropic"
+  },
+  {
+   "name": "M4 params_match 抓 telemetry 漂移",
+   "ok": true,
+   "detail": "关 vs 开"
+  },
+  {
+   "name": "M5 params_match 抓缺失参数（--port 没传）",
+   "ok": true,
+   "detail": "port=None"
+  },
+  {
+   "name": "M6 upstream_ports_ok 原样必须绿",
+   "ok": true,
+   "detail": "本机上游 [15721] 全在监听"
+  },
+  {
+   "name": "M7 upstream_ports_ok 抓死上游",
+   "ok": true,
+   "detail": "15721 未监听"
+  },
+  {
+   "name": "M8 upstream_ports_ok 空集合判绿（无本机上游不误红）",
+   "ok": true,
+   "detail": "本机上游 [] 全在监听"
+  },
+  {
+   "name": "M9 hook_profile_ok 原样必须绿",
+   "ok": true,
+   "detail": "注册齐 {'PreToolUse': 1, 'SessionStart': 1}"
+  },
+  {
+   "name": "M10 hook_profile_ok 抓缺 SessionStart",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "M11 hook_profile_ok 抓 profile 写错",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "M12 stale_hop_ok 无人引用判绿",
+   "ok": true,
+   "detail": "活配置未引用 8799（残留层，死了无害）"
+  },
+  {
+   "name": "M13 stale_hop_ok 被引用但没监听必须红",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "M14 load_bearing 抓「以为在用其实没走」",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "M15 传输层瞬时失败重试后判绿（503 -> 200）",
+   "ok": true,
+   "detail": "code=200 trace=attempt 1/3 _Boom attempt 2/3 HTTP=200"
+  },
+  {
+   "name": "M16 代理真死时重试不得造出假绿（3 次全败仍判红）",
+   "ok": true,
+   "detail": "code=0"
+  },
+  {
+   "name": "M17 去掉重试（attempts=1）则瞬时失败判红（M15 的绿确来自重试）",
+   "ok": true,
+   "detail": "code=0"
+  },
+  {
+   "name": "M18 实测守护者=headroom-agent（agent 祖先）",
+   "ok": true,
+   "detail": "祖先 pid=99 argv=/opt/miniconda3/bin/python3.13 -m headroom.cli install "
+  },
+  {
+   "name": "M19 实测守护者=launchd（launchd 祖先，与 M18 可分辨）",
+   "ok": true,
+   "detail": "祖先 pid=99 argv=/bin/launchd"
+  },
+  {
+   "name": "M20 误杀后无人拉起来：链到 init 判 none（supervisor-measured 会红）",
+   "ok": true,
+   "detail": "链=100 一路到 init 无人管"
+  },
+  {
+   "name": "M21 真自启 + 关键路径 -> 绿",
+   "ok": true,
+   "detail": "autostart 关键=True"
+  },
+  {
+   "name": "M22 无自启 + 关键路径 -> 红（重启后静默失效的真风险）",
+   "ok": true,
+   "detail": "none 关键=True"
+  },
+  {
+   "name": "M23 无自启 + 非关键 -> 绿（当前实况，不为没人用的端口误红）",
+   "ok": true,
+   "detail": "none 关键=False"
+  },
+  {
+   "name": "M23b 无守护的 shell fallback + 关键路径 -> 红",
+   "ok": true,
+   "detail": "shell-unsupervised 关键=True"
+  },
+  {
+   "name": "M24 只有别名/tail/注释提到 headroom -> 不算自启通道（本轮实测的真 bug）",
+   "ok": true,
+   "detail": "别名文件 has_start=False"
+  },
+  {
+   "name": "M25 launchctl load + 裸 proxy fallback -> 认出是启动动作",
+   "ok": true,
+   "detail": "has_start=True refs_plist=True"
+  },
+  {
+   "name": "M26 实测到守护者 -> settle 预算内等到 200 判绿（等预算靠的就是它）",
+   "ok": true,
+   "detail": "code=200 trace=attempt 1/60 _Boom attempt 2/60 HTTP=200"
+  },
+  {
+   "name": "M27 无守护者 -> 预算归 0 且只试 3 次就红，不许靠等造绿",
+   "ok": true,
+   "detail": "budget_none=0.0 tries=3 code=0"
+  },
+  {
+   "name": "M28 recovered_after_retry 不把「本来就好」记成自愈",
+   "ok": true,
+   "detail": "单发=False 重试后=True 空=False"
+  },
+  {
+   "name": "M29 真 server 9.4s 夹具窗口 + 无守护者预算 -> 必须红（真路径不许靠等造绿）",
+   "ok": true,
+   "detail": "code=0 tries=3 耗时=3.0s"
+  },
+  {
+   "name": "M30 unready_windows 被中间的 200 切断（不得合成一整段）",
+   "ok": true,
+   "detail": "seq 503/200/503/200 -> [5.0, 5.0]"
+  },
+  {
+   "name": "M31 稀疏探活的长空窗按 gap_cap 封顶（不得读成 200s 的慢自愈）",
+   "ok": true,
+   "detail": "1 个 503 + 200s 后才来 200 -> 10.0s（cap=10）"
+  },
+  {
+   "name": "M32 settle_covers 边界：预算差 1s 判红、刚好够判绿",
+   "ok": true,
+   "detail": "need=37.5 -> 预算37.4 红=True / 37.6 绿=True"
+  },
+  {
+   "name": "M33 轮转合并：.1 早事件 + live 晚事件必须合并且按时间排序",
+   "ok": true,
+   "detail": "合并 4 条 / 单读 live 仅 1 条 = 17:54 那次假绿的形状"
+  },
+  {
+   "name": "M34 轮转顺序给反也必须仍按时间排序（不许靠调用方给对顺序）",
+   "ok": true,
+   "detail": "给反顺序后仍时间升序=True"
+  },
+  {
+   "name": "M35 紧邻 start 锚点的 503 连片 -> lifecycle（预算该管它）",
+   "ok": true,
+   "detail": "shut@2 start@3 + 503 连片 0..4 -> [(8.0, True)]"
+  },
+  {
+   "name": "M36 无锚点的 503 连片 -> other（网络抖动，不许顶预算）",
+   "ok": true,
+   "detail": "锚点在 2/3s、连片在 100..104s -> [(8.0, False)]"
+  },
+  {
+   "name": "M37 无锚点时全部归 other（不得凭空造出 lifecycle 窗口）",
+   "ok": true,
+   "detail": "marks=[] -> [(8.0, False)]"
+  },
+  {
+   "name": "M38 预算 < 最坏 lifecycle + 余量必须红（分类后仍 fail-closed）",
+   "ok": true,
+   "detail": "worst_life=27.8 need=33.8 -> 33.7 红=True / 33.8 绿=True"
+  },
+  {
+   "name": "M39 开机通道两件都在才绿",
+   "ok": true,
+   "detail": "plist 在盘且 launchd 已认领"
+  },
+  {
+   "name": "M40 plist 被删 -> 红（8787 还活着也不许放行）",
+   "ok": true,
+   "detail": "plist 不在盘 = 没有开机通道"
+  },
+  {
+   "name": "M41 plist 在盘但 launchd 没认领 -> 红（重启即静默失效）",
+   "ok": true,
+   "detail": "plist 在盘但 launchd 未认领 = load 过就再没人管"
+  },
+  {
+   "name": "M42 >=3 次 start 挤一段 -> 判为重启循环（不再污染重启预算）",
+   "ok": true,
+   "detail": "5 starts/66s -> flap=1 计入预算的最坏=0.0s"
+  },
+  {
+   "name": "M43 一次 start 的长窗口仍算合法重启（不许把真重启误判成循环）",
+   "ok": true,
+   "detail": "1 start/66s -> 仍是合法重启，最坏=74.0s"
+  },
+  {
+   "name": "M44 最近窗口内的循环 -> 门自己判红（不许把在抖的循环静默放行）",
+   "ok": true,
+   "detail": "flap t0+60s 仍在 1800s 窗口内 -> 判红"
+  },
+  {
+   "name": "M45 早已停止的循环 -> 不再判红（历史事实不是当前缺陷）",
+   "ok": true,
+   "detail": "flap t0+2400s 之后再看 -> 已出窗口"
+  },
+  {
+   "name": "M46 循环仍计入预算的话本门就是空门（反向锁：排除才是有意的）",
+   "ok": true,
+   "detail": "66.2s 预算 60 -> 红（所以必须排除）；32.2s -> 绿（真重启够用）"
+  }
+ ]
+}

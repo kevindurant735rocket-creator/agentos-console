@@ -1,0 +1,88 @@
+{
+ "tool": "capmap_gate.py",
+ "gates": [
+  {
+   "name": "正例：四类账各一条 -> 四桶互斥且穷尽（合计 == 账本总数）且每条落在正确桶",
+   "ok": true,
+   "detail": "counts={'ab-verified': 1, 'ab-unverifiable': 1, 'no-verdict': 1, 'anonymous': 1} sum=4 ledger=4 错桶=无 anon_id=''"
+  },
+  {
+   "name": "反向：3 条 status=PROMOTED 但一条 A/B 裁决都没有 -> n_verified 必须为 0",
+   "ok": true,
+   "detail": "PROMOTED=3 n_verified=0 n_no_verdict=3 -> 未把自报当验过"
+  },
+  {
+   "name": "反向：6 条连 capability_id 都没有 -> 必须全落 anonymous，不得并进 no-verdict",
+   "ok": true,
+   "detail": "counts={'ab-verified': 0, 'ab-unverifiable': 0, 'no-verdict': 0, 'anonymous': 6} -> 无名账自己一桶"
+  },
+  {
+   "name": "反向：UNVERIFIABLE / PASS / FAIL 都不进「已验过」，只有 HOLD-AB/HOLD-EXIST 进",
+   "ok": true,
+   "detail": "kinds=[('u1', 'ab-unverifiable'), ('u2', 'ab-unverifiable'), ('u3', 'ab-unverifiable')] n_verified=0 -> 已验过判据收在 HOLD-AB/HOLD-EXIST"
+  },
+  {
+   "name": "反向：账本目录不存在 -> ok=false（不许给「没有能力 / 一切正常」）",
+   "ok": true,
+   "detail": "ok=False error='能力账目录不存在：/Users/zhangfengrui/Documents/Codex'"
+  },
+  {
+   "name": "反向：ledger.jsonl 缺失但目录在 -> ok=false，不许静默返回空账本",
+   "ok": true,
+   "detail": "ok=False error='ledger.jsonl 读不到：/Users/zhangfengrui/Documents/C'"
+  },
+  {
+   "name": "坏行计数不静默吞：3 合法 + 2 坏 -> 仍 ok，且 bad_lines==2",
+   "ok": true,
+   "detail": "ledger=3 bad_lines=2 n_verified=1"
+  },
+  {
+   "name": "取最新裁决按 ts 比而非「最后一行」：追加顺序与时间相反时旧裁决不得覆盖",
+   "ok": true,
+   "detail": "verdict=HOLD-AB n_verified=1"
+  },
+  {
+   "name": "排序：已验过最上、anonymous 沉底（最不可追溯的账不该被埋在中间一眼扫过去）",
+   "ok": true,
+   "detail": "order=['ab-verified', 'ab-unverifiable', 'no-verdict', 'anonymous']"
+  },
+  {
+   "name": "全量裁决记录数 >= 当前（每能力取最新一条）分布合计，且两者一致自洽",
+   "ok": true,
+   "detail": "current=1({'HOLD-AB': 1}) all=4({'HOLD-AB': 2, 'UNVERIFIABLE': 1, 'HOLD-EXIST': 1}) ids=2"
+  },
+  {
+   "name": "悬空裁决 id：单独报数 + 报名单，且不得被并进任何一桶",
+   "ok": true,
+   "detail": "悬空=2 (['ghost-1', 'ghost-2']) 未进桶，四桶仍穷尽 2/2"
+  },
+  {
+   "name": "反假绿：前端必须同时展示「当前分布」与「全量记录」两块，不得只剩一块",
+   "ok": true,
+   "detail": "当前分布 / 全量记录 / 悬空名单三块都在屏上"
+  },
+  {
+   "name": "接线：tablist 里每个 tab 都接进 9 处名单（模板 / 构建产物 / 4 个门）+ cap 专用 5 处",
+   "ok": true,
+   "detail": "tablist 抽到 13 个键，138/138 处齐"
+  },
+  {
+   "name": "反假绿：渲染层不许有第二套判定（不得用 status 推导证明等级）",
+   "ok": true,
+   "detail": "渲染层只引用后端 r.proof，四桶定义集中在 CAP_BUCKETS"
+  },
+  {
+   "name": "生产账本零污染：全程 sha256 未变",
+   "ok": true,
+   "detail": "autopi=ad8ac623 events=ad043e13 ledger=98ae5cea regres=9a6b4a30"
+  }
+ ],
+ "prod_sha_before": {
+  "ledger.jsonl": "98ae5cea64017fbb2d49cc198d32c9d7c4e2901ec35a1d7325dd0bfbb2b8d560",
+  "regression_verdicts.jsonl": "9a6b4a305b99de9d5ca1aa2a3f2f0b2558e4f446342e349feca1498fe0a940d8",
+  "autopilot_verdicts.jsonl": "ad8ac623fb60517e865c015657f4a1fed9e1d64d6669c037b3f598cbf5bcbbf6",
+  "events.jsonl": "ad043e13655087eda3d3575070c28dde6e67a5a7f172e9497250318924dad0de"
+ },
+ "passed": 15,
+ "total": 15
+}

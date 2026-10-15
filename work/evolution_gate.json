@@ -1,0 +1,56 @@
+{
+ "ok": true,
+ "checks": [
+  {
+   "name": "evolution-recurrence-readable",
+   "ok": true,
+   "detail": "复发簇=8, 复发性=7"
+  },
+  {
+   "name": "evolution-recurrence-has-recurring",
+   "ok": true,
+   "detail": "复发性簇=7"
+  },
+  {
+   "name": "evolution-capmap-readable",
+   "ok": true,
+   "detail": "能力=36, PROMOTED=26"
+  },
+  {
+   "name": "evolution-capmap-ab-verified",
+   "ok": true,
+   "detail": "A/B 验证=20/36"
+  },
+  {
+   "name": "evolution-capmap-no-degraded",
+   "ok": true,
+   "detail": "退化=0"
+  },
+  {
+   "name": "evolution-promote-readable",
+   "ok": true,
+   "detail": "总能力=36, 保持=26"
+  },
+  {
+   "name": "evolution-distill-dual-evidence",
+   "ok": true,
+   "detail": "双证据=61/50"
+  },
+  {
+   "name": "evolution-auto-promote-trigger",
+   "ok": true,
+   "detail": "高复发簇(>=5次)=5"
+  },
+  {
+   "name": "evolution-degradation-detection",
+   "ok": true,
+   "detail": "A/B 对比检测=True"
+  },
+  {
+   "name": "evolution-health-ok",
+   "ok": true,
+   "detail": "动作数=9"
+  }
+ ],
+ "port": 8790
+}

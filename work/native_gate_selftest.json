@@ -1,0 +1,475 @@
+{
+  "base_degraded": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/probe_degraded.json",
+  "base_main": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/probe.json",
+  "checks": 116,
+  "gate": "native_gate_selftest",
+  "ok": 116,
+  "rc": 0,
+  "red": [],
+  "results": [
+    {
+      "msg": "base-green judge_ax(synth) ",
+      "ok": true
+    },
+    {
+      "msg": "base-green judge_ax(live) ",
+      "ok": true
+    },
+    {
+      "msg": "base-green judge_window ",
+      "ok": true
+    },
+    {
+      "msg": "base-green judge_menu ",
+      "ok": true
+    },
+    {
+      "msg": "base-green judge_webview ",
+      "ok": true
+    },
+    {
+      "msg": "base-green judge_view_switch ",
+      "ok": true
+    },
+    {
+      "msg": "base-green judge_cmdk ",
+      "ok": true
+    },
+    {
+      "msg": "base-green judge_pixels ",
+      "ok": true
+    },
+    {
+      "msg": "base-green judge_panel ",
+      "ok": true
+    },
+    {
+      "msg": "base-green judge_projects ",
+      "ok": true
+    },
+    {
+      "msg": "base-green judge_degraded ",
+      "ok": true
+    },
+    {
+      "msg": "base-green judge_bundle ",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_window_invisible window-on-screen 窗口不可见",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_window_minimized window-on-screen 窗口被最小化",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_window_offscreen window-on-screen 窗口帧全在屏幕外",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_mini_not_restored window-minimized-restored 起时最小化却没被拉回来",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_restore_keys_removed window-minimized-restored 恢复动作的两个键不见了（修复被回退）",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_no_activation window-requested-activation 没请求焦点",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_key_lies window-key-matches-foreground key说谎",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_active_never_key window-became-key-when-foreground 自称前台却没拿到key",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_not_full_size window-full-size-content 没开合并标题栏",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_blank_page/title page-title-real 页面空白",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_blank_page/body page-body-text 页面空白",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_nav_failed webview-nav-finished 导航失败",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_switch_noop switch-mx-tab 点菜单屏没变",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_cmkd_not_focusable cmdk-focus-in-input 焦点没进输入框",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_shot_blank shot-mx-distinct-colors 截图纯色",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_shot_same_file shot-hashes-distinct 5张同一张",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_shot_truncated shot-cmdk-bytes 截图被截断",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_menu_miswired menu-forward-targets-match 转发接错线",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_menu_no_cmdk menu-has-cmdk 菜单没有cmdK",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_deg_dead_button degraded-start-button-wired 按钮没接线",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_deg_service_not_started degraded-service-started 没拉起服务",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_deg_never_explained degraded-panel-explains-selfheal 不解释",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_deg_no_panel degraded-panel-not-missing 面板没出现",
+      "ok": true
+    },
+    {
+      "msg": "GREEN-OK m_deg_recovery_fakes_dead degraded-health-recovered 采样出现过 ok=1，终值快照早一枪也不能假红",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_deg_never_recovered degraded-health-recovered 采样整轮 25s 全 ok=0，服务确实起不来",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_tree_never_loaded panel-tree-loaded 面板树压根没加载",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_tree_no_real_files panel-tree-has-real-files 树里没有真文件",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_never_expanded panel-tree-expanded 目录没展开",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_term_failed panel-term-rc-zero 终端命令失败",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_term_silent_empty panel-term-computed-42 rc=0但静默空转",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_argv_quoted panel-term-argv-parsed argv里留着裸引号",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_shot_flat_color panel-shot-distinct-colors 截图纯色",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_shot_all_black panel-shot-ink-ratio 截图满屏涂黑",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_shot_picked_blank panel-shot-method-not-blank 选中了全黑通道",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_toolbar_lost_panel panel-toolbar-wired 工具栏少了面板按钮",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_menu_no_cmdt panel-menu-has-cmdt 菜单没有cmdT",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_pane_segments_zero panel-pane-segments-declared 0段分段器假绿",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_pane_titles_short panel-pane-titles-complete 窗格标题不全",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_pane_ax_missing panel-pane-tabs-in-ax-tree AX树读不到tab",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_pane_no_switch panel-pane-switch-count 几乎没切过窗格",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_pane_two_visible panel-pane-only-one-visible 两格同时可见",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_pane_missed_visit panel-pane-visited-all-five 只逛过文件格",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_code_never_loaded panel-code-loaded 代码格没加载",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_code_direct_call panel-code-via-tree-selection 绕过文件树直调",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_code_editable panel-code-readonly 代码格可被编辑",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_browser_blank_page panel-browser-rendered-chars 浏览器白页",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_browser_no_title panel-browser-dom-title 浏览器无标题",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_browser_let_external panel-browser-rejects-external 回环限制被摘",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_browser_external_nav panel-browser-rejects-external 真导航到外网",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_preview_blank panel-preview-rendered-chars 预览白页",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_preview_confused panel-preview-not-confused-with-browser 预览与浏览器互相覆盖",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_shot_code_flat panel-shot-code-distinct-colors 代码格纯色",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_shot_code_black panel-shot-code-ink-ratio 代码格满屏涂黑",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_shot_code_picked_blank panel-shot-code-method-not-blank 代码格选了全黑通道",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_ax_no_run_button panel-ax-has-run-button AX里没有运行按钮",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_ax_no_browser_go panel-ax-has-browser-go AX里没有打开按钮",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_panel_composition_reads_outer panel-window-composition 门读错键(读外层)",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_proj_composition_missing projects-window-composition 左侧栏不在窗口构成里",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_proj_kind_flat projects-window-composition 外层不是横向split",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_proj_hidden projects-default-visible 左侧栏默认不可见",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_proj_never_loaded projects-loaded 项目数据压根没接上",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_proj_count_zero projects-loaded 项目列表是空的",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_proj_relative_roots projects-roots-absolute 项目根是相对路径",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_proj_rows_short projects-row-views-match 少一行原生视图",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_proj_no_active projects-active-flagged 没标出当前项目",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_proj_selection_wrong projects-active-flagged 选中行不是当前项目",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_proj_nfiles_zero projects-file-counts 文件数全是0",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_proj_ax_no_header projects-ax-has-header AX里没有标题",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_proj_ax_rows_unnamed projects-ax-rows-named AX里读不到项目行",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_proj_labels_blank projects-labels-real 项目名渲染成空白",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_proj_status_empty projects-status-text 状态栏没写结论",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_keyeq_path_faked keyeq-real-menu-path 没走菜单按键路径",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_keyeq_incomplete keyeq-sequence-complete 序列没走完",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_keyeq_one_shortcut_dead keyeq-all-views-consumed ⌘7快捷键被摘",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_keyeq_tab_not_reached keyeq-all-views-reached 消费了但页面没切",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_keyeq_cmdk_no keyeq-cmdk-opens ⌘K没打开命令板",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_keyeq_cmdt_missing keyeq-cmdt-toggled ⌘T状态读不出来",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_keyeq_cmdp_no_focus keyeq-cmdp-focuses-projects ⌘P没聚焦左栏",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_keyeq_arrow_dead projects-arrow-key-moves ↓键选不动行",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_menu_no_cmdp native-menu-has-cmdp 菜单没有⌘P",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_menu_cmdp_no_focus native-menu-cmdp-focuses ⌘P点了没聚焦",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_ats_no_local bundle-ats-loopback 撤掉回环放行",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_ats_blanket bundle-ats-not-arbitrary 整体放开",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_ax_windows_zero ax-window-exposed AX 读不到窗口",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_ax_windows_err ax-window-exposed kAXWindows 报错",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_ax_not_ok ax-window-exposed AX 采样压根没成",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_ax_self_link ax-content-tree 只剩 AXApplication 自链",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_ax_menu_saturated ax-content-tree 树被菜单项吃光",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_ax_texts_thin ax-content-tree 内容节点够但没读出文本",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_ax_foreign_pid ax-target-is-under-test AX 树采自别人家的实例",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_ax_unpinned ax-target-is-under-test AX 采样忘了钉 pid",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_ax_bare_shell ax-content-tree 只有窗口外壳，网页内容区没进 AX 树",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_ax_loaded_texts_thin ax-content-tree 内容区在但读不出足够文本",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_ax_series_too_thin ax-sustained 序列只采了 2 个样本，判据等于没判",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_ax_series_intermittent ax-sustained 8 次采样只暴露 1 次（AX 间歇暴露）",
+      "ok": true
+    },
+    {
+      "msg": "base-green judge_single_instance(live) ",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_si_a_not_in_table single-instance-a-in-process-table A 压根不在进程表里",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_si_second_rc_nonzero single-instance-second-rc 第二个实例非 0 退出",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_si_no_takeover_msg single-instance-second-activated-existing 第二个实例静默退出，没接管也没激活",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_si_second_slow single-instance-second-exited-fast 第二个实例没快速让路",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_si_second_wrote_probe single-instance-second-wrote-no-probe 第二个实例写了 probe.json（真起了服务）",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_si_extra_process single-instance-no-extra-process 两个实例并存，进程数变多",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_si_multi_two single-instance-evidence-fields 首个实例自报 multi=2",
+      "ok": true
+    },
+    {
+      "msg": "RED-OK m_si_sib_missing single-instance-evidence-fields 兄弟实例字段缺失",
+      "ok": true
+    }
+  ]
+}

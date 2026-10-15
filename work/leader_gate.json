@@ -1,0 +1,57 @@
+{
+  "judgments": [
+    {
+      "detail": "schema=True n=5 fan_out=True fan_in=True ms=True tools=True",
+      "gate": "D1 编译面：schema 全过 + 菱形扇出扇入 + 里程碑 + 白名单工具",
+      "ok": true
+    },
+    {
+      "detail": "rc=0 plan=True approved=False chain_save=True",
+      "gate": "D2 落盘面：plan rc=0 + 计划可读未审批 + 哈希链 save 行",
+      "ok": true
+    },
+    {
+      "detail": "rc=2 未审批=True dispatch=0 block=True",
+      "gate": "D3 锁面：未审批 run 必拒（rc≠0 + 未审批 + 零派发 + block）",
+      "ok": true
+    },
+    {
+      "detail": "rc=0 order=['t1', 't2', 't3', 't4', 't5'] ev=True outs=True marks=5",
+      "gate": "D4 派发-回收面：5/5 全绿 + 拓扑序 + 证据落盘含 rc=0",
+      "ok": true
+    },
+    {
+      "detail": "rc=1 order=['t1', 't2'] t2=doing t3=todo marks=['t1', 't2']",
+      "gate": "D5 失败传播面：乱序 DAG 拓扑跑 + t2 失败阻塞 t3 + rc≠0",
+      "ok": true
+    },
+    {
+      "detail": "push=True rc=0 pending=0 steer_rows=1 in_prompt=True",
+      "gate": "D6 监督串联面：steer 边界消费 + 进派发书 + 游标只进",
+      "ok": true
+    },
+    {
+      "detail": "rc=0 证据行=5",
+      "gate": "D7 复盘面：RETRO 落盘 + 任务账 rc 证据逐行 + 结论/steer 段",
+      "ok": true
+    },
+    {
+      "detail": "help=0 cli=0 anchor=1/1 chain=True",
+      "gate": "D8 CLI 面：leader --help rc=0 + 真 CLI plan + 三锚点齐",
+      "ok": true
+    },
+    {
+      "detail": "bad=2/True cyc=2/True",
+      "gate": "D9 负控面：坏工具名必拒 + 有环 DAG 必拒（且零落盘）",
+      "ok": true
+    },
+    {
+      "detail": "新增work=无 新增tools=无",
+      "gate": "D10 零污染：work/ 只多 --out；tools/ 零残留；夹具全清",
+      "ok": true
+    }
+  ],
+  "leader": "tools/leader.py",
+  "n_ok": 10,
+  "n_total": 10
+}

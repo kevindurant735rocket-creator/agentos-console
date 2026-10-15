@@ -1,0 +1,131 @@
+{
+  "base_is_real": false,
+  "base_reds": [],
+  "base_source": "合成同形正例（无真跑落盘，已标注）",
+  "mutants": [
+    {
+      "caught": true,
+      "expect": "真 HID Tab 多停到新控件",
+      "mutant": "真键没生效（处理臂==对照臂）",
+      "reds": [
+        "真 HID Tab 多停到新控件"
+      ],
+      "why": "处理臂读数替换成对照臂读数，模拟按了键但焦点不动"
+    },
+    {
+      "caught": true,
+      "expect": "原生窗口起来了",
+      "mutant": "原生窗口没起来",
+      "reds": [
+        "原生窗口起来了"
+      ],
+      "why": "windows=0"
+    },
+    {
+      "caught": true,
+      "expect": "置前调用成功",
+      "mutant": "置前调用失败",
+      "reds": [
+        "置前调用成功"
+      ],
+      "why": "kAXFrontmostAttribute set 返回非 0"
+    },
+    {
+      "caught": true,
+      "expect": "量具会说话（对照臂有读数）",
+      "mutant": "量具全程不开口",
+      "reds": [
+        "Shift+Tab 反向也停到有名控件",
+        "strict 口径也看得出移动（非纯补读假象）",
+        "对照臂读到有名产品控件",
+        "真 HID Tab 多停到新控件",
+        "量具会说话（对照臂有读数）"
+      ],
+      "why": "所有拍直读与补读都为空"
+    },
+    {
+      "caught": true,
+      "expect": "对照臂读到有名产品控件",
+      "mutant": "控件全无名",
+      "reds": [
+        "Shift+Tab 反向也停到有名控件",
+        "strict 口径也看得出移动（非纯补读假象）",
+        "对照臂读到有名产品控件",
+        "真 HID Tab 多停到新控件"
+      ],
+      "why": "所有 label 清空"
+    },
+    {
+      "caught": true,
+      "expect": "读到的都是合法控件 role",
+      "mutant": "焦点落在 AXWindow 上",
+      "reds": [
+        "读到的都是合法控件 role"
+      ],
+      "why": "首拍 role=AXWindow"
+    },
+    {
+      "caught": true,
+      "expect": "焦点没跑到别的 app",
+      "mutant": "焦点跑到别的 app",
+      "reds": [
+        "焦点没跑到别的 app"
+      ],
+      "why": "首拍 pid=99999 != 本 app"
+    },
+    {
+      "caught": true,
+      "expect": "Shift+Tab 反向也停到有名控件",
+      "mutant": "Shift+Tab 臂空",
+      "reds": [
+        "Shift+Tab 反向也停到有名控件"
+      ],
+      "why": "删掉全部 shift 拍"
+    },
+    {
+      "caught": true,
+      "expect": "strict 口径也看得出移动（非纯补读假象）",
+      "mutant": "移动只靠补读才看得到",
+      "reds": [
+        "strict 口径也看得出移动（非纯补读假象）",
+        "真 HID Tab 多停到新控件"
+      ],
+      "why": "处理臂直读全空，只剩补读有值"
+    },
+    {
+      "branch": "FKA=on 且 Tab 动了 -> ok",
+      "fka": "on",
+      "got": "ok",
+      "want": "ok",
+      "why": "环境就绪且 Tab 真搬了焦点"
+    },
+    {
+      "branch": "FKA=on 但 Tab 不动 -> red",
+      "fka": "on",
+      "got": "red",
+      "want": "red",
+      "why": "环境就绪仍不动 = 真缺陷，不许被 env 档吞掉"
+    },
+    {
+      "branch": "FKA=off 且 ALWAYS 全过 -> env",
+      "fka": "off",
+      "got": "env",
+      "want": "env",
+      "why": "Tab 不可判定 -> ENV_UNVERIFIED 且退出码非 0"
+    },
+    {
+      "branch": "FKA=unknown 同样 -> env",
+      "fka": "unknown",
+      "got": "env",
+      "want": "env",
+      "why": "读不到开关不许默认当绿"
+    },
+    {
+      "branch": "FKA=off 但 ALWAYS 有红 -> red",
+      "fka": "off",
+      "got": "red",
+      "want": "red",
+      "why": "FKA 关也压不住产品自己的义务红"
+    }
+  ]
+}

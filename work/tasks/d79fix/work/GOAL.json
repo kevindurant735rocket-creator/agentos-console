@@ -1,0 +1,88 @@
+{
+ "version": "v138",
+ "demand": "D79 收轮就绪度验收夹具（按 close_gate 源码规约重建：R1 OPEN、3 条 AC、R2 待办）",
+ "goal": "交付「D79 收轮就绪度验收夹具（按 close_gate 源码规约重建：R1 OPEN、3 条 AC、R2 待办）」：AC 全部有断言且命令退出码为 0",
+ "acs": [
+  "台面新增 #gpre 收轮就绪度：disk 族与 draft 族逐条显示过没过，缺哪条写清 why",
+  "证据行给可复跑命令：build.py / close_gate.py / gates.sh 各自 rc=0",
+  "裁决语义 CONTINUE/SHIP 两端引擎都识别（SHIP 时若 R2 待办必须拦）"
+ ],
+ "non_goals": [
+  "不改动产品代码与门判据（本夹具只验收轮就绪链路）",
+  "不触碰活项目根 work/GOAL.json（测试一律进 taskdir）"
+ ],
+ "rounds_plan": 2,
+ "goal_table": [
+  {
+   "n": 1,
+   "goal": "跑通 R1 提升：台面新增 #gpre 收轮就绪度：disk 族与 draft 族逐条显示过没过，缺哪条写清 why",
+   "ac": "AC 全 PASS，命令 rc=0",
+   "state": "进行中",
+   "giga_run": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/gf-d79/d79fix-r1",
+   "delta": null,
+   "evidence": null,
+   "goal_id": "d79fix-goal-r1-0f3a9c2b"
+  },
+  {
+   "n": 2,
+   "goal": "跑通 R2 提升：证据行给可复跑命令：build.py / close_gate.py / gates.sh 各自 rc=0",
+   "ac": "AC 全 PASS，命令 rc=0",
+   "state": "待办",
+   "giga_run": null,
+   "delta": null,
+   "evidence": null
+  }
+ ],
+ "depts": [
+  "PMO",
+  "ARCH",
+  "UX",
+  "DEV",
+  "QA",
+  "SRE"
+ ],
+ "goal_id": "d79fix-goal-r1-0f3a9c2b",
+ "created": "2026-10-14 21:39:48",
+ "updated": "2026-10-15 17:53:56",
+ "rounds": [
+  {
+   "n": 1,
+   "giga_run": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/gf-d79/d79fix-r1",
+   "depts": [
+    "PMO",
+    "ARCH",
+    "UX",
+    "DEV",
+    "QA",
+    "SRE"
+   ],
+   "agent_map": {
+    "PMO": "A-PMO",
+    "ARCH": "A-ARCH",
+    "UX": "A-UX",
+    "DEV": "A-DEV",
+    "QA": "A-QA",
+    "SRE": "A-SRE"
+   },
+   "state": "OPEN",
+   "opened": "2026-10-15 17:53:56",
+   "attempts": 1,
+   "goal_id": "d79fix-goal-r1-0f3a9c2b",
+   "bind_sha": "45229a3551aafe57335083cfb2ff644ce780b91753a4579ce42572ad84c94081",
+   "zero_rejected": false,
+   "table_goal": "跑通 R1 提升：台面新增 #gpre 收轮就绪度：disk 族与 draft 族逐条显示过没过，缺哪条写清 why",
+   "table_ac": "AC 全 PASS，命令 rc=0"
+  }
+ ],
+ "goal_chain": [
+  {
+   "n": 1,
+   "goal_id": "d79fix-goal-r1-0f3a9c2b",
+   "objective": "第 1 轮（目标共 R1..R2）：跑通 R1 提升：台面新增 #gpre 收轮就绪度：disk 族与 draft 族逐条显示过没过，缺哪条写清 why —— 判据：AC 全 PASS，命令 rc=0。执行约束：本轮必须 new-run.sh 新开**本轮专属** 00-project 账走完 01-project-gigafactory G0..G6 全链（复用别轮的账 = 本轮没提升，引擎判红）；收轮必须给 delta（指名动了哪条 AC）+ evidence（命令 + 退出码），零增量不予记账、换新账重做；收完由 next-round 派下一轮目标。",
+   "table_goal": "跑通 R1 提升：台面新增 #gpre 收轮就绪度：disk 族与 draft 族逐条显示过没过，缺哪条写清 why",
+   "table_ac": "AC 全 PASS，命令 rc=0",
+   "bound": "2026-10-15 17:53:14"
+  }
+ ],
+ "state": "ROUND_OPEN"
+}

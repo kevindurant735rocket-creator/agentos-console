@@ -1,0 +1,72 @@
+[
+ {
+  "gate": "裸 HTML 无样式直接交付",
+  "ok": true,
+  "detail": "内联 CSS 48140 字节（有样式=过门）"
+ },
+ {
+  "gate": "四态缺任一态",
+  "ok": true,
+  "detail": "空态=Y 加载态=Y 错误态=Y 404=Y"
+ },
+ {
+  "gate": "三尺寸截图缺任一尺寸",
+  "ok": true,
+  "detail": "w375=375x900 w768=768x900 w1440=1440x900"
+ },
+ {
+  "gate": "正文对比度低于 4.5",
+  "ok": true,
+  "detail": "正文=16.19 次要正文=9.16 弱化标签=5.51 PASS色=9.23 PARTIAL色=8.73 FAIL色=5.34"
+ },
+ {
+  "gate": "键盘无法回车走通主流程，或图片缺 alt、表单缺 label",
+  "ok": true,
+  "detail": "键盘链=Y img=0(全带alt=True) 表单label=1"
+ },
+ {
+  "gate": "首屏超过两秒无优化记录",
+  "ok": true,
+  "detail": "外部请求=0 内联script=2 style=1 体积=261KB"
+ },
+ {
+  "gate": "野值像素无出处且未打回",
+  "ok": true,
+  "detail": "全部 42 个 px 落在 4px 刻度（1-3px hairline 例外）"
+ },
+ {
+  "gate": "野值刻度门被掏空（剥注释后不再抓真实声明）",
+  "ok": true,
+  "detail": "注入声明 21px -> 判出 [21]"
+ },
+ {
+  "gate": "野值刻度门误伤注释散文（D83 假红回归）",
+  "ok": true,
+  "detail": "注释内 21/93/243/375px -> 判出 无（应为空）"
+ },
+ {
+  "gate": "截图为旧版本冒充本轮（内容指纹对不上构建）",
+  "ok": true,
+  "detail": "内容指纹一致=e8bd8c9cd5ac2b52（截图不因被重写而假红）"
+ },
+ {
+  "gate": "未声明交互预算 work/ui_budget.json",
+  "ok": true,
+  "detail": "首屏上限=30 总量上限=60 披露容器=0"
+ },
+ {
+  "gate": "首屏有效可交互元素超过预算上限",
+  "ok": true,
+  "detail": "首屏=22 / 预算=30"
+ },
+ {
+  "gate": "可交互元素总数超预算且无渐进披露容器",
+  "ok": true,
+  "detail": "总量=22 / 预算=60 披露容器=7"
+ },
+ {
+  "gate": "截图视口冒充或存在文档级横向溢出",
+  "ok": true,
+  "detail": "真视口 innerW=375/768/1440 精确，docScrollW==clientW，无 JS 错误"
+ }
+]

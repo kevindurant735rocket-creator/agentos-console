@@ -1,0 +1,62 @@
+{
+ "approved": false,
+ "bind_sha": "9616f6a1f82a49ccd5361f487c7908577463e15000d15c3d53c589ab39ce7beb",
+ "created": 1791988669.199,
+ "goal": "同意了全部执行，你为什么只蒸馏不给你自己部署技能",
+ "tasks": [
+  {
+   "accept": "关键文件已读 + 现状一句话 + rc=0",
+   "depends": [],
+   "evidence": [],
+   "id": "t1",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "侦察：读关键文件、确认现状",
+   "tools": [
+    "list_dir",
+    "read_file",
+    "search",
+    "gh_search",
+    "gh_repo_view",
+    "gh_file_read"
+   ]
+  },
+  {
+   "accept": "改动落盘 + 验证命令 rc=0（证据行）",
+   "depends": [
+    "t1"
+   ],
+   "evidence": [],
+   "id": "t2",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "动手：按判据改代码",
+   "tools": [
+    "read_file",
+    "search",
+    "write_file",
+    "edit_file",
+    "run_cmd",
+    "git_diff"
+   ]
+  },
+  {
+   "accept": "自检 rc=0 + 回执含真实 rc",
+   "depends": [
+    "t2"
+   ],
+   "evidence": [],
+   "id": "t3",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "收尾：自检 + 回执",
+   "tools": [
+    "run_cmd",
+    "git_diff",
+    "git_status",
+    "git_log"
+   ]
+  }
+ ],
+ "version": 1
+}

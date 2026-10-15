@@ -1,0 +1,67 @@
+{
+  "core": "tools/agent_core.py",
+  "judgments": [
+    {
+      "detail": "it=True",
+      "gate": "D1 可导入 + 纯面（load_cfg 缺文件=None；parse_skill 拿 name/body）",
+      "ok": true
+    },
+    {
+      "detail": "rc=0 tail='AGENT_CORE OK 140/140'",
+      "gate": "D2 --check 末行逐字 AGENT_CORE OK 140/140",
+      "ok": true
+    },
+    {
+      "detail": "sess=1 fc=1 rb=1 tbl=1 e2=1 pre=3 bud=1",
+      "gate": "D3 源码锚点（session/fail-closed/分支/补全表/exit2/预算 各就位）",
+      "ok": true
+    },
+    {
+      "detail": "blk=True miss=0 ctx=['CTX-A']",
+      "gate": "D4 拦截：exit 2 拦 + glob 不匹配不跑 + additionalContext 收集",
+      "ok": true
+    },
+    {
+      "detail": "rc7=True timeout=True",
+      "gate": "D5 fail-closed：非 0 退出码与超时都拦截",
+      "ok": true
+    },
+    {
+      "detail": "len=812",
+      "gate": "D6 注入：hook_context 真进 system prompt",
+      "ok": true
+    },
+    {
+      "detail": "blen=509",
+      "gate": "D7 预算：description 超 500 截断留标记、正文不进 prompt 段",
+      "ok": true
+    },
+    {
+      "detail": "inj=True keep=True",
+      "gate": "D8 /skill 注入：正文进下一轮上下文；未知名不改历史",
+      "ok": true
+    },
+    {
+      "detail": "exec_ok=True",
+      "gate": "D9 全关：无 hooks.json=load_cfg None 且工具常态可用",
+      "ok": true
+    },
+    {
+      "detail": "hit=True miss=False",
+      "gate": "D11 自动触发：triggers 命中注入正文 / 未命中不注入",
+      "ok": true
+    },
+    {
+      "detail": "len=4008",
+      "gate": "D12 自动触发预算：超 4000 截断留标记",
+      "ok": true
+    },
+    {
+      "detail": "新增=无",
+      "gate": "D10 零污染（work/ 只多 --out；夹具已清）",
+      "ok": true
+    }
+  ],
+  "n_ok": 12,
+  "n_total": 12
+}

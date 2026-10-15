@@ -1,0 +1,29 @@
+{
+ "tool": "a11y_served.py",
+ "port": 64999,
+ "method": "real-http-served + playwright-real-keyboard + cdp-ax-tree",
+ "gates": [
+  {
+   "name": "真 served 页面：HTTP 取回的 index.html == 盘上那份（不是陈旧副本）",
+   "ok": true,
+   "detail": "served=e8bd8c9cd5ac disk=e8bd8c9cd5ac build头=e8bd8c9cd5ac len=267621"
+  },
+  {
+   "name": "a11y_walk 走 --url 真跑绿，且确实落在 http://（不许悄悄退回 file://）",
+   "ok": true,
+   "detail": "rc=0 token=True mode=True target_http=True 21/21"
+  },
+  {
+   "name": "咬合牙：改过字节的 served 源必须被同一段判据判红（证明门 1 不是恒绿）",
+   "ok": true,
+   "detail": "变异体被判红：served=c43a18c7705c disk=e8bd8c9cd5ac（门 1 有牙）"
+  },
+  {
+   "name": "活的 index.html 零写入：跑完 sha256 与跑前一致（本门不碰活页面）",
+   "ok": true,
+   "detail": "前=e8bd8c9cd5ac 后=e8bd8c9cd5ac"
+  }
+ ],
+ "passed": 4,
+ "total": 4
+}

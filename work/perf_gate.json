@@ -1,0 +1,51 @@
+{
+ "ok": true,
+ "checks": [
+  {
+   "name": "perf-api-health",
+   "ok": true,
+   "detail": "HTTP=200, 响应时间=0.009s (目标<0.1s)"
+  },
+  {
+   "name": "perf-api-distill",
+   "ok": true,
+   "detail": "HTTP=200, 响应时间=0.006s (目标<0.2s)"
+  },
+  {
+   "name": "perf-api-capmap",
+   "ok": true,
+   "detail": "HTTP=200, 响应时间=0.008s (目标<0.2s)"
+  },
+  {
+   "name": "perf-page-load",
+   "ok": true,
+   "detail": "HTTP=200, 加载时间=0.006s (目标<1.0s)"
+  },
+  {
+   "name": "perf-memory",
+   "ok": true,
+   "detail": "内存=31.5MB (目标<200MB)"
+  },
+  {
+   "name": "perf-processes",
+   "ok": true,
+   "detail": "进程数=2 (目标<=3)"
+  },
+  {
+   "name": "perf-fds",
+   "ok": true,
+   "detail": "文件描述符=32 (目标<100)"
+  },
+  {
+   "name": "perf-cold-start",
+   "ok": true,
+   "detail": "冷启动=0.055s (目标<3s) 监听=0.053s"
+  },
+  {
+   "name": "perf-cli-perceived",
+   "ok": true,
+   "detail": "agentos health 端到端=0.077s rc=0 (目标<3s 且 rc=0)"
+  }
+ ],
+ "port": 8790
+}

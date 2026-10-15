@@ -1,0 +1,95 @@
+{
+ "tool": "snap_gate.py",
+ "ok": true,
+ "n": 15,
+ "n_red": 0,
+ "criteria": [
+  {
+   "name": "D65-1 快照在位且时间戳可信",
+   "ok": true,
+   "detail": "age=590188s limit=3600.0s captured_at=2026-10-08T22:36:37.201937+08:00"
+  },
+  {
+   "name": "D65-2 决策面自报快照且非实时",
+   "ok": true,
+   "detail": "闭环的「决策」一环 · 总闸 PASS，推导 2 条 · 快照 10-08 22:36:37 · 已过期"
+  },
+  {
+   "name": "D65-2 晋升面自报快照且非实时",
+   "ok": true,
+   "detail": "闭环的「晋升」一环 · 共 36 条 · 就绪 0 · 拦截 26 · 快照 10-08 22:36:37 · 已过期"
+  },
+  {
+   "name": "D65-2 蒸馏面自报快照且非实时",
+   "ok": true,
+   "detail": "蒸馏一环 · 共 77 行 · 双证据 61/50 · 闸绿 · 快照 10-08 22:36:37 · 已过期"
+  },
+  {
+   "name": "D65-4 决策面无降级文案",
+   "ok": true,
+   "detail": "clean"
+  },
+  {
+   "name": "D65-4 晋升面无降级文案",
+   "ok": true,
+   "detail": "clean"
+  },
+  {
+   "name": "D65-4 蒸馏面无降级文案",
+   "ok": true,
+   "detail": "clean"
+  },
+  {
+   "name": "D65-3 决策面有真行",
+   "ok": true,
+   "detail": "rows=2"
+  },
+  {
+   "name": "D65-3 晋升面有真行",
+   "ok": true,
+   "detail": "rows=36"
+  },
+  {
+   "name": "D65-3 蒸馏面有真行",
+   "ok": true,
+   "detail": "rows=12"
+  },
+  {
+   "name": "NEG1 抽掉快照后诚实降级且不编行",
+   "ok": true,
+   "detail": "rows=0 head=recommend 无快照（需服务在线）promote 无快照（需服务在线）distill 无快照（需服务在线）"
+  },
+  {
+   "name": "NEG2 过期快照打「已过期」而非「非实时」",
+   "ok": true,
+   "detail": "闭环的「决策」一环 · 总闸 PASS，推导 2 条 · 快照 01-01 00:00:00 · 已过期闭环的「晋升」一环 · 共 36 条 · 就绪 0 · 拦截 26 · 快照 01-01 00:00:00 · 已过期蒸馏一环 · 共 "
+  },
+  {
+   "name": "NEG3 引擎判红在快照面照样显红",
+   "ok": true,
+   "detail": "蒸馏一环 · 共 77 行 · 双证据 61/50 · 闸红 · 引擎判红：NEGCTL-ENGINE-RED · 快照 10-08 22:36:37 · 已过期"
+  },
+  {
+   "name": "D65-5 活文件零写入",
+   "ok": true,
+   "detail": "before={'index.html': 'e8bd8c9cd5ac2b5220d10e9832ca12bf4135435be69480b7324bc6c6f85a5d40', 'data.json': '6fdf2493fd741696cf67fa5b9b37554ab619d35494b470f0f282710f312feb8b'} after={'index.html': 'e8bd8c9cd5ac2b5220d10e9832ca12bf4135435be69480b7324bc6c6f85a5d40', 'data.json': '6fdf2493fd741696cf67fa5b9b"
+  },
+  {
+   "name": "NEG4 超时戳快照判红",
+   "ok": true,
+   "detail": "age4=-3600s"
+  }
+ ],
+ "base_titles": {
+  "决策": "闭环的「决策」一环 · 总闸 PASS，推导 2 条 · 快照 10-08 22:36:37 · 已过期",
+  "晋升": "闭环的「晋升」一环 · 共 36 条 · 就绪 0 · 拦截 26 · 快照 10-08 22:36:37 · 已过期",
+  "蒸馏": "蒸馏一环 · 共 77 行 · 双证据 61/50 · 闸绿 · 快照 10-08 22:36:37 · 已过期"
+ },
+ "base_rows": {
+  "决策": 2,
+  "晋升": 36,
+  "蒸馏": 12
+ },
+ "snapshot_age_s": 590188.178567,
+ "snapshot_limit_s": 3600.0
+}

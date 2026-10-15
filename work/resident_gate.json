@@ -1,0 +1,106 @@
+{
+ "ok": true,
+ "checks": [
+  {
+   "name": "launchd-job-loaded",
+   "ok": true,
+   "detail": "com.zhangfengrui.agentos-console"
+  },
+  {
+   "name": "plist-cmd-not-eaten",
+   "ok": true,
+   "detail": "argv=/bin/bash -c cd /Users/zhangfengrui/Documents/Codex/ · 命令标志 1 次(应1) · 紧邻=True"
+  },
+  {
+   "name": "plist-runatload",
+   "ok": true,
+   "detail": "RunAtLoad=True=开机自启"
+  },
+  {
+   "name": "plist-keepalive",
+   "ok": true,
+   "detail": "KeepAlive=常驻"
+  },
+  {
+   "name": "resident-listening",
+   "ok": true,
+   "detail": "pid=36845"
+  },
+  {
+   "name": "resident-pid-is-launchd",
+   "ok": true,
+   "detail": "监听 pid=36845 vs launchd job pid=36845（不等=手动孤儿进程，自启没生效）"
+  },
+  {
+   "name": "resident-code-fresh",
+   "ok": true,
+   "detail": "进程起 15:20:00 vs serve.py 改 15:08:00"
+  },
+  {
+   "name": "resident-code-sha",
+   "ok": true,
+   "detail": "常驻 c10e8cac5f26fcef vs 磁盘 c10e8cac5f26fcef"
+  },
+  {
+   "name": "resident-route/__health",
+   "ok": true,
+   "detail": "HTTP=200 {\"ok\": true, \"root\": \"/Users/zhangfengrui/Document"
+  },
+  {
+   "name": "resident-route/__recurrence",
+   "ok": true,
+   "detail": "HTTP=200 {\"ok\": true, \"error\": null, \"threshold\": 3, \"n_eve"
+  },
+  {
+   "name": "resident-route/__promote",
+   "ok": true,
+   "detail": "HTTP=200 {\"ok\": true, \"error\": null, \"total\": 36, \"n_ready\""
+  },
+  {
+   "name": "resident-route/__capmap",
+   "ok": true,
+   "detail": "HTTP=200 {\"ok\": true, \"error\": null, \"total\": 36, \"rows\": ["
+  },
+  {
+   "name": "resident-route/__projects",
+   "ok": true,
+   "detail": "HTTP=200 {\"ok\": true, \"n_projects\": 2, \"active\": \"console\","
+  },
+  {
+   "name": "resident-route/__act/recommend",
+   "ok": true,
+   "detail": "HTTP=200 {\"ok\": true, \"verdict\": \"PASS\", \"n\": 2, \"recommend"
+  },
+  {
+   "name": "resident-route/index.html",
+   "ok": true,
+   "detail": "HTTP=200 <!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta c"
+  },
+  {
+   "name": "resident-health-ok",
+   "ok": true,
+   "detail": "actions=desktop,doc-drift,egate,evolution,livecheck,promote,rebuild,snapshot,verify"
+  },
+  {
+   "name": "resident-promote-in-allowlist",
+   "ok": true,
+   "detail": "ACTIONS 含 promote 且源码声明 /__promote"
+  },
+  {
+   "name": "resident-promote-ok",
+   "ok": true,
+   "detail": "total=36 ready=0 hold=26"
+  },
+  {
+   "name": "headroom-on-8787",
+   "ok": true,
+   "detail": "/opt/miniconda3/bin/python3.13 -m headroom.cli proxy --host 127.0.0.1 --port 8787 --mode token --backend anthr"
+  },
+  {
+   "name": "serve-avoids-8787",
+   "ok": true,
+   "detail": "serve.py 默认 8790 且占用顺延，不与 headroom 抢 8787"
+  }
+ ],
+ "port": 8790
+}

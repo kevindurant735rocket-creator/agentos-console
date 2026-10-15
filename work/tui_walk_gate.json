@@ -1,0 +1,66 @@
+{
+ "tool": "tui_walk_gate.py",
+ "views_const": 13,
+ "gates": [
+  {
+   "gate": "BASE 零参数生产调用 rc=0 且汇总行 OK",
+   "ok": true,
+   "detail": "rc=0 keys=35/35 views=13/13 child_rc=0"
+  },
+  {
+   "gate": "BASE 键全绿（35/35，契约下限 14 键）",
+   "ok": true,
+   "detail": "缺的键=无"
+  },
+  {
+   "gate": "BASE 13 视图全访且 tab 名与 VIEWS 常量逐项一致",
+   "ok": true,
+   "detail": "visited=13 expected=13 VIEWS 常量=13；tab 不符=无"
+  },
+  {
+   "gate": "BASE 无 fail-closed 视图（数据源全是真的）",
+   "ok": true,
+   "detail": "fail-closed=无"
+  },
+  {
+   "gate": "BASE 无薄壳视图（body 行数/字符达标）",
+   "ok": true,
+   "detail": "薄壳=无"
+  },
+  {
+   "gate": "BASE reader_at 诚实（=AT-UNVERIFIED，不冒充 OS 读屏）",
+   "ok": true,
+   "detail": "reader_at='AT-UNVERIFIED'"
+  },
+  {
+   "gate": "BASE 每键都有 expect+detail+sent 证据串（不是收到字节就算过）",
+   "ok": true,
+   "detail": "缺证据的键=无"
+  },
+  {
+   "gate": "M1 首帧后立即退出、任何键都不响应的假 CLI必须红（rc≠0 且键或视图数不足）",
+   "ok": true,
+   "detail": "rc=2 keys=0/35 views=1/13 child_rc=0；首个 FAIL 键=digit-1 · 写 PTY 失败 OSError(5, 'Input/output error')"
+  },
+  {
+   "gate": "M2 永远重绘同一屏、按键不换页的假 CLI必须红（rc≠0 且键或视图数不足）",
+   "ok": true,
+   "detail": "rc=2 keys=5/35 views=1/13 child_rc=None；首个 FAIL 键=digit-3 · footer=视图 1（期望 3）；tab 激活='1 总览'（期望以 '3 ' 开头）"
+  },
+  {
+   "gate": "活 work/tui_walk.json 本轮由 BASE 写过（mtime 新鲜）",
+   "ok": true,
+   "detail": "mtime=18:49:29 门起始=18:49:21"
+  },
+  {
+   "gate": "tools/ 下无 _tuiwalkmut_* 残留（桩只落临时目录）",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "gate": "判据自证：mutant_caught 3 正例 + 3 变异谓词双向咬合",
+   "ok": true,
+   "detail": "正例 3/3 · 变异体咬住 3/3"
+  }
+ ]
+}

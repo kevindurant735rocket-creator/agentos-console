@@ -1,0 +1,41 @@
+{
+ "tool": "dsp_gate_selftest.py",
+ "rc": 0,
+ "cases": [
+  {
+   "name": "BASE 生产 dsp_gate 绿（DSP_GATE OK 18/18）",
+   "ok": true,
+   "detail": "rc=0 尾行=['DSP_GATE OK 18/18']"
+  },
+  {
+   "name": "变异体 D7 锁被摘（未审批也放行） 必红（门有牙）",
+   "ok": true,
+   "detail": "rc=2 命中=D7"
+  },
+  {
+   "name": "变异体 D8 白名单被摘（任务外工具放行） 必红（门有牙）",
+   "ok": true,
+   "detail": "rc=2 命中=D8"
+  },
+  {
+   "name": "变异体 D2 令牌被改字 必红（门有牙）",
+   "ok": true,
+   "detail": "rc=2 命中=D2"
+  },
+  {
+   "name": "变异体 D10 doom 期望被改（判据空转） 必红（门有牙）",
+   "ok": true,
+   "detail": "rc=2 命中=D10"
+  },
+  {
+   "name": "变异体 D13 交叉断言被翻转（悬空名不报） 必红（门有牙）",
+   "ok": true,
+   "detail": "rc=2 命中=D13"
+  },
+  {
+   "name": "生产 work/dsp_gate.json 字节不变（零污染）",
+   "ok": true,
+   "detail": "before=1995 after=1995"
+  }
+ ]
+}

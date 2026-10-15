@@ -1,0 +1,56 @@
+{
+ "ok": true,
+ "checks": [
+  {
+   "name": "capability-total-36",
+   "ok": true,
+   "detail": "能力数=36"
+  },
+  {
+   "name": "capability-status-distribution",
+   "ok": true,
+   "detail": "状态分布={'PROMOTED': 26, 'REJECTED': 4, 'DISCOVERED': 4, 'ROLLEDBACK': 1, 'EXPERIMENT': 1}"
+  },
+  {
+   "name": "capability-all-have-id-or-source",
+   "ok": true,
+   "detail": "有 ID=30, 有 source=36, 总=36"
+  },
+  {
+   "name": "capability-ab-verified",
+   "ok": true,
+   "detail": "A/B 验证=20/36"
+  },
+  {
+   "name": "capability-ab-was-now",
+   "ok": true,
+   "detail": "ab_was=20, ab_now=20"
+  },
+  {
+   "name": "capability-degradation-detection",
+   "ok": true,
+   "detail": "退化检测机制存在, 当前退化=0"
+  },
+  {
+   "name": "capability-verdict-hold",
+   "ok": true,
+   "detail": "HOLD-AB 判定=20"
+  },
+  {
+   "name": "capability-rollback-exists",
+   "ok": true,
+   "detail": "回退能力存在=True"
+  },
+  {
+   "name": "capability-engine-consistent",
+   "ok": true,
+   "detail": "引擎=36, 地图=36"
+  },
+  {
+   "name": "recurrence-capability-link",
+   "ok": true,
+   "detail": "复发簇=8, 有能力关联=8"
+  }
+ ],
+ "port": 8790
+}

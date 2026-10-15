@@ -1,0 +1,61 @@
+{
+ "tool": "view_dod_selftest.py",
+ "n_mutants": 6,
+ "gates": [
+  {
+   "gate": "BASE 生产调用零参数 rc=0（默认值未被隔离缝改坏）",
+   "ok": true,
+   "detail": "== VIEW_DOD OK  6/6 门通过（13 视图 × 3 尺寸 = 39 屏真视口走查）=="
+  },
+  {
+   "gate": "M1 视图切不过去（view() 空转 -> 面板永不可见）",
+   "ok": true,
+   "detail": "期望门「屏截图齐」已红"
+  },
+  {
+   "gate": "M2 真视口被冒充（innerWidth 被改写，与 headless --window-size 同类造假）",
+   "ok": true,
+   "detail": "期望门「真视口未被冒充」已红"
+  },
+  {
+   "gate": "M3 文档级横向溢出（body 层塞 2000px 定宽块，撑破文档宽度）",
+   "ok": true,
+   "detail": "期望门「任一视图存在文档级横向溢出」已红"
+  },
+  {
+   "gate": "M4 视图是空壳（轮次内容被清空，aria_selected 仍命中）",
+   "ok": true,
+   "detail": "期望门「任一视图是空壳」已红"
+  },
+  {
+   "gate": "M5 视图里抛未捕获异常（真 pageerror）",
+   "ok": true,
+   "detail": "期望门「任一视图 JS 报错」已红"
+  },
+  {
+   "gate": "M6 截图冒充旧构建（走查进行中页面被改 -> 39 屏非同一版本）",
+   "ok": true,
+   "detail": "期望门「截图为旧版本冒充本轮」已红"
+  },
+  {
+   "gate": "活 index.html 零写入（mutants 只碰临时目录）",
+   "ok": true,
+   "detail": "sha e8bd8c9cd5ac -> e8bd8c9cd5ac"
+  },
+  {
+   "gate": "隔离缝真隔离（6 个变异体只往各自临时目录落图）",
+   "ok": true,
+   "detail": "PNG 张数 M1=39 M2=39 M3=39 M4=39 M5=39 M6=39；0/缺失=缝没生效"
+  },
+  {
+   "gate": "判据自证：隔离缝判据 3 正例 + 3 变异谓词双向咬合",
+   "ok": true,
+   "detail": "正例 3/3 · 变异体咬住 3/3"
+  },
+  {
+   "gate": "真截图目录零污染（BASE 后逐字节一致）",
+   "ok": true,
+   "detail": "66 张 sha 逐字节不变（真无漂移）"
+  }
+ ]
+}

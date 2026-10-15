@@ -1,0 +1,72 @@
+#compdef agentos
+# AgentOS 终端 CLI 的 zsh 补全。由 `agentos completion zsh` 自包含打印。
+#
+# 常驻生效（推荐）：
+#   mkdir -p ~/.zfunc && agentos completion zsh > ~/.zfunc/_agentos
+#   print 'fpath=(~/.zfunc $fpath); autoload -Uz compinit; compinit' >> ~/.zshrc
+#   exec zsh
+# 只对当前 shell 生效：
+#   eval "$(agentos completion zsh)"
+
+typeset -ga _agentos_subs _agentos_gates _agentos_shells _agentos_terms
+_agentos_subs=(
+    'serve:起本地服务（默认 8790，占用顺延，不抢 8787）'
+    'health:判 __health 的 ok:true（rc=0 才是真健康）'
+    'open:浏览器打开驾驶舱首页'
+    'tui:终端交互主界面（13 视图走真数据）'
+    'gates:转发 tools/gates.sh（门链入口）'
+    'resident:常驻真值门：核 launchd 常驻实例'
+    'headroom:headroom 8787 契约门'
+    'term:服务端只读跑一条命令（转发 POST /__term）'
+    'gh:GitHub 读写面（读直连；写默认拒绝：--yes+配置+TTY 三闸+审计链）'
+    'agent:内置终端 agent（模型+真实工具循环）'
+    'config:读写 ~/.agentos/config.toml（API key / provider / model）'
+    'completion:打印 shell 补全脚本'
+    'sessions:列 headless 会话历史'
+    'resume:回放一次会话'
+)
+_agentos_gates=( resident_gate headroom_gate flake_retry_selftest indep_field_gate neg_a11y freshness_gate shoot view_dod view_dod_selftest http_shot_gate snap_gate a11y_walk a11y_human neg_a11y_human ux_audit a11y_served projspace_gate act_gate promo_gate capmap_gate abort_gate abort_e2e intent_gate retro_gate goal_gate round_gate close_gate layout_gate env_gate web_gate native_gate native_gate_selftest agent_core_gate neg_agent_core at_selftest neg_at_selftest minimize_check gh_gate tui_walk_gate cli_gate cli_gate_selftest evolution_gate capability_gate evolution_gate_selftest perf_gate dsp_gate dsp_gate_selftest )
+_agentos_shells=( zsh bash )
+_agentos_terms=( cat date find git grep head ls pwd python3 stat tail wc whoami )
+
+_agentos() {
+  local curcontext="$curcontext" state line ret=1
+  typeset -A opt_args
+
+  _arguments -C \
+    '(-V --version)'{-V,--version}'[打印 CLI 自身版本（不连服务）]' \
+    '(-h --help)'{-h,--help}'[显示帮助并退出]' \
+    '(-p --print)'{-p,--print}'[headless 一次性模式]:需求:' \
+    '--url=[服务地址]:url:_urls' \
+    '--port=[服务端口]:端口:' \
+    '--timeout=[单次执行上限秒]:秒:' \
+    '--no-color[零 ANSI 输出]' \
+    '--output-format=[输出格式]:格式:(text json)' \
+    '1: :->sub' \
+    '*:: :->args' && ret=0
+
+  case $state in
+    sub)
+      _describe -t subcommands 'agentos 子命令' _agentos_subs && ret=0
+      ;;
+    args)
+      case ${words[1]} in
+        gates)
+          _describe -t gates '门名（顺序见 tools/gates.sh 头部正确链）' \
+            _agentos_gates && ret=0
+          ;;
+        completion)
+          _describe -t shells 'shell' _agentos_shells && ret=0
+          ;;
+        term)
+          _describe -t terms '只读命令' _agentos_terms && ret=0
+          ;;
+      esac
+      ;;
+  esac
+  return ret
+}
+
+if [ "${funcstack[1]}" != "_agentos" ]; then
+  compdef _agentos agentos
+fi

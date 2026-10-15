@@ -1,0 +1,253 @@
+{
+ "version": "v138",
+ "demand": "AgentOS 终端 Agent 全面完善（台账重建：原 work/GOAL.json 于 2026-10-14 状态事故中被清，按引擎正典 set-goal 重建）：以用户要求为中心、真实可用、能真实完成任务",
+ "goal": "交付「AgentOS 终端 Agent 全面完善（台账重建：原 work/GOAL.json 于 2026-10-14 状态事故中被清，按引擎正典 set-goal 重建）：以用户要求为中心、真实可用、能真实完成任务」：AC 全部有断言且命令退出码为 0",
+ "acs": [
+  "全链门禁 rc=0（66 门；含防打转守卫 131/131 真生效）",
+  "用户报告的缺陷闭环：重复语句/连续失败 3-6 步内停、空答如实记账",
+  "受控进化合入落地：坏提案必拦回退、好提案合入后能力门仍绿"
+ ],
+ "non_goals": [
+  "不改动已交付的历史轮次与产物（本次仅重建被清的目标台账）",
+  "不触碰门判据与硬阻断清单"
+ ],
+ "rounds_plan": 4,
+ "goal_table": [
+  {
+   "n": 1,
+   "goal": "跑通 R1 提升：全链门禁 rc=0（66 门；含防打转守卫 131/131 真生效）",
+   "ac": "AC 全 PASS，命令 rc=0",
+   "state": "已收轮",
+   "giga_run": "agentos-r1",
+   "delta": "AC1 全链证据齐：agent_core --check 140/140 rc=0、leader_gate 10/10 rc=0、evo_merge_gate 7/7 rc=0、neg_agent_core 32/32 rc=0；70门链68/70（2引擎态诚实红待本轮收）",
+   "evidence": "agent_core --check → AGENT_CORE OK 140/140 rc=0；leader_gate → LEADER_GATE 10/10 rc=0；evo_merge_gate → EVO_MERGE_GATE 7/7 rc=0；neg_agent_core → NEG_AGENT_CORE OK 32/32 rc=0；全链 w13_chain → 68/70（round+close 引擎态）"
+  },
+  {
+   "n": 2,
+   "goal": "跑通 R2 提升：用户报告的缺陷闭环：重复语句/连续失败 3-6 步内停、空答如实记账",
+   "ac": "AC 全 PASS，命令 rc=0",
+   "state": "已收轮",
+   "giga_run": "agentos-r2",
+   "delta": "AC2 三守卫落地：重复语句≥3步停（桩实测steps==3）/同工具连续失败≥6停（实测第6步）/空答empty-answer记账；批准即执行四根钉：计划口径随闸（自由面不再谎报锁死）+_looks_approved（拍板命中/不同意不误判）+零证据打脸err:no-evidence-claim+跨轮复读err:stale-reply",
+   "evidence": "agent_core --check → AGENT_CORE OK 140/140 rc=0；dsp_gate → DSP_GATE OK 18/18 rc=0；supervise_gate → SUPERVISE_GATE_OK rc=0；neg_agent_core → 32/32 rc=0"
+  },
+  {
+   "n": 3,
+   "goal": "跑通 R3 提升：受控进化合入落地：坏提案必拦回退、好提案合入后能力门仍绿",
+   "ac": "AC 全 PASS，命令 rc=0",
+   "state": "已收轮",
+   "giga_run": "agentos-r3",
+   "delta": "AC3 受控合入落地：evo_merge_gate 7/7 rc=0、evo_merge_selftest 8/8 rc=0（4变异体咬红）、好提案合入后capability_gate 10/10 rc=0、链含双门（70门）；沙箱基线同构+M3判据洞两条教训",
+   "evidence": "evo_merge_gate → EVO_MERGE_GATE 7/7 rc=0；evo_merge_selftest → 8/8 rc=0；capability_gate → 10/10 rc=0；链长 70 门 evo 双门在链 rc=0"
+  },
+  {
+   "n": 4,
+   "goal": "跑通收官交付验证：复验R1/R2/R3已收轮证据并交付70门链70/70",
+   "ac": "70门链70/70 rc=0",
+   "state": "已完成",
+   "giga_run": "agentos-r4",
+   "delta": "AC1/AC2/AC3 三轮已收轮证据复验全绿：agent_core --check 140/140 rc=0、leader_gate 10/10 rc=0、evo_merge_gate 7/7 rc=0、dsp_gate 18/18 rc=0、supervise_gate OK rc=0、capability_gate 10/10 rc=0、round_gate D78 OK rc=0；交付70门链终跑",
+   "evidence": "agent_core --check → AGENT_CORE OK 140/140 rc=0；round_gate → D78 OK rc=0；dsp_gate → 18/18 rc=0；supervise_gate → OK rc=0；capability_gate → 10/10 rc=0；evo_merge_gate → 7/7 rc=0",
+   "goal_id": "agentos-r4-20261015-d4a7f8c1",
+   "ac_moved": [
+    "AC1",
+    "AC2",
+    "AC3"
+   ]
+  }
+ ],
+ "depts": [
+  "PMO",
+  "ARCH",
+  "UX",
+  "DEV",
+  "QA",
+  "SRE"
+ ],
+ "goal_id": "agentos-r1-20261015-a7f3c9e2",
+ "created": "2026-10-14 22:12:44",
+ "updated": "2026-10-15 18:23:07",
+ "rounds": [
+  {
+   "n": 1,
+   "giga_run": "agentos-r1",
+   "depts": [
+    "PMO",
+    "ARCH",
+    "UX",
+    "DEV",
+    "QA",
+    "SRE"
+   ],
+   "agent_map": {
+    "PMO": "A-PMO",
+    "ARCH": "A-ARCH",
+    "UX": "A-UX",
+    "DEV": "A-DEV",
+    "QA": "A-QA",
+    "SRE": "A-SRE"
+   },
+   "state": "CLOSED",
+   "opened": "2026-10-15 18:06:15",
+   "attempts": 1,
+   "goal_id": "agentos-r1-20261015-a7f3c9e2",
+   "bind_sha": "ccf0a712d8dea8c8ef12cc8feeb9bc29ec22146c2aba60e4114af7cfbdbeb2fe",
+   "zero_rejected": false,
+   "table_goal": "跑通 R1 提升：全链门禁 rc=0（66 门；含防打转守卫 131/131 真生效）",
+   "table_ac": "AC 全 PASS，命令 rc=0",
+   "delta": "AC1 全链证据齐：agent_core --check 140/140 rc=0、leader_gate 10/10 rc=0、evo_merge_gate 7/7 rc=0、neg_agent_core 32/32 rc=0；70门链68/70（2引擎态诚实红待本轮收）",
+   "evidence": "agent_core --check → AGENT_CORE OK 140/140 rc=0；leader_gate → LEADER_GATE 10/10 rc=0；evo_merge_gate → EVO_MERGE_GATE 7/7 rc=0；neg_agent_core → NEG_AGENT_CORE OK 32/32 rc=0；全链 w13_chain → 68/70（round+close 引擎态）",
+   "ac_moved": [
+    "AC1"
+   ],
+   "verdict": "CONTINUE",
+   "closed": "2026-10-15 18:07:46",
+   "zero_delta_streak": 0
+  },
+  {
+   "n": 2,
+   "giga_run": "agentos-r2",
+   "depts": [
+    "PMO",
+    "ARCH",
+    "UX",
+    "DEV",
+    "QA",
+    "SRE"
+   ],
+   "agent_map": {
+    "PMO": "A-PMO",
+    "ARCH": "A-ARCH",
+    "UX": "A-UX",
+    "DEV": "A-DEV",
+    "QA": "A-QA",
+    "SRE": "A-SRE"
+   },
+   "state": "CLOSED",
+   "opened": "2026-10-15 18:07:56",
+   "attempts": 1,
+   "goal_id": "agentos-r2-20261015-b8e4d1f3",
+   "bind_sha": "b3fe15fb9549e98423cd279122bb6eb3d85f931d513cf3c2bf18f57a4320bfed",
+   "zero_rejected": false,
+   "table_goal": "跑通 R2 提升：用户报告的缺陷闭环：重复语句/连续失败 3-6 步内停、空答如实记账",
+   "table_ac": "AC 全 PASS，命令 rc=0",
+   "delta": "AC2 三守卫落地：重复语句≥3步停（桩实测steps==3）/同工具连续失败≥6停（实测第6步）/空答empty-answer记账；批准即执行四根钉：计划口径随闸（自由面不再谎报锁死）+_looks_approved（拍板命中/不同意不误判）+零证据打脸err:no-evidence-claim+跨轮复读err:stale-reply",
+   "evidence": "agent_core --check → AGENT_CORE OK 140/140 rc=0；dsp_gate → DSP_GATE OK 18/18 rc=0；supervise_gate → SUPERVISE_GATE_OK rc=0；neg_agent_core → 32/32 rc=0",
+   "ac_moved": [
+    "AC2"
+   ],
+   "verdict": "CONTINUE",
+   "closed": "2026-10-15 18:09:40",
+   "zero_delta_streak": 0
+  },
+  {
+   "n": 3,
+   "giga_run": "agentos-r3",
+   "depts": [
+    "PMO",
+    "ARCH",
+    "UX",
+    "DEV",
+    "QA",
+    "SRE"
+   ],
+   "agent_map": {
+    "PMO": "A-PMO",
+    "ARCH": "A-ARCH",
+    "UX": "A-UX",
+    "DEV": "A-DEV",
+    "QA": "A-QA",
+    "SRE": "A-SRE"
+   },
+   "state": "CLOSED",
+   "opened": "2026-10-15 18:09:54",
+   "attempts": 1,
+   "goal_id": "agentos-r3-20261015-c9d5e2a4",
+   "bind_sha": "e26ab118e5d2617db32554281183dbd2a17b53c236c11afa25c36913f65b90ac",
+   "zero_rejected": false,
+   "table_goal": "跑通 R3 提升：受控进化合入落地：坏提案必拦回退、好提案合入后能力门仍绿",
+   "table_ac": "AC 全 PASS，命令 rc=0",
+   "delta": "AC3 受控合入落地：evo_merge_gate 7/7 rc=0、evo_merge_selftest 8/8 rc=0（4变异体咬红）、好提案合入后capability_gate 10/10 rc=0、链含双门（70门）；沙箱基线同构+M3判据洞两条教训",
+   "evidence": "evo_merge_gate → EVO_MERGE_GATE 7/7 rc=0；evo_merge_selftest → 8/8 rc=0；capability_gate → 10/10 rc=0；链长 70 门 evo 双门在链 rc=0",
+   "ac_moved": [
+    "AC3"
+   ],
+   "verdict": "CONTINUE",
+   "closed": "2026-10-15 18:10:40",
+   "zero_delta_streak": 0
+  },
+  {
+   "n": 4,
+   "giga_run": "agentos-r4",
+   "depts": [
+    "PMO",
+    "ARCH",
+    "UX",
+    "DEV",
+    "QA",
+    "SRE"
+   ],
+   "agent_map": {
+    "PMO": "A-PMO",
+    "ARCH": "A-ARCH",
+    "UX": "A-UX",
+    "DEV": "A-DEV",
+    "QA": "A-QA",
+    "SRE": "A-SRE"
+   },
+   "state": "CLOSED",
+   "opened": "2026-10-15 18:20:29",
+   "attempts": 1,
+   "goal_id": "agentos-r4-20261015-d4a7f8c1",
+   "bind_sha": "d3b21d0747a5d4506533872dbb41c8794a2f3f12617b48aebb097b6fd5958d99",
+   "zero_rejected": false,
+   "table_goal": "跑通收官交付验证：复验R1/R2/R3已收轮证据并交付70门链70/70",
+   "table_ac": "70门链70/70 rc=0",
+   "delta": "AC1/AC2/AC3 三轮已收轮证据复验全绿：agent_core --check 140/140 rc=0、leader_gate 10/10 rc=0、evo_merge_gate 7/7 rc=0、dsp_gate 18/18 rc=0、supervise_gate OK rc=0、capability_gate 10/10 rc=0、round_gate D78 OK rc=0；交付70门链终跑",
+   "evidence": "agent_core --check → AGENT_CORE OK 140/140 rc=0；round_gate → D78 OK rc=0；dsp_gate → 18/18 rc=0；supervise_gate → OK rc=0；capability_gate → 10/10 rc=0；evo_merge_gate → 7/7 rc=0",
+   "ac_moved": [
+    "AC1",
+    "AC2",
+    "AC3"
+   ],
+   "verdict": "SHIP",
+   "closed": "2026-10-15 18:23:07",
+   "zero_delta_streak": 0
+  }
+ ],
+ "goal_chain": [
+  {
+   "n": 1,
+   "goal_id": "agentos-r1-20261015-a7f3c9e2",
+   "objective": "第 1 轮（目标共 R1..R3）：跑通 R1 提升：全链门禁 rc=0（66 门；含防打转守卫 131/131 真生效） —— 判据：AC 全 PASS，命令 rc=0。执行约束：本轮必须 new-run.sh 新开**本轮专属** 00-project 账走完 01-project-gigafactory G0..G6 全链（复用别轮的账 = 本轮没提升，引擎判红）；收轮必须给 delta（指名动了哪条 AC）+ evidence（命令 + 退出码），零增量不予记账、换新账重做；收完由 next-round 派下一轮目标。",
+   "table_goal": "跑通 R1 提升：全链门禁 rc=0（66 门；含防打转守卫 131/131 真生效）",
+   "table_ac": "AC 全 PASS，命令 rc=0",
+   "bound": "2026-10-15 18:05:51"
+  },
+  {
+   "n": 2,
+   "goal_id": "agentos-r2-20261015-b8e4d1f3",
+   "objective": "第 2 轮（目标共 R1..R3）：跑通 R2 提升：用户报告的缺陷闭环：重复语句/连续失败 3-6 步内停、空答如实记账 —— 判据：AC 全 PASS，命令 rc=0。执行约束：本轮必须 new-run.sh 新开**本轮专属** 00-project 账走完 01-project-gigafactory G0..G6 全链（复用别轮的账 = 本轮没提升，引擎判红）；收轮必须给 delta（指名动了哪条 AC）+ evidence（命令 + 退出码），零增量不予记账、换新账重做；收完由 next-round 派下一轮目标。",
+   "table_goal": "跑通 R2 提升：用户报告的缺陷闭环：重复语句/连续失败 3-6 步内停、空答如实记账",
+   "table_ac": "AC 全 PASS，命令 rc=0",
+   "bound": "2026-10-15 18:07:52"
+  },
+  {
+   "n": 3,
+   "goal_id": "agentos-r3-20261015-c9d5e2a4",
+   "objective": "第 3 轮（目标共 R1..R3）：跑通 R3 提升：受控进化合入落地：坏提案必拦回退、好提案合入后能力门仍绿 —— 判据：AC 全 PASS，命令 rc=0。执行约束：本轮必须 new-run.sh 新开**本轮专属** 00-project 账走完 01-project-gigafactory G0..G6 全链（复用别轮的账 = 本轮没提升，引擎判红）；收轮必须给 delta（指名动了哪条 AC）+ evidence（命令 + 退出码），零增量不予记账、换新账重做；收完由 next-round 派下一轮目标。",
+   "table_goal": "跑通 R3 提升：受控进化合入落地：坏提案必拦回退、好提案合入后能力门仍绿",
+   "table_ac": "AC 全 PASS，命令 rc=0",
+   "bound": "2026-10-15 18:09:54"
+  },
+  {
+   "n": 4,
+   "goal_id": "agentos-r4-20261015-d4a7f8c1",
+   "objective": "第 4 轮（目标共 R1..R4）：跑通收官交付验证：复验R1/R2/R3已收轮证据并交付70门链70/70 —— 判据：70门链70/70 rc=0。执行约束：本轮必须 new-run.sh 新开**本轮专属** 00-project 账走完 01-project-gigafactory G0..G6 全链（复用别轮的账 = 本轮没提升，引擎判红）；收轮必须给 delta（指名动了哪条 AC）+ evidence（命令 + 退出码），零增量不予记账、换新账重做；收完由 next-round 派下一轮目标。",
+   "table_goal": "跑通收官交付验证：复验R1/R2/R3已收轮证据并交付70门链70/70",
+   "table_ac": "70门链70/70 rc=0",
+   "bound": "2026-10-15 18:20:29"
+  }
+ ],
+ "state": "GOAL_SHIPPED"
+}

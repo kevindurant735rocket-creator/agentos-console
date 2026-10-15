@@ -1,0 +1,249 @@
+{
+ "cases": {
+  "fresh_5min": {
+   "badge": true,
+   "badgeState": "fresh",
+   "badgeText": "证据 新鲜 · 5 分钟前",
+   "bannerOn": false,
+   "bannerVisible": false,
+   "banner1": "",
+   "banner2": "",
+   "liveText": "静态",
+   "foot": "总闸 PASS\n实测 55P / 2L / 0F\n自报 54P / 2L / 1F\n分歧 3\n证据 新鲜 5 分钟前\n覆盖率 57/57 齐\nmanifest 57/57\n降级 1",
+   "vtag": true,
+   "vtagCls": "vtag PASS",
+   "vtagText": "PASS",
+   "err": null,
+   "want_f": "fresh",
+   "want_banner": false
+  },
+  "fresh_inner_29min": {
+   "badge": true,
+   "badgeState": "fresh",
+   "badgeText": "证据 新鲜 · 29 分钟前",
+   "bannerOn": false,
+   "bannerVisible": false,
+   "banner1": "",
+   "banner2": "",
+   "liveText": "静态",
+   "foot": "总闸 PASS\n实测 55P / 2L / 0F\n自报 54P / 2L / 1F\n分歧 3\n证据 新鲜 29 分钟前\n覆盖率 57/57 齐\nmanifest 57/57\n降级 1",
+   "vtag": true,
+   "vtagCls": "vtag PASS",
+   "vtagText": "PASS",
+   "err": null,
+   "want_f": "fresh",
+   "want_banner": false
+  },
+  "amber_2h": {
+   "badge": true,
+   "badgeState": "amber",
+   "badgeText": "证据 偏旧 · 2.0 小时前",
+   "bannerOn": true,
+   "bannerVisible": true,
+   "banner1": "证据已 2.0 小时前未复跑",
+   "banner2": "顶栏 PASS 是 10/15 16:26 的历史结论，不代表当前真树状态。 证据源 /Users/zhangfengrui/Desktop/项目/future agent/phase18-verify-gate/report/verdicts.json",
+   "liveText": "静态",
+   "foot": "总闸 PASS\n实测 55P / 2L / 0F\n自报 54P / 2L / 1F\n分歧 3\n证据 偏旧 2.0 小时前\n覆盖率 57/57 齐\nmanifest 57/57\n降级 1",
+   "vtag": true,
+   "vtagCls": "vtag HIST",
+   "vtagText": "PASS · 偏旧",
+   "err": null,
+   "want_f": "amber",
+   "want_banner": true
+  },
+  "amber_inner_359min": {
+   "badge": true,
+   "badgeState": "amber",
+   "badgeText": "证据 偏旧 · 6.0 小时前",
+   "bannerOn": true,
+   "bannerVisible": true,
+   "banner1": "证据已 6.0 小时前未复跑",
+   "banner2": "顶栏 PASS 是 10/15 12:27 的历史结论，不代表当前真树状态。 证据源 /Users/zhangfengrui/Desktop/项目/future agent/phase18-verify-gate/report/verdicts.json",
+   "liveText": "静态",
+   "foot": "总闸 PASS\n实测 55P / 2L / 0F\n自报 54P / 2L / 1F\n分歧 3\n证据 偏旧 6.0 小时前\n覆盖率 57/57 齐\nmanifest 57/57\n降级 1",
+   "vtag": true,
+   "vtagCls": "vtag HIST",
+   "vtagText": "PASS · 偏旧",
+   "err": null,
+   "want_f": "amber",
+   "want_banner": true
+  },
+  "stale_outer_361min": {
+   "badge": true,
+   "badgeState": "stale",
+   "badgeText": "证据 陈旧 · 6.0 小时前",
+   "bannerOn": true,
+   "bannerVisible": true,
+   "banner1": "证据已 6.0 小时前未复跑",
+   "banner2": "顶栏 PASS 是 10/15 12:25 的历史结论，不代表当前真树状态。 证据源 /Users/zhangfengrui/Desktop/项目/future agent/phase18-verify-gate/report/verdicts.json",
+   "liveText": "静态",
+   "foot": "总闸 PASS\n实测 55P / 2L / 0F\n自报 54P / 2L / 1F\n分歧 3\n证据 陈旧 6.0 小时前\n覆盖率 57/57 齐\nmanifest 57/57\n降级 1",
+   "vtag": true,
+   "vtagCls": "vtag HIST",
+   "vtagText": "PASS · 陈旧",
+   "err": null,
+   "want_f": "stale",
+   "want_banner": true
+  },
+  "stale_26h": {
+   "badge": true,
+   "badgeState": "stale",
+   "badgeText": "证据 陈旧 · 26.0 小时前",
+   "bannerOn": true,
+   "bannerVisible": true,
+   "banner1": "证据已 26.0 小时前未复跑",
+   "banner2": "顶栏 PASS 是 10/14 16:26 的历史结论，不代表当前真树状态。 证据源 /Users/zhangfengrui/Desktop/项目/future agent/phase18-verify-gate/report/verdicts.json",
+   "liveText": "静态",
+   "foot": "总闸 PASS\n实测 55P / 2L / 0F\n自报 54P / 2L / 1F\n分歧 3\n证据 陈旧 26.0 小时前\n覆盖率 57/57 齐\nmanifest 57/57\n降级 1",
+   "vtag": true,
+   "vtagCls": "vtag HIST",
+   "vtagText": "PASS · 陈旧",
+   "err": null,
+   "want_f": "stale",
+   "want_banner": true
+  },
+  "stale_3d": {
+   "badge": true,
+   "badgeState": "stale",
+   "badgeText": "证据 陈旧 · 3 天前",
+   "bannerOn": true,
+   "bannerVisible": true,
+   "banner1": "证据已 3 天前未复跑",
+   "banner2": "顶栏 PASS 是 10/12 18:26 的历史结论，不代表当前真树状态。 证据源 /Users/zhangfengrui/Desktop/项目/future agent/phase18-verify-gate/report/verdicts.json",
+   "liveText": "静态",
+   "foot": "总闸 PASS\n实测 55P / 2L / 0F\n自报 54P / 2L / 1F\n分歧 3\n证据 陈旧 3 天前\n覆盖率 57/57 齐\nmanifest 57/57\n降级 1",
+   "vtag": true,
+   "vtagCls": "vtag HIST",
+   "vtagText": "PASS · 陈旧",
+   "err": null,
+   "want_f": "stale",
+   "want_banner": true
+  },
+  "missing": {
+   "badge": true,
+   "badgeState": "unknown",
+   "badgeText": "证据 未知 · 时间未知",
+   "bannerOn": true,
+   "bannerVisible": true,
+   "banner1": "证据新鲜度不可判定（fail-closed）",
+   "banner2": "顶栏 PASS 是 — 的历史结论，不代表当前真树状态。data.json 缺 generated_at 或无法解析 —— 按 fail-closed 判为不可信新鲜度 证据源 /Users/zhangfengrui/Desktop/项目/future agent/phase18-verify-gate/report/verdicts.json",
+   "liveText": "静态",
+   "foot": "总闸 PASS\n实测 55P / 2L / 0F\n自报 54P / 2L / 1F\n分歧 3\n证据 未知 时间未知\n覆盖率 57/57 齐\nmanifest 57/57\n降级 1",
+   "vtag": true,
+   "vtagCls": "vtag HIST",
+   "vtagText": "PASS · 时效未知",
+   "err": null,
+   "want_f": "unknown",
+   "want_banner": true
+  },
+  "garbage_ts": {
+   "badge": true,
+   "badgeState": "unknown",
+   "badgeText": "证据 未知 · 时间未知",
+   "bannerOn": true,
+   "bannerVisible": true,
+   "banner1": "证据新鲜度不可判定（fail-closed）",
+   "banner2": "顶栏 PASS 是 not-a-date 的历史结论，不代表当前真树状态。data.json 缺 generated_at 或无法解析 —— 按 fail-closed 判为不可信新鲜度 证据源 /Users/zhangfengrui/Desktop/项目/future agent/phase18-verify-gate/report/verdicts.json",
+   "liveText": "静态",
+   "foot": "总闸 PASS\n实测 55P / 2L / 0F\n自报 54P / 2L / 1F\n分歧 3\n证据 未知 时间未知\n覆盖率 57/57 齐\nmanifest 57/57\n降级 1",
+   "vtag": true,
+   "vtagCls": "vtag HIST",
+   "vtagText": "PASS · 时效未知",
+   "err": null,
+   "want_f": "unknown",
+   "want_banner": true
+  }
+ },
+ "mutants": {
+  "M1 永远判新鲜（横幅永不出现）": {
+   "caught_by": [
+    "amber_2h",
+    "amber_inner_359min",
+    "stale_outer_361min",
+    "stale_26h",
+    "stale_3d",
+    "vtag:bare",
+    "vtag:qual",
+    "vtag:fresh"
+   ]
+  },
+  "M2 永远判陈旧": {
+   "caught_by": [
+    "fresh_5min",
+    "fresh_inner_29min",
+    "amber_2h",
+    "amber_inner_359min",
+    "vtag:bare",
+    "vtag:qual",
+    "vtag:fresh"
+   ]
+  },
+  "M3 fail-open（坏时间戳当新鲜）": {
+   "caught_by": [
+    "missing",
+    "garbage_ts",
+    "vtag:bare",
+    "vtag:qual",
+    "vtag:fresh"
+   ]
+  },
+  "M4 横幅永不显示（徽章活、横幅死）": {
+   "caught_by": [
+    "amber_2h",
+    "amber_inner_359min",
+    "stale_outer_361min",
+    "stale_26h",
+    "stale_3d",
+    "missing",
+    "garbage_ts",
+    "vtag:bare",
+    "vtag:qual",
+    "vtag:fresh"
+   ]
+  },
+  "N1 定时器未注册（页面开着就永远新鲜）": {
+   "caught_by": [
+    "vtag:bare",
+    "vtag:qual",
+    "vtag:fresh",
+    "t4:定时器未注册"
+   ]
+  },
+  "N2 tick 不更新底栏时效": {
+   "caught_by": [
+    "vtag:bare",
+    "vtag:qual",
+    "vtag:fresh",
+    "t2:底栏未跟陈旧翻面"
+   ]
+  },
+  "N3 tick 强关横幅（徽章陈旧但不报警）": {
+   "caught_by": [
+    "vtag:bare",
+    "vtag:qual",
+    "vtag:fresh",
+    "t2:横幅被强关"
+   ]
+  },
+  "V1 verdictTag 不看时效（恒裸彩色 PASS）": {
+   "caught_by": [
+    "vtag:bare",
+    "vtag:qual",
+    "vtag:fresh"
+   ]
+  },
+  "V2 verdictTag 不进 freshTick（页面开着永远裸奔）": {
+   "caught_by": [
+    "vtag:bare",
+    "vtag:qual",
+    "vtag:fresh",
+    "t2:顶栏未随 tick 降级 vtag='PASS'"
+   ]
+  }
+ },
+ "summary": {
+  "ok": 16,
+  "total": 16
+ },
+ "retry_trace": []
+}

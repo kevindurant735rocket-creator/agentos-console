@@ -1,0 +1,96 @@
+{
+ "tool": "dsp_gate.py",
+ "rc": 0,
+ "gates": [
+  {
+   "gate": "D1 dsp.py 存在且可 import",
+   "ok": true,
+   "detail": "import ok"
+  },
+  {
+   "gate": "D2 --check 末行逐字 AGENT_CORE OK 140/140",
+   "ok": true,
+   "detail": "AGENT_CORE OK 140/140"
+  },
+  {
+   "gate": "D3 REPL 命令 /plan 锚点恰好一次",
+   "ok": true,
+   "detail": "命中=1"
+  },
+  {
+   "gate": "D3 REPL 命令 /approve 锚点恰好一次",
+   "ok": true,
+   "detail": "命中=1"
+  },
+  {
+   "gate": "D3 REPL 命令 /tasks 锚点恰好一次",
+   "ok": true,
+   "detail": "命中=1"
+  },
+  {
+   "gate": "D3 REPL 命令 /block 锚点恰好一次",
+   "ok": true,
+   "detail": "命中=1"
+  },
+  {
+   "gate": "D4 计划锁锚点恰好一次",
+   "ok": true,
+   "detail": "命中=1"
+  },
+  {
+   "gate": "D5a run_agent 自启锚点恰好一次",
+   "ok": true,
+   "detail": "命中=1"
+  },
+  {
+   "gate": "D5b _run_once 配 sid 锚点恰好一次",
+   "ok": true,
+   "detail": "命中=1"
+  },
+  {
+   "gate": "D6 分析器 BIG/SMALL 各一例真跑",
+   "ok": true,
+   "detail": "big=BIG small=SMALL"
+  },
+  {
+   "gate": "D7 计划锁：未审批锁死、审批后放行",
+   "ok": true,
+   "detail": "save=True locked=True approve=True"
+  },
+  {
+   "gate": "D8 白名单：任务外工具被拒",
+   "ok": true,
+   "detail": "任务 't1' 的工具白名单是 [read_file]，'write_file' 不在里面"
+  },
+  {
+   "gate": "D9 审计链 save→approve 不断",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "gate": "D10 doom 归一化第 3 次转 ask",
+   "ok": true,
+   "detail": "r=[None, None, 'ask']"
+  },
+  {
+   "gate": "D11 证据行无 rc 拒、有 rc 过",
+   "ok": true,
+   "detail": "no=False yes=True"
+  },
+  {
+   "gate": "D12 work/plans 无自检残留",
+   "ok": true,
+   "detail": "残留=[]"
+  },
+  {
+   "gate": "D13a KNOWN_TOOLS ⊆ @_tool 注册名集",
+   "ok": true,
+   "detail": "缺=[]"
+  },
+  {
+   "gate": "D13b 计划骨架工具名全部可解析",
+   "ok": true,
+   "detail": "悬空=[]"
+  }
+ ]
+}

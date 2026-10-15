@@ -1,0 +1,68 @@
+{
+ "tool": "layout_gate.py",
+ "html_sha256": "e8bd8c9cd5ac2b52",
+ "views": [
+  "over",
+  "round",
+  "mx",
+  "led",
+  "eng",
+  "work",
+  "goal",
+  "retro",
+  "cap",
+  "ws",
+  "term",
+  "file",
+  "set"
+ ],
+ "widths": [
+  375,
+  768,
+  1440
+ ],
+ "screens": 78,
+ "gates": [
+  {
+   "gate": "正例无元素压字（滚动容器/浮层/父子已排除）",
+   "ok": true,
+   "why": ""
+  },
+  {
+   "gate": "正例无文字被裁（无 ellipsis 且溢出真可见）",
+   "ok": true,
+   "why": ""
+  },
+  {
+   "gate": "真视口未被冒充（innerWidth 精确）",
+   "ok": true,
+   "why": ""
+  },
+  {
+   "gate": "每屏都走到真数据态（只读加载成功）",
+   "ok": true,
+   "why": ""
+  },
+  {
+   "gate": "上牙 MA：脱离文档流的按钮压住 nav tab 会被抓住",
+   "ok": true,
+   "why": ""
+  },
+  {
+   "gate": "上牙 MB：长 token 不换行被裁会被抓住",
+   "ok": true,
+   "why": ""
+  },
+  {
+   "gate": "details 全展开后同样无压字/无裁字（不靠排除蒙混过关）",
+   "ok": true,
+   "why": ""
+  },
+  {
+   "gate": "反向门零污染（活 index.html sha 未变）",
+   "ok": true,
+   "why": ""
+  }
+ ],
+ "ctrl_findings": []
+}

@@ -1,0 +1,131 @@
+{
+ "tool": "gh_gate.py",
+ "rc": 0,
+ "gates": [
+  {
+   "gate": "BASE gh 可解析（shutil.which('gh') 非空）",
+   "ok": true,
+   "detail": "/opt/homebrew/bin/gh"
+  },
+  {
+   "gate": "BASE gh api rate_limit rc=0 且 resources.core.limit>0",
+   "ok": true,
+   "detail": "rc=0 limit=5000"
+  },
+  {
+   "gate": "BASE agentos.py gh repos rc=0 且「仓库数: N」N>0",
+   "ok": true,
+   "detail": "rc=0 仓库数: 20"
+  },
+  {
+   "gate": "BASE gh auth status rc=0 且 stdout 含 'Logged in'",
+   "ok": true,
+   "detail": "rc=0 含 'Logged in'"
+  },
+  {
+   "gate": "BASE 读面零写向量（AST 扫描 3 个文件，写只许走 run_gh_write 收口）",
+   "ok": true,
+   "detail": "命中=无"
+  },
+  {
+   "gate": "W1 写面策略矩阵：无--yes/非TTY/配置关(含大小写陷阱)/限速 四拒、陈旧写与他仓写不误限",
+   "ok": true,
+   "detail": "7 例全对"
+  },
+  {
+   "gate": "W2 写收口模板复核：模板外向量必须 ValueError",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "gate": "W3 写面 CLI：无 --yes rc≠0 且审计 DENY(no-yes)",
+   "ok": true,
+   "detail": "rc=1 tail=no-yes"
+  },
+  {
+   "gate": "W4 写面 CLI：--yes 非交互 rc≠0 且审计 DENY(non-tty)（SEC S1）",
+   "ok": true,
+   "detail": "rc=1 tail=non-tty"
+  },
+  {
+   "gate": "W5 写面 CLI：白名单外旗标 -F 结构性拒绝（SEC T1）",
+   "ok": true,
+   "detail": "rc=1"
+  },
+  {
+   "gate": "W6 写面 CLI：--dry-run rc=0 且「将执行」且审计 EXEC-DRY",
+   "ok": true,
+   "detail": "rc=0"
+  },
+  {
+   "gate": "W7 审计哈希链自洽（gh audit rc=0 且「自洽」）",
+   "ok": true,
+   "detail": "rc=0"
+  },
+  {
+   "gate": "W8 审计防篡改：副本改一字即断链",
+   "ok": true,
+   "detail": "第 1 行 sha 断链（被改过或 prev 错）"
+  },
+  {
+   "gate": "W10 config set gh.write_enabled：模糊值 yes 拒 rc≠0、字面 true 过 rc=0（SEC E1）",
+   "ok": true,
+   "detail": "yes_rc=2 true_rc=0"
+  },
+  {
+   "gate": "W11 config set 任意表拒绝（只放行 llm.* / gh.*）",
+   "ok": true,
+   "detail": "rc=2"
+  },
+  {
+   "gate": "W9 写面 TTY 确认拒绝：--yes+配置开+答 n → rc≠0 且审计 DENY(confirm-no)（SEC S1 末段，真 PTY）",
+   "ok": true,
+   "detail": "rc=1 tail=confirm-no"
+  },
+  {
+   "gate": "W12 policy v2：agent 自主路径（配置开+审计限速即放行、配置模糊拒、CLI 无 --yes 仍拒）",
+   "ok": true,
+   "detail": "4 例全对"
+  },
+  {
+   "gate": "W13 deploy 密钥扫描：.env 命中拒发、干净目录零误伤",
+   "ok": true,
+   "detail": "hits=['.env'] clean=[]"
+  },
+  {
+   "gate": "W14 repo-create dry-run rc=0 且审计 EXEC-DRY 留痕",
+   "ok": true,
+   "detail": "rc=0 sub=repo-create"
+  },
+  {
+   "gate": "判据自证：重试谓词认传输层事故字样、不认真失败字样",
+   "ok": true,
+   "detail": "incident=True real_fail=False"
+  },
+  {
+   "gate": "M1 PATH 无 gh（剥掉含 gh 的 PATH 目录） 必须红（子进程活着判红：rc≠0 且 JSON rc≠0 且有 FAIL 门）",
+   "ok": true,
+   "detail": "child_rc=2 json_rc=2 失败门=[\"BASE gh 可解析（shutil.which('gh') 非空）\", 'BASE gh api rate_limit rc=0 且 resources.core.limit>0', \"BASE gh auth status rc=0 且 stdout 含 'Logged in'\"]"
+  },
+  {
+   "gate": "M2 gh 未认证（隔离 HOME/GH_CONFIG_DIR/GH_TOKEN） 必须红（子进程活着判红：rc≠0 且 JSON rc≠0 且有 FAIL 门）",
+   "ok": true,
+   "detail": "child_rc=2 json_rc=2 失败门=['BASE agentos.py gh repos rc=0 且「仓库数: N」N>0', \"BASE gh auth status rc=0 且 stdout 含 'Logged in'\"]"
+  },
+  {
+   "gate": "M3 假 gh（exit 1 且打印传输层 TLS 字样）顶 PATH 最前 必须红（子进程活着判红：rc≠0 且 JSON rc≠0 且有 FAIL 门）",
+   "ok": true,
+   "detail": "child_rc=2 json_rc=2 失败门=['BASE gh api rate_limit rc=0 且 resources.core.limit>0', 'BASE agentos.py gh repos rc=0 且「仓库数: N」N>0', \"BASE gh auth status rc=0 且 stdout 含 'Logged in'\"]"
+  },
+  {
+   "gate": "零污染：生产 JSON 在 3 个变异体跑动前后字节不变",
+   "ok": true,
+   "detail": "before=有 after=有"
+  },
+  {
+   "gate": "零污染：tools/ 下无 _ghmut_* 残留（桩只落临时目录）",
+   "ok": true,
+   "detail": "[]"
+  }
+ ]
+}

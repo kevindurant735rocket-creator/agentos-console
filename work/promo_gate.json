@@ -1,0 +1,58 @@
+{
+ "tool": "promo_gate.py",
+ "gates": [
+  {
+   "name": "正例：VALIDATED+experiment+regression 真晋升 rc=0 且带 PROMOTED 令牌 + 事后复核",
+   "ok": true,
+   "detail": "rc=0 token=True 复核status=PROMOTED"
+  },
+  {
+   "name": "幂等：重复晋升 → PROMOTE-HOLDS rc=0 且 history 不增长",
+   "ok": true,
+   "detail": "rc=0 holds=True history 1→1"
+  },
+  {
+   "name": "负例·账本缺失 → rc=2（PROMOTE-FAIL，非 usage 假绿）",
+   "ok": true,
+   "detail": "rc=2 out='PROMOTE-FAIL ledger 缺失: /Users/zhangfengrui/Documents/Codex/2026-10-01'"
+  },
+  {
+   "name": "负例·账本为空 → rc=2",
+   "ok": true,
+   "detail": "rc=2 out='PROMOTE-FAIL 账本为空: /Users/zhangfengrui/Documents/Codex/2026-10-01/agen'"
+  },
+  {
+   "name": "负例·DISCOVERED 直升 PROMOTED → rc=2（真门 GATE_DENIED 冒泡）",
+   "ok": true,
+   "detail": "rc=2 denied=True 事后status=DISCOVERED"
+  },
+  {
+   "name": "负例·缺 --commit/--reason → rc=2（star/口碑/单次通过都不算证据）",
+   "ok": true,
+   "detail": "rc=2 事后status=VALIDATED out='PROMOTE-FAIL --commit 与 --reason 均必填（star/口碑/单次通过都'"
+  },
+  {
+   "name": "负例·--id 不存在 → rc=2 UNKNOWN_CAPABILITY",
+   "ok": true,
+   "detail": "rc=2 out='PROMOTE-FAIL UNKNOWN_CAPABILITY nope'"
+  },
+  {
+   "name": "只读面：report 零写账本（mtime+size+sha 三重不变）",
+   "ok": true,
+   "detail": "rc=0 token=True 账本不变=True"
+  },
+  {
+   "name": "接线真值：production 报告 rc=0 且 OK token 在场（不是 usage 假绿）",
+   "ok": true,
+   "detail": "rc=0 token=True | 能力 36 · 可真晋升 0 · 已 PROMOTED(hold) 26 · 复发簇 7/13 达阈值(>=3)"
+  },
+  {
+   "name": "生产账本零污染：全程 sha256 未变",
+   "ok": true,
+   "detail": "sha 98ae5cea64017fbb"
+  }
+ ],
+ "prod_ledger_sha_before": "98ae5cea64017fbb2d49cc198d32c9d7c4e2901ec35a1d7325dd0bfbb2b8d560",
+ "passed": 10,
+ "total": 10
+}

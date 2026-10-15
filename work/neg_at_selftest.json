@@ -1,0 +1,61 @@
+{
+  "title": "at_selftest 反向门",
+  "mutants": 5,
+  "passed": 5,
+  "items": [
+    {
+      "tag": "E0 反向门不得毁掉正向门的真跑证据位",
+      "mutates_case": "work/at_selftest.json",
+      "ok": true,
+      "rc": "sha=32e0fc262868",
+      "reds": [],
+      "hits_expected_case": true,
+      "errs": []
+    },
+    {
+      "tag": "M1 放松「前台必须是浏览器」",
+      "mutates_case": "N2",
+      "ok": true,
+      "rc": 1,
+      "reds": [
+        "FAIL N2 反例 前台是 Finder 不是浏览器                             -> AT-VERIFIED"
+      ],
+      "hits_expected_case": true,
+      "errs": []
+    },
+    {
+      "tag": "M2 放松「窗口标题必须命中被测页」",
+      "mutates_case": "N3",
+      "ok": true,
+      "rc": 1,
+      "reds": [
+        "FAIL N3 反例 窗口标题未命中被测 title                              -> AT-VERIFIED"
+      ],
+      "hits_expected_case": true,
+      "errs": []
+    },
+    {
+      "tag": "M3 放松「AX 元素数不得为 0」",
+      "mutates_case": "N4",
+      "ok": true,
+      "rc": 1,
+      "reds": [
+        "FAIL N4 反例 AX 元素计数为 0（TCC 静默空）                          -> AT-VERIFIED"
+      ],
+      "hits_expected_case": true,
+      "errs": []
+    },
+    {
+      "tag": "M4 抽掉「计数不可解析」兜底（脏输出直接当通过）",
+      "mutates_case": "N5",
+      "ok": true,
+      "rc": 1,
+      "reds": [
+        "FAIL N5 反例 计数不可解析为整数                                    -> AT-VERIFIED"
+      ],
+      "hits_expected_case": true,
+      "errs": []
+    }
+  ],
+  "how": "sys.modules 预注册变异副本，源码文本级替换，不落盘"
+}

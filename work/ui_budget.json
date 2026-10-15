@@ -1,0 +1,16 @@
+{
+  "first_screen": {
+    "max_interactive": 30
+  },
+  "total_interactive": {
+    "max": 60
+  },
+  "progressive_disclosure_containers": [],
+  "measured": {
+    "first_screen_interactive": 22,
+    "total_interactive": 22,
+    "disclosure_containers": 7,
+    "audit_rc": 0
+  },
+  "redeclared_note": "2026-10-14 事故后重声明：原声明文件被清且无副本，按当轮实测（首屏22/总量22/披露容器7）留适度余量重声明；此后超额照旧判红"
+}

@@ -1,0 +1,41 @@
+{
+ "ok": false,
+ "checks": [
+  {
+   "name": "evolution-recurrence-readable",
+   "ok": false,
+   "detail": "API 不可用: fixture-dead"
+  },
+  {
+   "name": "evolution-capmap-readable",
+   "ok": false,
+   "detail": "API 不可用"
+  },
+  {
+   "name": "evolution-promote-readable",
+   "ok": false,
+   "detail": "API 不可用"
+  },
+  {
+   "name": "evolution-distill-dual-evidence",
+   "ok": false,
+   "detail": "API 不可用"
+  },
+  {
+   "name": "evolution-auto-promote-trigger",
+   "ok": false,
+   "detail": "复发簇不可读"
+  },
+  {
+   "name": "evolution-degradation-detection",
+   "ok": false,
+   "detail": "能力账不可读"
+  },
+  {
+   "name": "evolution-health-ok",
+   "ok": false,
+   "detail": "服务不健康"
+  }
+ ],
+ "port": 54942
+}

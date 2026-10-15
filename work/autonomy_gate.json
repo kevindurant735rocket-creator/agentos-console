@@ -1,0 +1,67 @@
+{
+  "autonomy": "tools/autonomy.py",
+  "judgments": [
+    {
+      "detail": "rc=0 kinds=('timeout', 'verify', 'budget', 'notfound') anchors=[1, 1, 1, 1, 1, 1]",
+      "gate": "D1 纯面：--help rc=0 + 分类表（timeout/verify/budget/notfound）+ 6 锚点各 1 处",
+      "ok": true
+    },
+    {
+      "detail": "rc=2 环=True rows=0",
+      "gate": "D2 负控面：有环计划 rc=2 拒跑 + 零派发 + 零落账",
+      "ok": true
+    },
+    {
+      "detail": "rc=2 未审批=True dispatch=0 block=True",
+      "gate": "D3 锁面：未审批 run 必拒（rc=2 + 未审批 + 零派发 + block）",
+      "ok": true
+    },
+    {
+      "detail": "rc=0 order=['t1', 't2', 't3', 't4', 't5'] ev=True vmarks=5 report=True",
+      "gate": "D4 全流程面：一次调用 5/5 全绿 + 拓扑序 + verify 真跑（marker）+ 报告落盘",
+      "ok": true
+    },
+    {
+      "detail": "rc=0 t1次数=2 v0=verify rc=1 kind=verify 提示=True",
+      "gate": "D5 自救面：判据先红后绿 → 第 2 次尝试转绿 done + 修法真进派发书",
+      "ok": true
+    },
+    {
+      "detail": "rc=1 n_by={'a': 1, 'b': 3, 'd': 1} b=blocked c=todo d=done blocked=1",
+      "gate": "D6 封顶+DAG 面：恒败恰好 1+2=3 次封顶 blocked + 下游 c 不派发 + 独立 d 照常 done",
+      "ok": true
+    },
+    {
+      "detail": "seen=True rc2=0 t1累计派发=1 run_start=2",
+      "gate": "D7 续跑面：派发中途 SIGKILL 强杀 → resume 续跑 + t1 零重跑 + 终局全绿",
+      "ok": true
+    },
+    {
+      "detail": "rc1=1 剩4=True rc2=0 run_start=2 done1=1",
+      "gate": "D8 预算面：--max-tasks 1 干净停（rc=1 剩 4）→ 再跑续完（rc=0 全绿 + 两段 run_start）",
+      "ok": true
+    },
+    {
+      "detail": "j1=blocked j2=blocked j3=done falsy=无",
+      "gate": "D9 判据面（反假绿）：自称 rc=0 但 verify 红 → 不 done；worker rc=1 但 verify 绿 → 不 done；done 必含 rc=0",
+      "ok": true
+    },
+    {
+      "detail": "pending=0 steer_rows=1 in_prompt=True",
+      "gate": "D10 监督面：steer 边界消费 + 进派发书 + 游标只进",
+      "ok": true
+    },
+    {
+      "detail": "status=0 report=0 结论=True",
+      "gate": "D11 CLI 面：status rc=0（计划+跑账尾）+ report rc=0（结论/下一步段齐）",
+      "ok": true
+    },
+    {
+      "detail": "新增work=无 新增tools=无 残留=无",
+      "gate": "D12 零污染：work/ 只多 --out；tools/ 零残留；夹具按 sid 全清",
+      "ok": true
+    }
+  ],
+  "n_ok": 12,
+  "n_total": 12
+}

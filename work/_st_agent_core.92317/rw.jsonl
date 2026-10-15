@@ -1,0 +1,7 @@
+{"kind": "user", "text": "u1"}
+{"kind": "assistant", "text": "a1"}
+{"kind": "user", "text": "u2"}
+{"kind": "assistant", "text": "a2"}
+{"kind": "user", "text": "u3"}
+{"kind": "assistant", "text": "a3"}
+{"ts": 1792062348.438394, "kind": "note", "text": "rewind → 第 2/3 轮（history 重建 4 条）"}

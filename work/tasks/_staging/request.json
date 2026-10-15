@@ -1,0 +1,10 @@
+{
+ "demand": "做个库存后台",
+ "acs": [
+  "库存列表可见"
+ ],
+ "non_goals": [],
+ "rounds": 3,
+ "taskdir": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/tasks/g20261015-183911-603082-f87a",
+ "created": "2026-10-15 18:39:11"
+}

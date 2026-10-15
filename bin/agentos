@@ -1,0 +1,71 @@
+#!/bin/sh
+# AgentOS —— 生成式 shim（install.sh 安装时把 __AGENTOS_ROOT__ 替换成真实仓库根）。
+#
+# 为什么不做软链：
+#   软链装到 ~/.local/bin 后，$0 解析、python 选择、仓库搬迁全都不可控，
+#   而且「装了什么」变成一条指向源码树的路径，卸载时说不清该删谁。
+#   生成一份自包含 shim，装一次落一份，卸载只删这一份，边界干净。
+#
+# 为什么不用 readlink -f：
+#   macOS 的 readlink 是 BSD 版，没有 -f 选项，一跑就 illegal option。
+#   这里只用 dirname + cd + pwd -P（POSIX 全支持）推导，并且以内嵌根兜底。
+set -u
+ENTRY="tools/agentos.py"
+MARK="tools/gates.sh"
+root=""
+
+# 1) 从 shim 自身位置推导。仓库内直接跑 bin/agentos 走这条；
+#    装出去的副本落在 ~/.local/bin，推导结果不是仓库根，自然落到第 2 步。
+cand=$(CDPATH= cd "$(dirname "$0")/.." 2>/dev/null && pwd -P) || cand=""
+if [ -n "$cand" ] && [ -f "$cand/$ENTRY" ] && [ -f "$cand/$MARK" ]; then
+  root=$cand
+fi
+
+# 2) install.sh 安装时内嵌的仓库根。
+if [ -z "$root" ]; then
+  embedded="__AGENTOS_ROOT__"
+  if [ -f "$embedded/$ENTRY" ] && [ -f "$embedded/$MARK" ]; then
+    root=$embedded
+  fi
+fi
+
+if [ -z "$root" ]; then
+  printf 'agentos: 定位不到 AgentOS 仓库。期望同时存在 %s 与 %s。\n' "$ENTRY" "$MARK" >&2
+  printf 'agentos: 试过的位置: shim 上一级目录、内嵌根 __AGENTOS_ROOT__\n' >&2
+  printf 'agentos: 仓库被移走就重跑一次 install.sh 重新生成 shim。\n' >&2
+  exit 127
+fi
+
+# 3) 允许调试用 AGENTOS_PYTHON 指定解释器，跳过自动挑选。
+if [ -n "${AGENTOS_PYTHON:-}" ]; then
+  exec "$AGENTOS_PYTHON" "$root/$ENTRY" "$@"
+fi
+
+# 4) 挑一个真能跑 agentos.py 的 python：先仓库虚拟环境，再 PATH。
+#    挑选标准不是「命令存在」，而是「这个解释器真编译得动入口文件」——
+#    3.9 遇到 3.10+ 语法会直接 SyntaxError，只 probe --version 是后知后觉。
+py=""
+for cand_py in "$root/.venv-pw/bin/python" "$root/.venv/bin/python" "$root/venv/bin/python" python3 python3.14 python3.13 python3.12 python3.11 python3.10 python; do
+  found=$(command -v "$cand_py" 2>/dev/null) || continue
+  [ -n "$found" ] || continue
+  [ -x "$found" ] || continue
+  "$found" -c 'import sys
+_path = sys.argv[1]
+try:
+    compile(open(_path, "rb").read(), _path, "exec")
+except SyntaxError:
+    sys.exit(1)
+for _mod in ("argparse", "json", "select", "termios", "tty", "subprocess", "shutil", "uuid"):
+    __import__(_mod)' "$root/$ENTRY" >/dev/null 2>&1 || continue
+  py=$found
+  break
+done
+
+if [ -z "$py" ]; then
+  printf 'agentos: 没找到可用的 python（需要能编译并运行 %s）。\n' "$root/$ENTRY" >&2
+  printf 'agentos: 已试: %s/.venv-pw/bin/python, %s/.venv/bin/python, python3, python\n' "$root" "$root" >&2
+  printf 'agentos: 可用 AGENTOS_PYTHON=/path/to/python agentos ... 手动指定。\n' >&2
+  exit 127
+fi
+
+exec "$py" "$root/$ENTRY" "$@"

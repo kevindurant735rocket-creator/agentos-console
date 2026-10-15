@@ -1,0 +1,52 @@
+{
+  "core": "tools/agent_core.py",
+  "judgments": [
+    {
+      "detail": "缺=无",
+      "gate": "D1 可导入 + 五件纯函数齐",
+      "ok": true
+    },
+    {
+      "detail": "rc=0 tail='AGENT_CORE OK 140/140'",
+      "gate": "D2 --check 末行逐字 AGENT_CORE OK 140/140",
+      "ok": true
+    },
+    {
+      "detail": "loop=1 at=1 sum=1 fmt=2 sep=1",
+      "gate": "D3 源码锚点（续行循环/@路由/摘要集成/缩进两站点/⎿渲染 各就位）",
+      "ok": true
+    },
+    {
+      "detail": "odd=True even=False",
+      "gate": "D4 续行：奇=续、偶=字面、compose 拼接语义（行为）",
+      "ok": true
+    },
+    {
+      "detail": "a=['@a.txt'] all=['@a.txt', '@sub/']",
+      "gate": "D5 @补全：前缀/目录斜杠/隐藏跳过/非 @ 不问（行为）",
+      "ok": true
+    },
+    {
+      "detail": "edit='x.py · +1 −1 · X'",
+      "gate": "D6 ⎿详情：±对账/写入行字节/失败与缺参一律空（行为）",
+      "ok": true
+    },
+    {
+      "detail": "summ=['note-e.txt · +1 −1 · XX']",
+      "gate": "D7 事件集成：run_agent 真跑 edit_file → tool 事件带 summary",
+      "ok": true
+    },
+    {
+      "detail": "fmt='l1\\n  l2'",
+      "gate": "D8 终答：续行缩进两格/单行不变/空答占位（行为）",
+      "ok": true
+    },
+    {
+      "detail": "新增=无",
+      "gate": "D9 零污染（work/ 只多 --out；夹具已清）",
+      "ok": true
+    }
+  ],
+  "n_ok": 9,
+  "n_total": 9
+}

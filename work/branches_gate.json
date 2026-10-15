@@ -1,0 +1,52 @@
+{
+  "core": "tools/agent_core.py",
+  "judgments": [
+    {
+      "detail": "attrs=['fork_transcript', 'verify_plan']",
+      "gate": "D1 可导入 + fork/verify 两原语齐",
+      "ok": true
+    },
+    {
+      "detail": "rc=0 tail='AGENT_CORE OK 140/140'",
+      "gate": "D2 --check 末行逐字 AGENT_CORE OK 140/140",
+      "ok": true
+    },
+    {
+      "detail": "branch=1 verify=1 tbl=1",
+      "gate": "D3 源码锚点（/branch 分支//verify 分支/补全表 各就位）",
+      "ok": true
+    },
+    {
+      "detail": "ok=True rows=4 src_lines=3",
+      "gate": "D4 fork 对账：原文件不动 + 新文件多注记 + 轮数对",
+      "ok": true
+    },
+    {
+      "detail": "m={'t1': 'done', 't2': 'pending', 't3': 'evidence-missing', 't4': 'evidence-mismatch', 't5': 'evidence-mismatch'}",
+      "gate": "D5 verify 五态：真完成/未做/缺证据/对不上/无 accept 全分得开",
+      "ok": true
+    },
+    {
+      "detail": "verdict=pending",
+      "gate": "D6 不提前 done：doing + 证据齐也不算完成（只认 done）",
+      "ok": true
+    },
+    {
+      "detail": "err=\"fork 落盘失败：[Errno 2] No such file or directory: '/var/folders\"",
+      "gate": "D7 缺记录 fail-closed：源不存在报 (False, err) 不抛",
+      "ok": true
+    },
+    {
+      "detail": "b2_rows=4",
+      "gate": "D8 分叉两路独立：b1 的追加不进 b2",
+      "ok": true
+    },
+    {
+      "detail": "新增=无",
+      "gate": "D9 零污染（work/ 只多 --out；夹具已清）",
+      "ok": true
+    }
+  ],
+  "n_ok": 9,
+  "n_total": 9
+}

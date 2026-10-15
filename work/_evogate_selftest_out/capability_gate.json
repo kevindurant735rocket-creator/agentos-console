@@ -1,0 +1,16 @@
+{
+ "ok": false,
+ "checks": [
+  {
+   "name": "capability-total-36",
+   "ok": false,
+   "detail": "API 不可用"
+  },
+  {
+   "name": "recurrence-capability-link",
+   "ok": false,
+   "detail": "复发簇不可读"
+  }
+ ],
+ "port": 54942
+}

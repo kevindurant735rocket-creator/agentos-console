@@ -1,0 +1,64 @@
+FAIL enterprise:work/ADR.md missing-or-TODO fix=./work/ADR.md
+FAIL enterprise:work/RISK.md missing-or-TODO fix=./work/RISK.md
+FAIL enterprise:work/RUNBOOK.md missing-or-TODO fix=./work/RUNBOOK.md
+FAIL enterprise:work/SBOM.md missing-or-TODO fix=./work/SBOM.md
+FAIL enterprise:work/THREAT.md missing-or-TODO fix=./work/THREAT.md
+FAIL enterprise:work/SLO.md missing-or-TODO fix=./work/SLO.md
+FAIL enterprise:work/AUDIT.md missing-or-TODO fix=./work/AUDIT.md
+FAIL enterprise:work/COMPLIANCE.md missing-or-TODO fix=./work/COMPLIANCE.md
+FAIL enterprise:work/DR.md missing-or-TODO fix=./work/DR.md
+FAIL enterprise:work/OBS.md missing-or-TODO fix=./work/OBS.md
+FAIL enterprise:work/API.openapi.yaml missing-or-TODO fix=./work/API.openapi.yaml
+FAIL enterprise:work/LOAD.k6.js missing-or-TODO fix=./work/LOAD.k6.js
+FAIL enterprise:work/INCIDENT.md missing-or-TODO fix=./work/INCIDENT.md
+FAIL enterprise:work/ALIGN.md missing-or-TODO fix=./work/ALIGN.md
+FAIL enterprise:work/AGENT.md missing-or-TODO fix=./work/AGENT.md
+FAIL enterprise:work/PRODUCT_DEPTH.md missing-or-TODO fix=./work/PRODUCT_DEPTH.md
+FAIL enterprise:work/STORIES.md missing-or-TODO fix=./work/STORIES.md
+FAIL enterprise:work/SECURITY.md missing-or-TODO fix=./work/SECURITY.md
+FAIL enterprise:work/DEPLOY.md missing-or-TODO fix=./work/DEPLOY.md
+FAIL enterprise:work/PIPELINE.md missing-or-TODO fix=./work/PIPELINE.md
+FAIL enterprise:work/REFLECT.md missing-or-TODO fix=./work/REFLECT.md
+FAIL enterprise:work/CONTRACT.md missing-or-TODO fix=./work/CONTRACT.md
+FAIL enterprise:work/RELEASE.md missing-or-TODO fix=./work/RELEASE.md
+FAIL enterprise:work/COST.md missing-or-TODO fix=./work/COST.md
+FAIL enterprise:work/CAPSULE.md missing-or-TODO fix=./work/CAPSULE.md
+WARN enterprise:CI missing fix=./.github/workflows/ci.yml
+FAIL enterprise:G0 no-gate-record fix=./work/gates/G0-decision.md
+FAIL enterprise:G1 no-gate-record fix=./work/gates/G1-decision.md
+FAIL enterprise:G2 no-gate-record fix=./work/gates/G2-decision.md
+FAIL enterprise:G3 no-gate-record fix=./work/gates/G3-decision.md
+FAIL enterprise:G4 no-gate-record fix=./work/gates/G4-decision.md
+FAIL enterprise:G5 no-gate-record fix=./work/gates/G5-decision.md
+FAIL enterprise:RUNBOOK missing 启动 fix=./work/RUNBOOK.md
+FAIL enterprise:RUNBOOK missing 停止 fix=./work/RUNBOOK.md
+FAIL enterprise:RUNBOOK missing 备份 fix=./work/RUNBOOK.md
+FAIL enterprise:RUNBOOK missing 扩容 fix=./work/RUNBOOK.md
+FAIL enterprise:RUNBOOK missing 排障 fix=./work/RUNBOOK.md
+FAIL enterprise:SBOM no-license-col fix=./work/SBOM.md
+FAIL enterprise:THREAT no-content fix=./work/THREAT.md
+FAIL enterprise:depts not-armed (<9) fix=./work/depts
+FAIL enterprise:verifier SEC missing fix=./work/verifiers/SEC.sh
+FAIL enterprise:verifier PERF missing fix=./work/verifiers/PERF.sh
+FAIL enterprise:verifier A11Y missing fix=./work/verifiers/A11Y.sh
+FAIL enterprise:verifier E2E missing fix=./work/verifiers/E2E.sh
+FAIL enterprise:COMPLIANCE no-content fix=./work/COMPLIANCE.md
+FAIL enterprise:DR no-RTO fix=./work/DR.md
+FAIL enterprise:OBS no-content fix=./work/OBS.md
+FAIL enterprise:API.openapi no-content fix=./work/API.openapi.yaml
+FAIL enterprise:SLO no-numeric-targets fix=./work/SLO.md
+FAIL enterprise:OBS oncall-no-sla fix=./work/OBS.md
+FAIL enterprise:ALIGN no-fit fix=./work/ALIGN.md
+PASS enterprise:DEPTH all-ticked
+FAIL enterprise:STORIES no-content fix=./work/STORIES.md
+FAIL enterprise:SECURITY no-content fix=./work/SECURITY.md
+FAIL enterprise:DEPLOY no-content fix=./work/DEPLOY.md
+FAIL enterprise:PIPELINE no-preset fix=./work/PIPELINE.md
+PASS enterprise:PIPELINE filled
+FAIL enterprise:ALIGN no-budget fix=./work/ALIGN.md
+FAIL enterprise:CONTRACT no-MODE fix=./work/CONTRACT.md
+PASS enterprise:RELEASE filled
+PASS enterprise:COST filled
+WARN enterprise:Dockerfile missing（上市建议补）
+WARN enterprise:events.jsonl missing
+ENTERPRISE GATE: FAIL

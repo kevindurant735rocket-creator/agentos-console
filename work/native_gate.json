@@ -1,0 +1,984 @@
+{
+  "checks": 194,
+  "elapsed": 131.4,
+  "gate": "native_gate",
+  "live_sha_before": {
+    "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/data.json": "6fdf2493fd741696cf67fa5b9b37554ab619d35494b470f0f282710f312feb8b",
+    "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/index.html": "e8bd8c9cd5ac2b5220d10e9832ca12bf4135435be69480b7324bc6c6f85a5d40"
+  },
+  "ok": 194,
+  "rc": 0,
+  "red": [],
+  "results": [
+    {
+      "check": "build-rc",
+      "detail": "rc=0 BUILD_OK /Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/AgentOS.app",
+      "ok": true
+    },
+    {
+      "check": "bundle-app-dir",
+      "detail": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/AgentOS.app",
+      "ok": true
+    },
+    {
+      "check": "bundle-executable",
+      "detail": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/AgentOS.app/Contents/MacOS/AgentOS",
+      "ok": true
+    },
+    {
+      "check": "bundle-info-plist",
+      "detail": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/AgentOS.app/Contents/Info.plist",
+      "ok": true
+    },
+    {
+      "check": "bundle-plist-parses",
+      "detail": "keys=13",
+      "ok": true
+    },
+    {
+      "check": "bundle-id",
+      "detail": "com.zhangfengrui.agentos-console",
+      "ok": true
+    },
+    {
+      "check": "bundle-package-appl",
+      "detail": "APPL",
+      "ok": true
+    },
+    {
+      "check": "bundle-exec-matches",
+      "detail": "AgentOS",
+      "ok": true
+    },
+    {
+      "check": "bundle-ats-loopback",
+      "detail": "{\"NSAllowsLocalNetworking\": true}",
+      "ok": true
+    },
+    {
+      "check": "bundle-ats-not-arbitrary",
+      "detail": "must not blanket-disable ATS",
+      "ok": true
+    },
+    {
+      "check": "bundle-adhoc-signed",
+      "detail": "Internal requirements count=0 size=12",
+      "ok": true
+    },
+    {
+      "check": "app-main-rc",
+      "detail": "rc=0",
+      "ok": true
+    },
+    {
+      "check": "ax-target-is-under-test",
+      "detail": "target_pid=84292 sampled_pid=84292",
+      "ok": true
+    },
+    {
+      "check": "ax-sampling-got-a-tree",
+      "detail": "ok=True best_is_none=None why=''",
+      "ok": true
+    },
+    {
+      "check": "ax-window-exposed",
+      "detail": "windows_err=0 windows=1 titles=['AgentOS']",
+      "ok": true
+    },
+    {
+      "check": "ax-content-tree",
+      "detail": "nodes=20 非菜单=20(≥8) 网页内容区=1(≥1) 文本=7(≥5) 环=0 菜单节点=0",
+      "ok": true
+    },
+    {
+      "check": "ax-sustained",
+      "detail": "序列采样=12(≥6) 真暴露=11 需≥8(=ceil(12×60%)) 占比=92%",
+      "ok": true
+    },
+    {
+      "check": "probe-main-parses",
+      "detail": "fields=322",
+      "ok": true
+    },
+    {
+      "check": "bundle-is-app",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "window-shown-at-launch",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "window-requested-activation",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "window-on-screen",
+      "detail": "visible=True frame_on_screen=True mini=False",
+      "ok": true
+    },
+    {
+      "check": "window-minimized-restored",
+      "detail": "起时最小化=0 已调解除=0 末态 mini=False",
+      "ok": true
+    },
+    {
+      "check": "window-key-matches-foreground",
+      "detail": "is_key=True nsapp_is_active=True",
+      "ok": true
+    },
+    {
+      "check": "window-became-key-when-foreground",
+      "detail": "active=True did_became_key=1",
+      "ok": true
+    },
+    {
+      "check": "window-full-size-content",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "window-titlebar-transparent",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "window-frame-autosave",
+      "detail": "AgentOSMainWindow",
+      "ok": true
+    },
+    {
+      "check": "window-frame-nonzero",
+      "detail": "{{0, 65}, {1352, 783}}",
+      "ok": true
+    },
+    {
+      "check": "menu-view-count",
+      "detail": "13",
+      "ok": true
+    },
+    {
+      "check": "menu-view-ids",
+      "detail": "['over', 'round', 'mx', 'led', 'eng', 'work', 'goal', 'retro', 'cap', 'ws', 'term', 'file', 'set']",
+      "ok": true
+    },
+    {
+      "check": "menu-forward-targets-match",
+      "detail": "['over', 'round', 'mx', 'led', 'eng', 'work', 'goal', 'retro', 'cap', 'ws', 'term', 'file', 'set']",
+      "ok": true
+    },
+    {
+      "check": "menu-view-titles",
+      "detail": "['总览', '轮次台账', '阶段矩阵', '证据账本', '引擎与规则', 'Agent 台', '目标台', '复盘台', '能力地图', '工作区', '终端', '文件', '设置']",
+      "ok": true
+    },
+    {
+      "check": "menu-view-shortcuts",
+      "detail": "['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '', '', '']",
+      "ok": true
+    },
+    {
+      "check": "menu-has-cmdk",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "menu-has-edit",
+      "detail": "['AgentOS', '文件', '编辑', '视图', '窗口']",
+      "ok": true
+    },
+    {
+      "check": "menu-toolbar-items",
+      "detail": "['health', 'reload', 'panel']",
+      "ok": true
+    },
+    {
+      "check": "menu-toolbar-unified",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "webview-nav-finished",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "webview-no-nav-error",
+      "detail": "none",
+      "ok": true
+    },
+    {
+      "check": "webview-url-is-loopback",
+      "detail": "http://127.0.0.1:8790/",
+      "ok": true
+    },
+    {
+      "check": "webview-title-after-load",
+      "detail": "AgentOS 交付驾驶舱",
+      "ok": true
+    },
+    {
+      "check": "page-title-real",
+      "detail": "AgentOS 交付驾驶舱",
+      "ok": true
+    },
+    {
+      "check": "page-tab-count",
+      "detail": "13",
+      "ok": true
+    },
+    {
+      "check": "page-has-tablist",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "page-main-present",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "page-buttons",
+      "detail": "126",
+      "ok": true
+    },
+    {
+      "check": "page-body-text",
+      "detail": "2578",
+      "ok": true
+    },
+    {
+      "check": "health-ok",
+      "detail": "已连接 · 2 客户端 · 指纹 e8bd8c9cd5ac:1791984709",
+      "ok": true
+    },
+    {
+      "check": "probe-sequence-complete",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "switch-mx-ran",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "switch-mx-tab",
+      "detail": "t-mx",
+      "ok": true
+    },
+    {
+      "check": "switch-mx-panel",
+      "detail": "v-mx",
+      "ok": true
+    },
+    {
+      "check": "switch-mx-tab-text",
+      "detail": "阶段矩阵3",
+      "ok": true
+    },
+    {
+      "check": "switch-back-ran",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "switch-back-tab",
+      "detail": "t-over",
+      "ok": true
+    },
+    {
+      "check": "switch-back-panel",
+      "detail": "v-over",
+      "ok": true
+    },
+    {
+      "check": "cmdk-open-called",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "cmdk-on-after-open",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "cmdk-focus-in-input",
+      "detail": "cmdq",
+      "ok": true
+    },
+    {
+      "check": "cmdk-options-listed",
+      "detail": "40",
+      "ok": true
+    },
+    {
+      "check": "cmdk-closed",
+      "detail": "0",
+      "ok": true
+    },
+    {
+      "check": "shot-over-captured",
+      "detail": "ok 563934 bytes 2442x1564",
+      "ok": true
+    },
+    {
+      "check": "shot-over-bytes",
+      "detail": "563934",
+      "ok": true
+    },
+    {
+      "check": "shot-over-dim",
+      "detail": "(2442, 1564)",
+      "ok": true
+    },
+    {
+      "check": "shot-over-distinct-colors",
+      "detail": "610",
+      "ok": true
+    },
+    {
+      "check": "shot-over-ink-ratio",
+      "detail": "0.9974261335589873",
+      "ok": true
+    },
+    {
+      "check": "shot-mx-captured",
+      "detail": "ok 500792 bytes 2442x1564",
+      "ok": true
+    },
+    {
+      "check": "shot-mx-bytes",
+      "detail": "500792",
+      "ok": true
+    },
+    {
+      "check": "shot-mx-dim",
+      "detail": "(2442, 1564)",
+      "ok": true
+    },
+    {
+      "check": "shot-mx-distinct-colors",
+      "detail": "523",
+      "ok": true
+    },
+    {
+      "check": "shot-mx-ink-ratio",
+      "detail": "0.9961920880050772",
+      "ok": true
+    },
+    {
+      "check": "shot-cmdk-captured",
+      "detail": "ok 463690 bytes 2442x1564",
+      "ok": true
+    },
+    {
+      "check": "shot-cmdk-bytes",
+      "detail": "463690",
+      "ok": true
+    },
+    {
+      "check": "shot-cmdk-dim",
+      "detail": "(2442, 1564)",
+      "ok": true
+    },
+    {
+      "check": "shot-cmdk-distinct-colors",
+      "detail": "385",
+      "ok": true
+    },
+    {
+      "check": "shot-cmdk-ink-ratio",
+      "detail": "0.9993300895564488",
+      "ok": true
+    },
+    {
+      "check": "shot-back-captured",
+      "detail": "ok 563934 bytes 2442x1564",
+      "ok": true
+    },
+    {
+      "check": "shot-back-bytes",
+      "detail": "563934",
+      "ok": true
+    },
+    {
+      "check": "shot-back-dim",
+      "detail": "(2442, 1564)",
+      "ok": true
+    },
+    {
+      "check": "shot-back-distinct-colors",
+      "detail": "610",
+      "ok": true
+    },
+    {
+      "check": "shot-back-ink-ratio",
+      "detail": "0.9974261335589873",
+      "ok": true
+    },
+    {
+      "check": "shot-final-captured",
+      "detail": "ok 458037 bytes 2442x1564",
+      "ok": true
+    },
+    {
+      "check": "shot-final-bytes",
+      "detail": "458037",
+      "ok": true
+    },
+    {
+      "check": "shot-final-dim",
+      "detail": "(2442, 1564)",
+      "ok": true
+    },
+    {
+      "check": "shot-final-distinct-colors",
+      "detail": "455",
+      "ok": true
+    },
+    {
+      "check": "shot-final-ink-ratio",
+      "detail": "0.9993300895564488",
+      "ok": true
+    },
+    {
+      "check": "shot-hashes-distinct",
+      "detail": "4 unique of 5",
+      "ok": true
+    },
+    {
+      "check": "panel-window-is-splitview",
+      "detail": "NSSplitView:outer-horizontal",
+      "ok": true
+    },
+    {
+      "check": "panel-window-composition",
+      "detail": "['WKWebView', 'WorkspacePanel']",
+      "ok": true
+    },
+    {
+      "check": "panel-hidden-by-default",
+      "detail": "0",
+      "ok": true
+    },
+    {
+      "check": "panel-toolbar-wired",
+      "detail": "['health', 'reload', 'panel']",
+      "ok": true
+    },
+    {
+      "check": "panel-menu-has-cmdt",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "panel-sequence-complete",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "panel-tree-loaded",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "panel-tree-has-real-files",
+      "detail": "names=['AgentOS.app', 'README.md', 'agent_desktop.html', 'agents', 'bin', 'completions'] root_children=16",
+      "ok": true
+    },
+    {
+      "check": "panel-outline-rows",
+      "detail": "17",
+      "ok": true
+    },
+    {
+      "check": "panel-tree-expanded",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "panel-term-ok",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "panel-term-rc-zero",
+      "detail": "0",
+      "ok": true
+    },
+    {
+      "check": "panel-term-computed-42",
+      "detail": "'42\\n'",
+      "ok": true
+    },
+    {
+      "check": "panel-term-argv-parsed",
+      "detail": "['python3', '-c', 'print(6*7)']",
+      "ok": true
+    },
+    {
+      "check": "panel-term-served-argv",
+      "detail": "['/opt/miniconda3/bin/python3', '-c', 'print(6*7)']",
+      "ok": true
+    },
+    {
+      "check": "panel-term-textview-monospaced",
+      "detail": "True",
+      "ok": true
+    },
+    {
+      "check": "panel-term-textview-selectable",
+      "detail": "True",
+      "ok": true
+    },
+    {
+      "check": "panel-term-textview-readonly",
+      "detail": "False",
+      "ok": true
+    },
+    {
+      "check": "panel-term-input-wired",
+      "detail": "True",
+      "ok": true
+    },
+    {
+      "check": "panel-term-run-wired",
+      "detail": "True",
+      "ok": true
+    },
+    {
+      "check": "panel-shot-method-not-blank",
+      "detail": "method=cachedefault blank=[]",
+      "ok": true
+    },
+    {
+      "check": "panel-shot-distinct-colors",
+      "detail": "196",
+      "ok": true
+    },
+    {
+      "check": "panel-shot-ink-ratio",
+      "detail": "ink=0.9560136246182758 distinct=196",
+      "ok": true
+    },
+    {
+      "check": "panel-shot-bytes",
+      "detail": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/shot-panel-cachedefault.png bytes=91628",
+      "ok": true
+    },
+    {
+      "check": "panel-ax-has-tree",
+      "detail": "True",
+      "ok": true
+    },
+    {
+      "check": "panel-ax-term-has-result",
+      "detail": "True",
+      "ok": true
+    },
+    {
+      "check": "panel-ax-has-run-button",
+      "detail": "True",
+      "ok": true
+    },
+    {
+      "check": "panel-ax-has-browser-go",
+      "detail": "True",
+      "ok": true
+    },
+    {
+      "check": "panel-pane-count-is-five",
+      "detail": "5",
+      "ok": true
+    },
+    {
+      "check": "panel-pane-titles-complete",
+      "detail": "['文件', '终端', '代码', '浏览器', '预览']",
+      "ok": true
+    },
+    {
+      "check": "panel-pane-segments-declared",
+      "detail": "5",
+      "ok": true
+    },
+    {
+      "check": "panel-pane-tabs-in-ax-tree",
+      "detail": "ax_count=5 ax_all=True",
+      "ok": true
+    },
+    {
+      "check": "panel-pane-switch-count",
+      "detail": "11",
+      "ok": true
+    },
+    {
+      "check": "panel-pane-only-one-visible",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "panel-pane-visited-all-five",
+      "detail": "['文件', '代码', '浏览器', '预览', '终端', '文件', '代码', '预览', '文件', '代码', '文件']",
+      "ok": true
+    },
+    {
+      "check": "panel-pane-tour-recorded",
+      "detail": "6",
+      "ok": true
+    },
+    {
+      "check": "panel-pane-back-to-file",
+      "detail": "active=文件 ax_active=文件",
+      "ok": true
+    },
+    {
+      "check": "panel-code-loaded",
+      "detail": "loaded=1 error='' chars=113214 path='agent_desktop.html'",
+      "ok": true
+    },
+    {
+      "check": "panel-code-served-by-backend",
+      "detail": "served='agent_desktop.html' requested='agent_desktop.html'",
+      "ok": true
+    },
+    {
+      "check": "panel-code-via-tree-selection",
+      "detail": "source='outline-selection' tree_sel='agent_desktop.html' code='agent_desktop.html'",
+      "ok": true
+    },
+    {
+      "check": "panel-code-readonly",
+      "detail": "editable=False selectable=True",
+      "ok": true
+    },
+    {
+      "check": "panel-code-readonly-in-ax",
+      "detail": "ax_editable=False ax_chars=113214 code_chars=113214",
+      "ok": true
+    },
+    {
+      "check": "panel-browser-loaded",
+      "detail": "loaded=1 error='' url='http://127.0.0.1:8790/'",
+      "ok": true
+    },
+    {
+      "check": "panel-browser-dom-title",
+      "detail": "'AgentOS 交付驾驶舱'",
+      "ok": true
+    },
+    {
+      "check": "panel-browser-rendered-chars",
+      "detail": "225",
+      "ok": true
+    },
+    {
+      "check": "panel-browser-rejects-external",
+      "detail": "attempts=2 rejected='只接回环地址（收到 host=example.com）' asked='http://example.com/steal' rejected_url='http://example.com/steal' navs=1 last='http://127.0.0.1:8790/'",
+      "ok": true
+    },
+    {
+      "check": "panel-browser-lost-page-on-reject",
+      "detail": "live_loaded=1 live_url='http://127.0.0.1:8790/' url='http://127.0.0.1:8790/'",
+      "ok": true
+    },
+    {
+      "check": "panel-preview-loaded",
+      "detail": "loaded=1 error='' chars=172275",
+      "ok": true
+    },
+    {
+      "check": "panel-preview-rendered-chars",
+      "detail": "291",
+      "ok": true
+    },
+    {
+      "check": "panel-preview-dom-title",
+      "detail": "'AgentOS 交付驾驶舱'",
+      "ok": true
+    },
+    {
+      "check": "panel-preview-not-confused-with-browser",
+      "detail": "preview_path='index.template.html' browser_url='http://127.0.0.1:8790/'",
+      "ok": true
+    },
+    {
+      "check": "panel-shot-code-method-not-blank",
+      "detail": "method=cachedefault blank=[]",
+      "ok": true
+    },
+    {
+      "check": "panel-shot-code-distinct-colors",
+      "detail": "249",
+      "ok": true
+    },
+    {
+      "check": "panel-shot-code-ink-ratio",
+      "detail": "ink=0.9015445149166079 distinct=249",
+      "ok": true
+    },
+    {
+      "check": "panel-shot-code-bytes",
+      "detail": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/shot-code-cachedefault.png bytes=160659",
+      "ok": true
+    },
+    {
+      "check": "projects-window-composition",
+      "detail": "kind='NSSplitView:outer-horizontal' subviews=['ProjectsPanel', 'NSSplitView']",
+      "ok": true
+    },
+    {
+      "check": "projects-default-visible",
+      "detail": "visible=1 divider_x=257",
+      "ok": true
+    },
+    {
+      "check": "projects-loaded",
+      "detail": "loaded=1 count=2 err=''",
+      "ok": true
+    },
+    {
+      "check": "projects-roots-absolute",
+      "detail": "True",
+      "ok": true
+    },
+    {
+      "check": "projects-row-views-match",
+      "detail": "rows=2 count=2",
+      "ok": true
+    },
+    {
+      "check": "projects-labels-real",
+      "detail": "['AgentOS 驾驶舱', 'future agent']",
+      "ok": true
+    },
+    {
+      "check": "projects-active-flagged",
+      "detail": "active=['console'] selected='console' sel_is_active=True",
+      "ok": true
+    },
+    {
+      "check": "projects-file-counts",
+      "detail": "[600, 2000]",
+      "ok": true
+    },
+    {
+      "check": "projects-status-text",
+      "detail": "'2 个项目 · 当前 console'",
+      "ok": true
+    },
+    {
+      "check": "projects-ax-has-header",
+      "detail": "'项目与任务空间'",
+      "ok": true
+    },
+    {
+      "check": "projects-ax-rows-named",
+      "detail": "rows=2 named=2",
+      "ok": true
+    },
+    {
+      "check": "keyeq-real-menu-path",
+      "detail": "'NSMenu.performKeyEquivalent'",
+      "ok": true
+    },
+    {
+      "check": "keyeq-sequence-complete",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "keyeq-all-views-consumed",
+      "detail": "未消费= 有键视图=10/10",
+      "ok": true
+    },
+    {
+      "check": "keyeq-all-views-reached",
+      "detail": "没切过去= 总视图=13(期望13) 命中=10(期望10)",
+      "ok": true
+    },
+    {
+      "check": "keyeq-cmdk-opens",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "keyeq-cmdt-toggled",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "keyeq-cmdp-focuses-projects",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "projects-arrow-key-moves",
+      "detail": "moves=1 after='console'",
+      "ok": true
+    },
+    {
+      "check": "native-menu-has-cmdp",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "native-menu-cmdp-focuses",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "app-degraded-rc",
+      "detail": "rc=0",
+      "ok": true
+    },
+    {
+      "check": "probe-degraded-parses",
+      "detail": "fields=82",
+      "ok": true
+    },
+    {
+      "check": "degraded-port-was-free",
+      "detail": "127.0.0.1:8791",
+      "ok": true
+    },
+    {
+      "check": "degraded-mode-on",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "degraded-health-was-down",
+      "detail": "0",
+      "ok": true
+    },
+    {
+      "check": "degraded-panel-not-missing",
+      "detail": "0",
+      "ok": true
+    },
+    {
+      "check": "degraded-panel-heading",
+      "detail": "AgentOS 服务未运行",
+      "ok": true
+    },
+    {
+      "check": "degraded-panel-real-cause",
+      "detail": "连接失败：Could not connect to the server.\n地址：http://127.0.0.1:87",
+      "ok": true
+    },
+    {
+      "check": "degraded-panel-explains-selfheal",
+      "detail": ".1:8791/\nAgentOS 会自己把本地服务拉起来，不需要你在终端敲命令。",
+      "ok": true
+    },
+    {
+      "check": "degraded-panel-shows-url",
+      "detail": "address shown to user",
+      "ok": true
+    },
+    {
+      "check": "degraded-start-button-wired",
+      "detail": "启动服务",
+      "ok": true
+    },
+    {
+      "check": "degraded-retry-button-wired",
+      "detail": "重新检测",
+      "ok": true
+    },
+    {
+      "check": "degraded-button-really-clicked",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "degraded-service-started",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "degraded-service-pid",
+      "detail": "84636",
+      "ok": true
+    },
+    {
+      "check": "degraded-health-recovered",
+      "detail": "after_tap=1 ok_in_samples=1/1",
+      "ok": true
+    },
+    {
+      "check": "degraded-panel-dismissed",
+      "detail": "0",
+      "ok": true
+    },
+    {
+      "check": "degraded-console-then-loaded",
+      "detail": "AgentOS 交付驾驶舱",
+      "ok": true
+    },
+    {
+      "check": "degraded-sequence-complete",
+      "detail": "1",
+      "ok": true
+    },
+    {
+      "check": "single-instance-a-in-process-table",
+      "detail": "A=84656 in [84656]",
+      "ok": true
+    },
+    {
+      "check": "single-instance-second-rc",
+      "detail": "rc=0",
+      "ok": true
+    },
+    {
+      "check": "single-instance-second-activated-existing",
+      "detail": "[agentos] 已有实例 84656 在运行，已激活并退出",
+      "ok": true
+    },
+    {
+      "check": "single-instance-second-exited-fast",
+      "detail": "0.4 (sequence needs ~36s)",
+      "ok": true
+    },
+    {
+      "check": "single-instance-second-wrote-no-probe",
+      "detail": "takeover branch writes no probe.json",
+      "ok": true
+    },
+    {
+      "check": "single-instance-no-extra-process",
+      "detail": "before=1 after=1",
+      "ok": true
+    },
+    {
+      "check": "single-instance-evidence-fields",
+      "detail": "multi=1 siblings=1 fields=270",
+      "ok": true
+    },
+    {
+      "check": "degraded-port-released",
+      "detail": "127.0.0.1:8791 after kill",
+      "ok": true
+    },
+    {
+      "check": "resident-8790-untouched",
+      "detail": "常驻 8790 必须仍在监听（降级探针不许误杀它）",
+      "ok": true
+    },
+    {
+      "check": "live-untouched:index.html",
+      "detail": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/index.html",
+      "ok": true
+    },
+    {
+      "check": "live-untouched:data.json",
+      "detail": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/data.json",
+      "ok": true
+    }
+  ]
+}

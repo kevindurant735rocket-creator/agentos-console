@@ -1,0 +1,98 @@
+{
+ "tool": "indep_field_gate.py",
+ "method": "fixture-extract+mutants+live-reconcile",
+ "base": {
+  "ok": true,
+  "why": "4 字段 + 2 口径全对"
+ },
+ "mutants": [
+  {
+   "mutant": "M1 取键改回 verdict（D55 原 bug）",
+   "caught": true,
+   "why": "verdict=None(应 'PASS')"
+  },
+  {
+   "mutant": "M2 改取近形键 recomputed_global_verdict",
+   "caught": true,
+   "why": "verdict='FAIL'(应 'PASS')"
+  },
+  {
+   "mutant": "M3 丢 consistent 透传",
+   "caught": true,
+   "why": "consistent=None"
+  },
+  {
+   "mutant": "M4 审计器分歧偷换成自报/实测分歧",
+   "caught": true,
+   "why": "n_mismatches=1(应 7)"
+  }
+ ],
+ "live": {
+  "ok": true,
+  "why": "对账一致"
+ },
+ "payload": {
+  "ok": true
+ },
+ "gates": [
+  {
+   "gate": "BASE：抽取键=independent_verdict 且 4 字段 + 2 口径全对",
+   "ok": true,
+   "detail": "4 字段 + 2 口径全对"
+  },
+  {
+   "gate": "变异体 M1 取键改回 verdict（D55 原 bug） -> 判红",
+   "ok": true,
+   "detail": "红因=verdict=None(应 'PASS')"
+  },
+  {
+   "gate": "变异体 M2 改取近形键 recomputed_global_verdict -> 判红",
+   "ok": true,
+   "detail": "红因=verdict='FAIL'(应 'PASS')"
+  },
+  {
+   "gate": "变异体 M3 丢 consistent 透传 -> 判红",
+   "ok": true,
+   "detail": "红因=consistent=None"
+  },
+  {
+   "gate": "变异体 M4 审计器分歧偷换成自报/实测分歧 -> 判红",
+   "ok": true,
+   "detail": "红因=n_mismatches=1(应 7)"
+  },
+  {
+   "gate": "活产物 independent 逐字段等于上游真值",
+   "ok": true,
+   "detail": "verdict=PASS consistent=True 分歧=0"
+  },
+  {
+   "gate": "两个分歧口径并存（自报/实测 vs 审计器重算）",
+   "ok": true,
+   "detail": "n_divergence=3 vs n_mismatches=0"
+  },
+  {
+   "gate": "index.html 内联载荷的 independent 块 == data.json",
+   "ok": true,
+   "detail": "verdict=PASS"
+  },
+  {
+   "gate": "模板：两个分歧口径各带口径名（不合并）",
+   "ok": true,
+   "detail": "两个口径名都在盘上"
+  },
+  {
+   "gate": "变异体 口径名合并成一个 -> 判红",
+   "ok": true,
+   "detail": "红因=缺口径名=自报-实测分歧（阶段自报 vs 闸门）"
+  },
+  {
+   "gate": "活产物零写入（本门不得改被验收物）",
+   "ok": true,
+   "detail": "三文件字节一致"
+  }
+ ],
+ "summary": {
+  "ok": 11,
+  "total": 11
+ }
+}

@@ -1,0 +1,81 @@
+{
+ "ok": true,
+ "cases": [
+  {
+   "name": "BASE-evolution_gate-green",
+   "ok": true,
+   "detail": "rc=0 FAIL行=0"
+  },
+  {
+   "name": "BASE-capability_gate-green",
+   "ok": true,
+   "detail": "rc=0 FAIL行=0"
+  },
+  {
+   "name": "M01-evolution_gate-evolution-recurrence-readable",
+   "ok": true,
+   "detail": "rc=1 命中evolution-recurrence-readable=True"
+  },
+  {
+   "name": "M02-evolution_gate-evolution-capmap-no-degraded",
+   "ok": true,
+   "detail": "rc=1 命中evolution-capmap-no-degraded=True"
+  },
+  {
+   "name": "M03-evolution_gate-evolution-distill-dual-evidence",
+   "ok": true,
+   "detail": "rc=1 命中evolution-distill-dual-evidence=True"
+  },
+  {
+   "name": "M04-evolution_gate-evolution-auto-promote-trigger",
+   "ok": true,
+   "detail": "rc=1 命中evolution-auto-promote-trigger=True"
+  },
+  {
+   "name": "M05-evolution_gate-evolution-health-ok",
+   "ok": true,
+   "detail": "rc=1 命中evolution-health-ok=True"
+  },
+  {
+   "name": "M06-capability_gate-capability-total-36",
+   "ok": true,
+   "detail": "rc=1 命中capability-total-36=True"
+  },
+  {
+   "name": "M07-capability_gate-capability-engine-consistent",
+   "ok": true,
+   "detail": "rc=1 命中capability-engine-consistent=True"
+  },
+  {
+   "name": "M08-capability_gate-capability-ab-verified",
+   "ok": true,
+   "detail": "rc=1 命中capability-ab-verified=True"
+  },
+  {
+   "name": "M09-capability_gate-capability-verdict-hold",
+   "ok": true,
+   "detail": "rc=1 命中capability-verdict-hold=True"
+  },
+  {
+   "name": "M10-capability_gate-capability-rollback-exists",
+   "ok": true,
+   "detail": "rc=1 命中capability-rollback-exists=True"
+  },
+  {
+   "name": "M11-both-service-dead",
+   "ok": true,
+   "detail": "rc=[1, 1]"
+  },
+  {
+   "name": "zero-pollution-prod-json-untouched",
+   "ok": true,
+   "detail": "被改写=无"
+  },
+  {
+   "name": "isolated-out-dir-really-used",
+   "ok": true,
+   "detail": "隔离目录=['capability_gate.json', 'evolution_gate.json']"
+  }
+ ],
+ "port": 54942
+}

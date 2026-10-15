@@ -1,0 +1,685 @@
+{
+ "tool": "view_dod.py",
+ "method": "playwright-cdp-real-viewport",
+ "url": "http://127.0.0.1:62836/index.html",
+ "transport": "real-http",
+ "served_root": "live",
+ "views": [
+  "over",
+  "round",
+  "mx",
+  "led",
+  "eng",
+  "work",
+  "goal",
+  "retro",
+  "cap",
+  "ws",
+  "term",
+  "file",
+  "set"
+ ],
+ "widths": [
+  375,
+  768,
+  1440
+ ],
+ "screens": {
+  "over@375": {
+   "innerW": 375,
+   "docScrollW": 375,
+   "docClientW": 375,
+   "visible": true,
+   "nodes": 105,
+   "textLen": 1381,
+   "tabsSelected": [
+    "over"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 85205,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "round@375": {
+   "innerW": 375,
+   "docScrollW": 375,
+   "docClientW": 375,
+   "visible": true,
+   "nodes": 76,
+   "textLen": 182,
+   "tabsSelected": [
+    "round"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 78631,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "mx@375": {
+   "innerW": 375,
+   "docScrollW": 375,
+   "docClientW": 375,
+   "visible": true,
+   "nodes": 307,
+   "textLen": 1554,
+   "tabsSelected": [
+    "mx"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 81681,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "led@375": {
+   "innerW": 375,
+   "docScrollW": 375,
+   "docClientW": 375,
+   "visible": true,
+   "nodes": 472,
+   "textLen": 3332,
+   "tabsSelected": [
+    "led"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 78748,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "eng@375": {
+   "innerW": 375,
+   "docScrollW": 375,
+   "docClientW": 375,
+   "visible": true,
+   "nodes": 303,
+   "textLen": 4942,
+   "tabsSelected": [
+    "eng"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 84475,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "work@375": {
+   "innerW": 375,
+   "docScrollW": 375,
+   "docClientW": 375,
+   "visible": true,
+   "nodes": 96,
+   "textLen": 1095,
+   "tabsSelected": [
+    "work"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 80898,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "goal@375": {
+   "innerW": 375,
+   "docScrollW": 375,
+   "docClientW": 375,
+   "visible": true,
+   "nodes": 85,
+   "textLen": 792,
+   "tabsSelected": [
+    "goal"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 84840,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "retro@375": {
+   "innerW": 375,
+   "docScrollW": 375,
+   "docClientW": 375,
+   "visible": true,
+   "nodes": 303,
+   "textLen": 4120,
+   "tabsSelected": [
+    "retro"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 87381,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "cap@375": {
+   "innerW": 375,
+   "docScrollW": 375,
+   "docClientW": 375,
+   "visible": true,
+   "nodes": 710,
+   "textLen": 9608,
+   "tabsSelected": [
+    "cap"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 83416,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "ws@375": {
+   "innerW": 375,
+   "docScrollW": 375,
+   "docClientW": 375,
+   "visible": true,
+   "nodes": 111,
+   "textLen": 618,
+   "tabsSelected": [
+    "ws"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 78085,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "term@375": {
+   "innerW": 375,
+   "docScrollW": 375,
+   "docClientW": 375,
+   "visible": true,
+   "nodes": 17,
+   "textLen": 2612,
+   "tabsSelected": [
+    "term"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 79050,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "file@375": {
+   "innerW": 375,
+   "docScrollW": 375,
+   "docClientW": 375,
+   "visible": true,
+   "nodes": 87,
+   "textLen": 29016,
+   "tabsSelected": [
+    "file"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 78411,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "set@375": {
+   "innerW": 375,
+   "docScrollW": 375,
+   "docClientW": 375,
+   "visible": true,
+   "nodes": 66,
+   "textLen": 807,
+   "tabsSelected": [
+    "set"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 78676,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "over@768": {
+   "innerW": 768,
+   "docScrollW": 768,
+   "docClientW": 768,
+   "visible": true,
+   "nodes": 105,
+   "textLen": 1381,
+   "tabsSelected": [
+    "over"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 138326,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "round@768": {
+   "innerW": 768,
+   "docScrollW": 768,
+   "docClientW": 768,
+   "visible": true,
+   "nodes": 76,
+   "textLen": 182,
+   "tabsSelected": [
+    "round"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 124776,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "mx@768": {
+   "innerW": 768,
+   "docScrollW": 768,
+   "docClientW": 768,
+   "visible": true,
+   "nodes": 307,
+   "textLen": 1554,
+   "tabsSelected": [
+    "mx"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 124313,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "led@768": {
+   "innerW": 768,
+   "docScrollW": 768,
+   "docClientW": 768,
+   "visible": true,
+   "nodes": 472,
+   "textLen": 3332,
+   "tabsSelected": [
+    "led"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 126433,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "eng@768": {
+   "innerW": 768,
+   "docScrollW": 768,
+   "docClientW": 768,
+   "visible": true,
+   "nodes": 303,
+   "textLen": 4948,
+   "tabsSelected": [
+    "eng"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 131350,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "work@768": {
+   "innerW": 768,
+   "docScrollW": 768,
+   "docClientW": 768,
+   "visible": true,
+   "nodes": 96,
+   "textLen": 1095,
+   "tabsSelected": [
+    "work"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 125097,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "goal@768": {
+   "innerW": 768,
+   "docScrollW": 768,
+   "docClientW": 768,
+   "visible": true,
+   "nodes": 85,
+   "textLen": 792,
+   "tabsSelected": [
+    "goal"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 126162,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "retro@768": {
+   "innerW": 768,
+   "docScrollW": 768,
+   "docClientW": 768,
+   "visible": true,
+   "nodes": 303,
+   "textLen": 4120,
+   "tabsSelected": [
+    "retro"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 134045,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "cap@768": {
+   "innerW": 768,
+   "docScrollW": 768,
+   "docClientW": 768,
+   "visible": true,
+   "nodes": 710,
+   "textLen": 9608,
+   "tabsSelected": [
+    "cap"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 126450,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "ws@768": {
+   "innerW": 768,
+   "docScrollW": 768,
+   "docClientW": 768,
+   "visible": true,
+   "nodes": 111,
+   "textLen": 618,
+   "tabsSelected": [
+    "ws"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 114381,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "term@768": {
+   "innerW": 768,
+   "docScrollW": 768,
+   "docClientW": 768,
+   "visible": true,
+   "nodes": 17,
+   "textLen": 2612,
+   "tabsSelected": [
+    "term"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 115038,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "file@768": {
+   "innerW": 768,
+   "docScrollW": 768,
+   "docClientW": 768,
+   "visible": true,
+   "nodes": 87,
+   "textLen": 29016,
+   "tabsSelected": [
+    "file"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 114786,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "set@768": {
+   "innerW": 768,
+   "docScrollW": 768,
+   "docClientW": 768,
+   "visible": true,
+   "nodes": 66,
+   "textLen": 807,
+   "tabsSelected": [
+    "set"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 119567,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "over@1440": {
+   "innerW": 1440,
+   "docScrollW": 1440,
+   "docClientW": 1440,
+   "visible": true,
+   "nodes": 105,
+   "textLen": 1381,
+   "tabsSelected": [
+    "over"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 266401,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "round@1440": {
+   "innerW": 1440,
+   "docScrollW": 1440,
+   "docClientW": 1440,
+   "visible": true,
+   "nodes": 76,
+   "textLen": 182,
+   "tabsSelected": [
+    "round"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 166598,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "mx@1440": {
+   "innerW": 1440,
+   "docScrollW": 1440,
+   "docClientW": 1440,
+   "visible": true,
+   "nodes": 307,
+   "textLen": 1554,
+   "tabsSelected": [
+    "mx"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 239362,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "led@1440": {
+   "innerW": 1440,
+   "docScrollW": 1440,
+   "docClientW": 1440,
+   "visible": true,
+   "nodes": 472,
+   "textLen": 3332,
+   "tabsSelected": [
+    "led"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 235510,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "eng@1440": {
+   "innerW": 1440,
+   "docScrollW": 1440,
+   "docClientW": 1440,
+   "visible": true,
+   "nodes": 303,
+   "textLen": 4949,
+   "tabsSelected": [
+    "eng"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 270432,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "work@1440": {
+   "innerW": 1440,
+   "docScrollW": 1440,
+   "docClientW": 1440,
+   "visible": true,
+   "nodes": 96,
+   "textLen": 1095,
+   "tabsSelected": [
+    "work"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 243179,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "goal@1440": {
+   "innerW": 1440,
+   "docScrollW": 1440,
+   "docClientW": 1440,
+   "visible": true,
+   "nodes": 85,
+   "textLen": 792,
+   "tabsSelected": [
+    "goal"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 256583,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "retro@1440": {
+   "innerW": 1440,
+   "docScrollW": 1440,
+   "docClientW": 1440,
+   "visible": true,
+   "nodes": 303,
+   "textLen": 4120,
+   "tabsSelected": [
+    "retro"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 281402,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "cap@1440": {
+   "innerW": 1440,
+   "docScrollW": 1440,
+   "docClientW": 1440,
+   "visible": true,
+   "nodes": 710,
+   "textLen": 9608,
+   "tabsSelected": [
+    "cap"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 260126,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "ws@1440": {
+   "innerW": 1440,
+   "docScrollW": 1440,
+   "docClientW": 1440,
+   "visible": true,
+   "nodes": 111,
+   "textLen": 618,
+   "tabsSelected": [
+    "ws"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 203430,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "term@1440": {
+   "innerW": 1440,
+   "docScrollW": 1440,
+   "docClientW": 1440,
+   "visible": true,
+   "nodes": 17,
+   "textLen": 2612,
+   "tabsSelected": [
+    "term"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 200426,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "file@1440": {
+   "innerW": 1440,
+   "docScrollW": 1440,
+   "docClientW": 1440,
+   "visible": true,
+   "nodes": 87,
+   "textLen": 29016,
+   "tabsSelected": [
+    "file"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 303080,
+   "viewport_faked": false,
+   "overflow": false
+  },
+  "set@1440": {
+   "innerW": 1440,
+   "docScrollW": 1440,
+   "docClientW": 1440,
+   "visible": true,
+   "nodes": 66,
+   "textLen": 807,
+   "tabsSelected": [
+    "set"
+   ],
+   "offenders": [],
+   "pageerrors": [],
+   "png_bytes": 219532,
+   "viewport_faked": false,
+   "overflow": false
+  }
+ },
+ "gates": [
+  {
+   "gate": "13 视图 × 3 尺寸 = 39 屏截图齐",
+   "ok": true,
+   "detail": "截图=39/39 逐屏实测过=39/39"
+  },
+  {
+   "gate": "真视口未被冒充（innerWidth 精确）",
+   "ok": true,
+   "detail": "innerW 精确=375/768/1440 × 13 视图"
+  },
+  {
+   "gate": "任一视图存在文档级横向溢出",
+   "ok": true,
+   "detail": "39 屏 docScrollW==clientW 且无越界元素"
+  },
+  {
+   "gate": "任一视图是空壳（无真内容）",
+   "ok": true,
+   "detail": "每屏节点≥3 且文本≥20 字符"
+  },
+  {
+   "gate": "任一视图 JS 报错",
+   "ok": true,
+   "detail": "39 屏 0 pageerror"
+  },
+  {
+   "gate": "截图为旧版本冒充本轮（内容指纹对不上构建）",
+   "ok": true,
+   "detail": "内容指纹一致=e8bd8c9cd5ac2b52（截图不因被重写而假红）"
+  }
+ ]
+}

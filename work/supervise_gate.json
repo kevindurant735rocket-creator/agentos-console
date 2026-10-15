@@ -1,0 +1,52 @@
+{
+  "core": "tools/agent_core.py",
+  "judgments": [
+    {
+      "detail": "往返=True",
+      "gate": "D1 steer 纯面：往返/游标只进/坏 sid 拒",
+      "ok": true
+    },
+    {
+      "detail": "rc=0 tail='AGENT_CORE OK 140/140'",
+      "gate": "D2 --check 末行逐字 AGENT_CORE OK 140/140",
+      "ok": true
+    },
+    {
+      "detail": "take=1 steer=1 watch=1 tbl=1 a1=1 a2=1 bash=1",
+      "gate": "D3 源码锚点（边界消费//steer//watch/补全表/CLI 两命令/bash 字面）",
+      "ok": true
+    },
+    {
+      "detail": "seen=True",
+      "gate": "D4 注入：指令进本轮消息（[老板指令…]，真 run_agent）",
+      "ok": true
+    },
+    {
+      "detail": "again=False",
+      "gate": "D5 幂等：已消费指令不再进第二轮（游标生效）",
+      "ok": true
+    },
+    {
+      "detail": "len=171",
+      "gate": "D6 监督面：会话尾进屏 + 无计划如实说",
+      "ok": true
+    },
+    {
+      "detail": "A=1 B=0",
+      "gate": "D7 隔离：A 会话的指令不出现在 B 会话",
+      "ok": true
+    },
+    {
+      "detail": "watch=0 steer=1 leaked=False",
+      "gate": "D8 CLI：watch --once 出屏 rc=0；坏 sid 的 steer 拒且零写入",
+      "ok": true
+    },
+    {
+      "detail": "新增=无",
+      "gate": "D9 零污染（work/ 只多 --out；真 work/steer 未被门创建）",
+      "ok": true
+    }
+  ],
+  "n_ok": 9,
+  "n_total": 9
+}

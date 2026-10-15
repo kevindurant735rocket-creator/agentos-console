@@ -1,0 +1,108 @@
+{
+ "tool": "http_shot_gate.py",
+ "base_url": "http://127.0.0.1:64318/index.html",
+ "probes": {
+  "base": {
+   "pjnodes": 2,
+   "pjerr": "",
+   "cxexecn": "读 /__health · 10/15 18:32",
+   "cxact": "当前动作不可判定上次动作不可判定上次 rc不可判定上次耗时不可判定本进程执行数—被用户中止false",
+   "cxinst": "clients1code_shac10e8cac5f26启动时间2026-10-15 18:32:28重建次数0末次构建本次未重建",
+   "codeSha": "c10e8cac5f26",
+   "instUndecidable": 0,
+   "url": "http://127.0.0.1:64318/index.html",
+   "scheme": "http:",
+   "pageerrors": []
+  },
+  "m1_health_blocked": {
+   "pjnodes": 2,
+   "pjerr": "",
+   "cxexecn": "读 /__health 失败",
+   "cxact": "当前动作不可判定上次动作不可判定上次 rc不可判定中止次数不可判定",
+   "cxinst": "clients不可判定code_sha不可判定启动时间不可判定重建次数不可判定末次构建不可判定",
+   "codeSha": "",
+   "instUndecidable": 5,
+   "url": "http://127.0.0.1:64318/index.html",
+   "scheme": "http:",
+   "pageerrors": []
+  },
+  "m2_projects_blocked": {
+   "pjnodes": 0,
+   "pjerr": "项目空间读不到：Failed to fetch",
+   "cxexecn": "读 /__health · 10/15 18:32",
+   "cxact": "当前动作不可判定上次动作不可判定上次 rc不可判定上次耗时不可判定本进程执行数—被用户中止false",
+   "cxinst": "clients2code_shac10e8cac5f26启动时间2026-10-15 18:32:28重建次数0末次构建本次未重建",
+   "codeSha": "c10e8cac5f26",
+   "instUndecidable": 0,
+   "url": "http://127.0.0.1:64318/index.html",
+   "scheme": "http:",
+   "pageerrors": []
+  },
+  "m3_file_scheme": {
+   "pjnodes": 0,
+   "pjerr": "项目空间读不到：Failed to fetch",
+   "cxexecn": "读 /__health 失败",
+   "cxact": "当前动作不可判定上次动作不可判定上次 rc不可判定中止次数不可判定",
+   "cxinst": "clients不可判定code_sha不可判定启动时间不可判定重建次数不可判定末次构建不可判定",
+   "codeSha": "",
+   "instUndecidable": 5,
+   "url": "file:///Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/index.html",
+   "scheme": "file:",
+   "pageerrors": []
+  },
+  "m4_health_500": {
+   "pjnodes": 2,
+   "pjerr": "",
+   "cxexecn": "读 /__health · 10/15 18:32",
+   "cxact": "当前动作不可判定上次动作不可判定上次 rc不可判定上次耗时不可判定本进程执行数—被用户中止—",
+   "cxinst": "clients—code_sha不可判定启动时间不可判定重建次数—末次构建本次未重建",
+   "codeSha": "",
+   "instUndecidable": 2,
+   "url": "http://127.0.0.1:64318/index.html",
+   "scheme": "http:",
+   "pageerrors": []
+  }
+ },
+ "gates": [
+  {
+   "gate": "BASE 真 HTTP 页面是健康的（左栏真项目 + 右栏真执行面）",
+   "ok": true,
+   "detail": "健康"
+  },
+  {
+   "gate": "变异体有牙：拦掉 /__health 时本门必须判红（此刻应不健康）",
+   "ok": true,
+   "detail": "#cxexecn='读 /__health 失败'; #cxinst 无 code_sha; #cxinst 「不可判定」×5"
+  },
+  {
+   "gate": "变异体有牙：拦掉 /__projects 时本门必须判红（此刻应不健康）",
+   "ok": true,
+   "detail": "项目按钮=0（<2）; 左栏报错=项目空间读不到：Failed to fetch"
+  },
+  {
+   "gate": "变异体有牙：/__health 回 500 时本门必须判红（此刻应不健康）",
+   "ok": true,
+   "detail": "#cxinst 无 code_sha; #cxinst 「不可判定」×2"
+  },
+  {
+   "gate": "拦掉 /__projects 确实退化成 .pjerr（不只是按钮变少）",
+   "ok": true,
+   "detail": "pjerr=项目空间读不到：Failed to fetch pjnodes=0"
+  },
+  {
+   "gate": "退回 file:// 健康信号全塌（证明 file:// 拍的截图不算数）",
+   "ok": true,
+   "detail": "scheme=file: pjnodes=0 scheme=file:（非 http）; 项目按钮=0（<2）; 左栏报错=项目空间读不到：Failed to fetch; #cxexecn='读 /__health 失败'; #cxinst 无 code_sha; #cxinst 「不可判定」×5"
+  },
+  {
+   "gate": "任一探针页 JS 报错",
+   "ok": true,
+   "detail": "5 次探测 0 pageerror"
+  },
+  {
+   "gate": "活 index.html 零写入（本门只读）",
+   "ok": true,
+   "detail": "sha e8bd8c9cd5ac2b52 -> e8bd8c9cd5ac2b52"
+  }
+ ]
+}

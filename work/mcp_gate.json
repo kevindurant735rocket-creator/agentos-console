@@ -1,0 +1,57 @@
+{
+  "client": "tools/mcp_client.py",
+  "judgments": [
+    {
+      "detail": "非法条目拒=True",
+      "gate": "D1 可导入 + 纯面（往返/净化/非法配置 fail-closed）",
+      "ok": true
+    },
+    {
+      "detail": "rc=0 tail='AGENT_CORE OK 140/140'",
+      "gate": "D2 --check 末行逐字 AGENT_CORE OK 140/140",
+      "ok": true
+    },
+    {
+      "detail": "ver=1 mis=1 deg=1 eof=1 def=1 call=3",
+      "gate": "D3 源码锚点（协议版本/id 错配/降级/EOF + _mcp_sync 定义 1 处、调用 ≥2）",
+      "ok": true
+    },
+    {
+      "detail": "handshake=ok",
+      "gate": "D4 良好路径：握手 ok + list 2 + call 回显 + isError 映射",
+      "ok": true
+    },
+    {
+      "detail": "handshake=stateless",
+      "gate": "D5 降级：initialize 被拒 → stateless 如实记录且仍可用",
+      "ok": true
+    },
+    {
+      "detail": "ok=True",
+      "gate": "D6 id 错配 fail-closed（不把发错的响应当自己的）",
+      "ok": true
+    },
+    {
+      "detail": "ok=True",
+      "gate": "D7 死服务器 fail-closed（报 EOF/退出且不 hang）",
+      "ok": true
+    },
+    {
+      "detail": "added=['mcp_fxs_echo', 'mcp_fxs_set_thing']",
+      "gate": "D8 注册：mcp_<server>_<tool> 注入 + 逐工具风险映射",
+      "ok": true
+    },
+    {
+      "detail": "残=无",
+      "gate": "D9 密钥不外泄：Server env 已剔除本机 key",
+      "ok": true
+    },
+    {
+      "detail": "新增=无",
+      "gate": "D10 零污染（work/ 只多 --out）",
+      "ok": true
+    }
+  ],
+  "n_ok": 10,
+  "n_total": 10
+}

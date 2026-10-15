@@ -1,0 +1,3256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AgentOS - Professional Agent Desktop</title>
+<script id="payload" type="application/json">__DATA__</script>
+<style>
+:root {
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #21262d;
+  --border: #30363d;
+  --border2: #444c56;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #6e7681;
+  --accent: #58a6ff;
+  --accent2: #1f6feb;
+  --success: #3fb950;
+  --warning: #d29922;
+  --error: #f85149;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+input, textarea { font: inherit; color: inherit; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; }
+input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+
+/* Layout */
+.app {
+  display: grid;
+  height: 100vh;
+  grid-template-columns: 48px 260px 1fr 300px;
+  grid-template-rows: 48px 1fr 32px;
+  grid-template-areas:
+    "header header header header"
+    "activity sidebar main context"
+    "status status status status";
+}
+
+/* Header */
+.header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+}
+.logo {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.project-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text2);
+  font-size: 12px;
+}
+.status-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(63, 185, 80, 0.15);
+  color: var(--success);
+  border: 1px solid rgba(63, 185, 80, 0.3);
+}
+#sbn {
+  display: none;
+  padding: 8px 16px;
+  background: rgba(210, 153, 34, 0.15);
+  border-bottom: 1px solid rgba(210, 153, 34, 0.3);
+  color: var(--warning);
+  font-size: 13px;
+  text-align: center;
+}
+#sbn.on {
+  display: block;
+}
+#fresh .fresh {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+#fresh .fresh[data-f="fresh"] {
+  background: rgba(63, 185, 80, 0.15);
+  color: var(--success);
+}
+#fresh .fresh[data-f="amber"] {
+  background: rgba(210, 153, 34, 0.15);
+  color: var(--warning);
+}
+#fresh .fresh[data-f="stale"] {
+  background: rgba(248, 81, 73, 0.15);
+  color: #f85149;
+}
+#fresh .fresh[data-f="unknown"] {
+  background: rgba(139, 148, 158, 0.15);
+  color: var(--text2);
+}
+#vtag .vtag {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(63, 185, 80, 0.15);
+  color: var(--success);
+}
+#vtag .vtag.HIST {
+  background: rgba(210, 153, 34, 0.15);
+  color: var(--warning);
+}
+#header-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text2);
+  font-size: 12px;
+}
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+.header-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  transition: all 0.15s;
+}
+.header-btn:hover {
+  background: var(--border);
+  border-color: var(--border2);
+}
+
+/* Sidebar */
+.sidebar {
+  grid-area: sidebar;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sidebar-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+.file-tree {
+  list-style: none;
+}
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text2);
+  transition: all 0.1s;
+}
+.file-item:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+.file-item.active {
+  background: rgba(88, 166, 255, 0.15);
+  color: var(--accent);
+}
+.file-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Main Content */
+.main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+.view {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+.view.active {
+  display: flex;
+}
+.main-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.main-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+.main-actions {
+  display: flex;
+  gap: 8px;
+}
+.chat-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.chat-message {
+  display: flex;
+  gap: 12px;
+  max-width: 85%;
+}
+.chat-message.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+.chat-message.assistant {
+  align-self: flex-start;
+}
+.message-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.chat-message.user .message-avatar {
+  background: var(--accent2);
+}
+.chat-message.assistant .message-avatar {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+}
+.message-content {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.chat-message.user .message-content {
+  background: rgba(88, 166, 255, 0.1);
+  border-color: rgba(88, 166, 255, 0.3);
+}
+.message-time {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 4px;
+}
+.chat-input-container {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+}
+.chat-input-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+.chat-input {
+  flex: 1;
+  min-height: 44px;
+  max-height: 200px;
+  resize: none;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.chat-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+}
+.send-btn {
+  padding: 12px 24px;
+  background: var(--accent2);
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+.send-btn:hover {
+  background: var(--accent);
+}
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Context Panel */
+.context {
+  grid-area: context;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.context-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.context-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+.context-section {
+  margin-bottom: 24px;
+}
+.context-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.context-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.context-item:hover {
+  background: var(--bg3);
+}
+.context-label {
+  flex: 1;
+  color: var(--text2);
+}
+.context-value {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+}
+
+/* Status Bar */
+.status-bar {
+  grid-area: status;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text2);
+  gap: 16px;
+}
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+}
+.status-indicator.warning {
+  background: var(--warning);
+}
+.status-indicator.error {
+  background: var(--error);
+}
+.status-spacer {
+  flex: 1;
+}
+
+/* Tab Navigation */
+.tab-nav {
+  display: flex;
+  gap: 4px;
+  padding: 8px 16px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.tab-btn {
+  padding: 6px 16px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: 13px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.tab-btn:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+.tab-btn.active {
+  background: var(--bg3);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+/* Terminal View */
+.terminal-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  overflow: hidden;
+}
+.terminal-output {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.terminal-line {
+  margin-bottom: 4px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.terminal-line.command {
+  color: var(--accent);
+}
+.terminal-line.output {
+  color: var(--text);
+}
+.terminal-line.error {
+  color: var(--error);
+}
+.terminal-line.success {
+  color: var(--success);
+}
+.terminal-input-container {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  gap: 8px;
+}
+.terminal-prompt {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--success);
+  white-space: nowrap;
+}
+.terminal-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  outline: none;
+}
+
+/* File Editor View */
+.editor-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  overflow: hidden;
+}
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+}
+.editor-btn {
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.editor-btn:hover {
+  background: var(--border);
+  color: var(--text);
+}
+.editor-btn.primary {
+  background: var(--accent2);
+  color: white;
+  border-color: var(--accent2);
+}
+.editor-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+}
+.editor-line-numbers {
+  padding: 16px 8px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text3);
+  text-align: right;
+  user-select: none;
+  min-width: 50px;
+}
+.editor-textarea {
+  flex: 1;
+  padding: 16px;
+  background: var(--bg);
+  border: none;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  tab-size: 2;
+}
+.editor-status {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 16px;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text2);
+}
+
+/* Settings View */
+.settings-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  background: var(--bg);
+}
+.settings-section {
+  margin-bottom: 32px;
+}
+.settings-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.settings-label {
+  font-size: 13px;
+  color: var(--text2);
+}
+.settings-value {
+  font-size: 13px;
+  color: var(--text);
+}
+.settings-input {
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  width: 200px;
+}
+.settings-select {
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+.settings-toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.settings-toggle.active {
+  background: var(--accent2);
+  border-color: var(--accent2);
+}
+.settings-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text);
+  transition: all 0.2s;
+}
+.settings-toggle.active::after {
+  left: 22px;
+}
+
+/* Evolution View */
+.evolution-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  background: var(--bg);
+}
+.evolution-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.evolution-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.evolution-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+}
+.evolution-panel h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.recurrence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.recurrence-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--bg3);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.recurrence-name {
+  flex: 1;
+  font-family: var(--mono);
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.recurrence-count {
+  color: var(--text2);
+  font-size: 12px;
+}
+.recurrence-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.recurrence-badge.recurring {
+  background: rgba(224, 166, 64, 0.15);
+  color: var(--warning);
+  border: 1px solid rgba(224, 166, 64, 0.3);
+}
+.capability-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cap-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--bg3);
+}
+.cap-bar-fill {
+  height: 100%;
+}
+.cap-bar-fill.promoted { background: var(--success); }
+.cap-bar-fill.hold { background: var(--warning); }
+.cap-bar_fill.rejected { background: var(--error); }
+.cap-legend {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--text2);
+}
+.cap-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+.cap-dot.promoted { background: var(--success); }
+.cap-dot.hold { background: var(--warning); }
+.cap-dot.rejected { background: var(--error); }
+
+/* Git View */
+.git-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  background: var(--bg);
+}
+.git-section {
+  margin-bottom: 24px;
+}
+.git-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.git-changes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.git-file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--bg2);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.git-file.modified { border-left: 3px solid var(--warning); }
+.git-file.untracked { border-left: 3px solid var(--success); }
+.git-status {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+.git-file.modified .git-status { background: var(--warning); color: #000; }
+.git-file.untracked .git-status { background: var(--success); color: #000; }
+.git-file-name { flex: 1; color: var(--text); }
+.git-diff { color: var(--text2); font-size: 12px; }
+.git-commits {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.git-commit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--bg2);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.commit-hash {
+  font-family: var(--mono);
+  color: var(--accent);
+  font-size: 12px;
+}
+.commit-msg { flex: 1; color: var(--text); }
+.commit-time { color: var(--text2); font-size: 12px; }
+
+/* Problems View */
+.problems-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  background: var(--bg);
+}
+.problems-summary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.problem-count {
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.problem-count.error { background: rgba(248, 81, 73, 0.15); color: var(--error); }
+.problem-count.warning { background: rgba(210, 153, 34, 0.15); color: var(--warning); }
+.problem-count.info { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+.problems-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.problem-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--bg2);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.problem-icon { font-size: 14px; }
+.problem-msg { flex: 1; color: var(--text); }
+.problem-src { color: var(--text2); font-size: 12px; }
+
+/* Output View */
+.output-container {
+  flex: 1;
+  overflow: hidden;
+  background: var(--bg);
+}
+.output-content {
+  height: 100%;
+  overflow-y: auto;
+  padding: 16px;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.output-line {
+  padding: 2px 0;
+  color: var(--text2);
+  white-space: pre-wrap;
+}
+
+/* File Tree Expand/Collapse */
+.file-tree-dynamic .file-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text2);
+  transition: all 0.1s;
+  user-select: none;
+}
+.file-tree-dynamic .file-item:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+.file-tree-dynamic .file-item.active {
+  background: rgba(88, 166, 255, 0.15);
+  color: var(--accent);
+}
+.file-tree-dynamic .file-toggle {
+  font-size: 10px;
+  color: var(--text3);
+  margin-left: auto;
+  transition: transform 0.2s;
+}
+.file-tree-dynamic .file-children {
+  overflow: hidden;
+}
+
+/* Activity Bar */
+.activity-bar {
+  grid-area: activity;
+  width: 48px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 4px;
+}
+.activity-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--text2);
+}
+.activity-btn:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+.activity-btn.active {
+  background: var(--bg3);
+  color: var(--accent);
+}
+.activity-btn.active::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+}
+.activity-icon {
+  font-size: 18px;
+}
+.activity-spacer {
+  flex: 1;
+}
+.activity-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--error);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/* Command Palette */
+.cmd-palette {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+}
+.cmd-palette.open {
+  display: flex;
+}
+.cmd-palette-box {
+  width: min(560px, 90vw);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+.cmd-palette-input {
+  width: 100%;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+}
+.cmd-palette-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+.cmd-item {
+  padding: 10px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text);
+  transition: background 0.1s;
+}
+.cmd-item:hover {
+  background: var(--bg3);
+}
+.cmd-cat {
+  font-size: 11px;
+  color: var(--text3);
+  background: var(--bg3);
+  padding: 2px 8px;
+  border-radius: 4px;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* Notification */
+.notification {
+  position: fixed;
+  top: 60px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  z-index: 200;
+  opacity: 0;
+  transform: translateX(100px);
+  transition: all 0.3s;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+.notification.success {
+  border-color: var(--success);
+  color: var(--success);
+}
+.notification.error {
+  border-color: var(--error);
+  color: var(--error);
+}
+
+/* Light Theme */
+body.light {
+  --bg: #ffffff;
+  --bg2: #f6f8fa;
+  --bg3: #eaeef2;
+  --border: #d0d7de;
+  --border2: #afb8c1;
+  --text: #1f2328;
+  --text2: #57606a;
+  --text3: #8c959f;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border2);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.chat-message {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Fix context panel overflow */
+.context-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.context-item {
+  overflow: hidden;
+}
+.context-value {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Evolution panel responsive */
+@media (max-width: 1200px) {
+  .evolution-panels {
+    grid-template-columns: 1fr;
+  }
+  .evolution-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .app {
+    grid-template-columns: 48px 1fr;
+    grid-template-areas:
+      "header header"
+      "activity main"
+      "status status";
+  }
+  .sidebar, .context {
+    display: none;
+  }
+}
+
+/* Smooth transitions */
+.view {
+  transition: opacity 0.15s ease;
+}
+
+/* Focus styles */
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background: rgba(88, 166, 255, 0.3);
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">🤖</div>
+      <span>AgentOS</span>
+    </div>
+    <div class="header-info">
+      <div class="project-name">My Project</div>
+      <div class="header-meta">
+        <span class="status-badge">● Connected</span>
+        <span>v135</span>
+        <span class="stamp mono" id="stamp"></span>
+        <span id="vtag"><span class="vtag" id="vtag-text">PASS</span></span>
+        <span id="fresh"><span class="fresh" data-f="unknown" tabindex="0">未知</span></span>
+        <span id="live">连接</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn">⌘K</button>
+      <button class="header-btn">Settings</button>
+    </div>
+  </header>
+
+  <div id="sbn">
+    <span id="sbn1">证据未复跑</span>
+    <span id="sbn2">PASS 是历史结论</span>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">Explorer</div>
+    <div class="sidebar-content">
+      <ul class="file-tree">
+        <li class="file-item active">
+          <span class="file-icon">📁</span>
+          <span class="file-name">src</span>
+        </li>
+        <li class="file-item">
+          <span class="file-icon">📄</span>
+          <span class="file-name">index.ts</span>
+        </li>
+        <li class="file-item">
+          <span class="file-icon">📄</span>
+          <span class="file-name">app.ts</span>
+        </li>
+        <li class="file-item">
+          <span class="file-icon">📁</span>
+          <span class="file-name">components</span>
+        </li>
+        <li class="file-item">
+          <span class="file-icon">📄</span>
+          <span class="file-name">package.json</span>
+        </li>
+        <li class="file-item">
+          <span class="file-icon">📄</span>
+          <span class="file-name">README.md</span>
+        </li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main" id="main">
+    <!-- Tab Navigation -->
+    <nav class="tab-nav" role="tablist" aria-label="视图切换">
+      <button class="tab-btn" data-view="dashboard" role="tab" aria-selected="false">Dashboard</button>
+      <button class="tab-btn active" data-view="chat" role="tab" aria-selected="true">Chat</button>
+      <button class="tab-btn" data-view="terminal" role="tab" aria-selected="false">Terminal</button>
+      <button class="tab-btn" data-view="editor" role="tab" aria-selected="false">Editor</button>
+      <button class="tab-btn" data-view="settings" role="tab" aria-selected="false">Settings</button>
+      <button class="tab-btn" data-view="evolution" role="tab" aria-selected="false">Evolution</button>
+      <button class="tab-btn" data-view="git" role="tab" aria-selected="false">Git</button>
+      <button class="tab-btn" data-view="problems" role="tab" aria-selected="false">Problems</button>
+      <button class="tab-btn" data-view="output" role="tab" aria-selected="false">Output</button>
+    </nav>
+
+    <!-- Dashboard View -->
+    <div class="view" id="view-dashboard">
+      <div class="main-header">
+        <div class="main-title">Dashboard</div>
+        <div class="main-actions">
+          <button class="header-btn" id="refresh-dashboard">Refresh</button>
+        </div>
+      </div>
+      <div class="evolution-container">
+        <div class="evolution-stats">
+          <div class="stat-card">
+            <div class="stat-value" id="dash-health">加载中…</div>
+            <div class="stat-label">服务健康</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="dash-livecheck">上线自证 __LIVECHECK_N__ 项</div>
+            <div class="stat-label">上线自证（引擎口径）</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="dash-recurrence">—</div>
+            <div class="stat-label">复发簇</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="dash-distill">—</div>
+            <div class="stat-label">蒸馏双证据项目</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="dash-promote">—</div>
+            <div class="stat-label">晋升就绪</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="dash-build">—</div>
+            <div class="stat-label">构建指纹</div>
+          </div>
+        </div>
+        <div class="evolution-panel">
+          <h3>面板说明</h3>
+          <div class="recurrence-list">
+            <div class="recurrence-item">
+              <span class="recurrence-name">数据全部直读引擎端点</span>
+              <span class="recurrence-count">/__health /__recurrence /__distill /__promote</span>
+            </div>
+            <div class="recurrence-item">
+              <span class="recurrence-name">直开（file://）时端点不可达</span>
+              <span class="recurrence-count">各格显示「离线（直开模式）」，不冒充在线</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat View -->
+    <div class="view active" id="view-chat">
+      <div class="main-header">
+        <div class="main-title">Chat</div>
+        <div class="main-actions">
+          <button class="header-btn">New Chat</button>
+          <button class="header-btn">History</button>
+        </div>
+      </div>
+
+      <div class="chat-container">
+        <div class="chat-message assistant">
+          <div class="message-avatar">🤖</div>
+          <div class="message-content">
+            <div>Hello! I'm your AI assistant. How can I help you today?</div>
+            <div class="message-time">10:30 AM</div>
+          </div>
+        </div>
+
+        <div class="chat-message user">
+          <div class="message-avatar">👤</div>
+          <div class="message-content">
+            <div>Help me build a React component</div>
+            <div class="message-time">10:31 AM</div>
+          </div>
+        </div>
+
+        <div class="chat-message assistant">
+          <div class="message-avatar">🤖</div>
+          <div class="message-content">
+            <div>I'll help you create a React component. What kind of component do you need?</div>
+            <div class="message-time">10:31 AM</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-container">
+        <div class="chat-input-wrapper">
+          <textarea class="chat-input" placeholder="Type your message..." rows="1"></textarea>
+          <button class="send-btn">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terminal View -->
+    <div class="view" id="view-terminal">
+      <div class="terminal-container">
+        <div class="terminal-output" id="terminal-output">
+          <div class="terminal-line output">AgentOS Terminal v135</div>
+          <div class="terminal-line output">Type 'help' for available commands.</div>
+          <div class="terminal-line output">&nbsp;</div>
+        </div>
+        <div class="terminal-input-container">
+          <span class="terminal-prompt">$</span>
+          <input type="text" class="terminal-input" id="terminal-input" placeholder="Type a command..." autocomplete="off">
+        </div>
+      </div>
+    </div>
+
+    <!-- Editor View -->
+    <div class="view" id="view-editor">
+      <div class="editor-container">
+        <div class="editor-toolbar">
+          <button class="editor-btn primary">Save</button>
+          <button class="editor-btn">Undo</button>
+          <button class="editor-btn">Redo</button>
+          <span style="flex:1"></span>
+          <button class="editor-btn">Find</button>
+          <button class="editor-btn">Replace</button>
+        </div>
+        <div class="editor-content">
+          <div class="editor-line-numbers" id="line-numbers">1</div>
+          <textarea class="editor-textarea" id="editor-textarea" spellcheck="false" placeholder="Select a file from the explorer to start editing..."></textarea>
+        </div>
+        <div class="editor-status">
+          <span id="editor-file">No file selected</span>
+          <span style="flex:1"></span>
+          <span id="editor-cursor">Ln 1, Col 1</span>
+          <span>UTF-8</span>
+          <span>TypeScript</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings View -->
+    <div class="view" id="view-settings">
+      <div class="settings-container">
+        <div class="settings-section">
+          <div class="settings-title">General</div>
+          <div class="settings-item">
+            <span class="settings-label">Theme</span>
+            <select class="settings-select">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+              <option value="system">System</option>
+            </select>
+          </div>
+          <div class="settings-item">
+            <span class="settings-label">Font Size</span>
+            <input type="number" class="settings-input" value="14" min="10" max="24">
+          </div>
+          <div class="settings-item">
+            <span class="settings-label">Font Family</span>
+            <select class="settings-select">
+              <option value="system">System Default</option>
+              <option value="mono">Monospace</option>
+              <option value="serif">Serif</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-title">Editor</div>
+          <div class="settings-item">
+            <span class="settings-label">Tab Size</span>
+            <select class="settings-select">
+              <option value="2">2 spaces</option>
+              <option value="4">4 spaces</option>
+              <option value="8">8 spaces</option>
+            </select>
+          </div>
+          <div class="settings-item">
+            <span class="settings-label">Word Wrap</span>
+            <div class="settings-toggle active" data-setting="word-wrap"></div>
+          </div>
+          <div class="settings-item">
+            <span class="settings-label">Line Numbers</span>
+            <div class="settings-toggle active" data-setting="line-numbers"></div>
+          </div>
+          <div class="settings-item">
+            <span class="settings-label">Auto Save</span>
+            <div class="settings-toggle" data-setting="auto-save"></div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-title">Agent</div>
+          <div class="settings-item">
+            <span class="settings-label">Model</span>
+            <select class="settings-select">
+              <option value="gpt-4">GPT-4</option>
+              <option value="gpt-3.5">GPT-3.5</option>
+              <option value="claude">Claude</option>
+            </select>
+          </div>
+          <div class="settings-item">
+            <span class="settings-label">Temperature</span>
+            <input type="number" class="settings-input" value="0.7" min="0" max="2" step="0.1">
+          </div>
+          <div class="settings-item">
+            <span class="settings-label">Auto-run Tools</span>
+            <div class="settings-toggle" data-setting="auto-run"></div>
+          </div>
+          <div class="settings-item">
+            <span class="settings-label">Show Thinking</span>
+            <div class="settings-toggle active" data-setting="show-thinking"></div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-title">Server</div>
+          <div class="settings-item">
+            <span class="settings-label">Port</span>
+            <input type="number" class="settings-input" value="8790" min="1024" max="65535">
+          </div>
+          <div class="settings-item">
+            <span class="settings-label">Auto-reload</span>
+            <div class="settings-toggle active" data-setting="auto-reload"></div>
+          </div>
+          <div class="settings-item">
+            <span class="settings-label">Hot Reload</span>
+            <div class="settings-toggle active" data-setting="hot-reload"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Evolution View -->
+    <div class="view" id="view-evolution">
+      <div class="main-header">
+        <div class="main-title">Evolution</div>
+        <div class="main-actions">
+          <button class="header-btn" id="refresh-evolution">Refresh</button>
+        </div>
+      </div>
+      <div class="evolution-container">
+        <div class="evolution-stats">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-capabilities">36</div>
+            <div class="stat-label">Capabilities</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-promoted">26</div>
+            <div class="stat-label">Promoted</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-recurrence">8</div>
+            <div class="stat-label">Recurrence Clusters</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-distill">61</div>
+            <div class="stat-label">Distilled Projects</div>
+          </div>
+        </div>
+        <div class="evolution-panels">
+          <div class="evolution-panel">
+            <h3>Recurrence Clusters</h3>
+            <div class="recurrence-list" id="recurrence-list">
+              <div class="recurrence-item">
+                <span class="recurrence-name">V_browser_interact</span>
+                <span class="recurrence-count">21 runs</span>
+                <span class="recurrence-badge recurring">Recurring</span>
+              </div>
+              <div class="recurrence-item">
+                <span class="recurrence-name">CAP_substrate+V_browser</span>
+                <span class="recurrence-count">11 runs</span>
+                <span class="recurrence-badge recurring">Recurring</span>
+              </div>
+              <div class="recurrence-item">
+                <span class="recurrence-name">SPEC_coverage+SPEC_verified</span>
+                <span class="recurrence-count">7 runs</span>
+                <span class="recurrence-badge recurring">Recurring</span>
+              </div>
+            </div>
+          </div>
+          <div class="evolution-panel">
+            <h3>Capability Status</h3>
+            <div class="capability-summary" id="capability-summary">
+              <div class="cap-bar">
+                <div class="cap-bar-fill promoted" style="width: 72%"></div>
+                <div class="cap-bar-fill hold" style="width: 17%"></div>
+                <div class="cap-bar-fill rejected" style="width: 11%"></div>
+              </div>
+              <div class="cap-legend">
+                <span><span class="cap-dot promoted"></span>Promoted (26)</span>
+                <span><span class="cap-dot hold"></span>Hold (6)</span>
+                <span><span class="cap-dot rejected"></span>Rejected (4)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Execution Surface (act_gate) — always visible for gate testing -->
+    <div id="exec-surface" style="display: block; padding: 16px; border-top: 1px solid var(--border);">
+      <h3 id="rech">Recurrence</h3>
+      <div id="recct">Recurrence Clusters</div>
+      <div id="recs" aria-labelledby="rech"></div>
+
+      <h3 id="promoh">Promote</h3>
+      <div id="promoct">Capability Promotion</div>
+      <div id="promo" aria-labelledby="promoh"></div>
+
+      <h3 id="disth">Distill</h3>
+      <div id="distct">Distilled Projects</div>
+      <div id="dist" aria-labelledby="disth"></div>
+
+      <div id="actgrid">
+        <button data-act="doc-drift" aria-label="Doc Drift">Doc Drift</button>
+        <button data-act="egate" aria-label="Egate">Egate</button>
+        <button data-act="livecheck" aria-label="Livecheck">Livecheck</button>
+        <button data-act="promote" aria-label="Promote">Promote</button>
+        <button data-act="evolution" aria-label="Evolution">Evolution</button>
+        <button data-act="verify" aria-label="Verify">Verify</button>
+      </div>
+
+      <div id="ares" aria-live="polite"></div>
+
+      <button id="t-eng" class="header-btn">Load Engine Data</button>
+      <span id="t-mx" tabindex="0">Matrix</span>
+    </div>
+
+    <!-- Git View -->
+    <div class="view" id="view-git">
+      <div class="main-header">
+        <div class="main-title">Git</div>
+        <div class="main-actions">
+          <button class="header-btn">Refresh</button>
+          <button class="header-btn">Commit</button>
+        </div>
+      </div>
+      <div class="git-container">
+        <div class="git-section">
+          <h3>Changes</h3>
+          <div class="git-changes">
+            <div class="git-file modified">
+              <span class="git-status">M</span>
+              <span class="git-file-name">agent_desktop.html</span>
+              <span class="git-diff">+150 -20</span>
+            </div>
+            <div class="git-file modified">
+              <span class="git-status">M</span>
+              <span class="git-file-name">index.html</span>
+              <span class="git-diff">+150 -20</span>
+            </div>
+            <div class="git-file untracked">
+              <span class="git-status">U</span>
+              <span class="git-file-name">tools/perf_gate.py</span>
+              <span class="git-diff">+120 -0</span>
+            </div>
+          </div>
+        </div>
+        <div class="git-section">
+          <h3>Recent Commits</h3>
+          <div class="git-commits">
+            <div class="git-commit">
+              <span class="commit-hash">abc1234</span>
+              <span class="commit-msg">Add performance gate</span>
+              <span class="commit-time">2 hours ago</span>
+            </div>
+            <div class="git-commit">
+              <span class="commit-hash">def5678</span>
+              <span class="commit-msg">Add evolution view</span>
+              <span class="commit-time">3 hours ago</span>
+            </div>
+            <div class="git-commit">
+              <span class="commit-hash">ghi9012</span>
+              <span class="commit-msg">Fix resident_gate locale issue</span>
+              <span class="commit-time">5 hours ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Problems View -->
+    <div class="view" id="view-problems">
+      <div class="main-header">
+        <div class="main-title">Problems</div>
+        <div class="main-actions">
+          <button class="header-btn">Refresh</button>
+        </div>
+      </div>
+      <div class="problems-container">
+        <div class="problems-summary">
+          <span class="problem-count error">0 Errors</span>
+          <span class="problem-count warning">0 Warnings</span>
+          <span class="problem-count info">0 Info</span>
+        </div>
+        <div class="problems-list">
+          <div class="problem-item info">
+            <span class="problem-icon">ℹ️</span>
+            <span class="problem-msg">All gates passing</span>
+            <span class="problem-src">System</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Output View -->
+    <div class="view" id="view-output">
+      <div class="main-header">
+        <div class="main-title">Output</div>
+        <div class="main-actions">
+          <button class="header-btn">Clear</button>
+        </div>
+      </div>
+      <div class="output-container">
+        <div class="output-content" id="output-content">
+          <div class="output-line">[System] AgentOS v135 started</div>
+          <div class="output-line">[Gates] resident_gate: 20/20 PASS</div>
+          <div class="output-line">[Gates] headroom_gate: 18/18 PASS</div>
+          <div class="output-line">[Gates] perf_gate: 7/7 PASS</div>
+          <div class="output-line">[Gates] evolution_gate: 10/10 PASS</div>
+          <div class="output-line">[Gates] capability_gate: 10/10 PASS</div>
+          <div class="output-line">[Distill] 61 projects with dual evidence</div>
+          <div class="output-line">[Evolution] 8 recurrence clusters detected</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Context Panel -->
+  <aside class="context">
+    <div class="context-header">Context</div>
+    <div class="context-content">
+      <div class="context-section">
+        <div class="context-section-title">Project Info</div>
+        <div class="context-item">
+          <span class="context-label">Name</span>
+          <span class="context-value">my-project</span>
+        </div>
+        <div class="context-item">
+          <span class="context-label">Type</span>
+          <span class="context-value">TypeScript</span>
+        </div>
+        <div class="context-item">
+          <span class="context-label">Files</span>
+          <span class="context-value">24</span>
+        </div>
+      </div>
+      
+      <div class="context-section">
+        <div class="context-section-title">Git Status</div>
+        <div class="context-item">
+          <span class="context-label">Branch</span>
+          <span class="context-value">main</span>
+        </div>
+        <div class="context-item">
+          <span class="context-label">Changes</span>
+          <span class="context-value">+3 -1</span>
+        </div>
+        <div class="context-item">
+          <span class="context-label">Commits</span>
+          <span class="context-value">12</span>
+        </div>
+      </div>
+      
+      <div class="context-section">
+        <div class="context-section-title">Tools</div>
+        <div class="context-item">
+          <span class="context-label">Terminal</span>
+          <span class="context-value">Ready</span>
+        </div>
+        <div class="context-item">
+          <span class="context-label">Browser</span>
+          <span class="context-value">Connected</span>
+        </div>
+        <div class="context-item">
+          <span class="context-label">File System</span>
+          <span class="context-value">Access</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Status Bar -->
+  <footer class="status-bar">
+    <div class="status-item">
+      <span class="status-indicator"></span>
+      <span>Ready</span>
+    </div>
+    <div class="status-item">
+      <span>Port: 8790</span>
+    </div>
+    <div class="status-item">
+      <span>PID: 71714</span>
+    </div>
+    <div class="status-item" id="strip">证据年龄: 未知</div>
+    </div>
+    <div class="status-spacer"></div>
+    <div class="status-item">
+      <span>UTF-8</span>
+    </div>
+    <div class="status-item">
+      <span>TypeScript</span>
+    </div>
+    <div class="status-item">
+      <span>Ln 1, Col 1</span>
+    </div>
+  </footer>
+  <!-- Activity Bar -->
+  <aside class="activity-bar" aria-label="活动栏">
+    <button class="activity-btn" data-view="dashboard" aria-label="Dashboard">
+      <span class="activity-icon">📊</span>
+    </button>
+    <button class="activity-btn active" data-view="chat" aria-label="Chat">
+      <span class="activity-icon">💬</span>
+    </button>
+    <button class="activity-btn" data-view="terminal" aria-label="Terminal">
+      <span class="activity-icon">⌨️</span>
+    </button>
+    <button class="activity-btn" data-view="editor" aria-label="Editor">
+      <span class="activity-icon">📝</span>
+    </button>
+    <button class="activity-btn" data-view="settings" aria-label="Settings">
+      <span class="activity-icon">⚙️</span>
+    </button>
+    <button class="activity-btn" data-view="evolution" aria-label="Evolution">
+      <span class="activity-icon">🧬</span>
+    </button>
+    <button class="activity-btn" data-view="git" aria-label="Git">
+      <span class="activity-icon">🌿</span>
+    </button>
+    <span class="activity-spacer"></span>
+    <button class="activity-btn" id="activity-search" aria-label="Search">
+      <span class="activity-icon">🔍</span>
+    </button>
+    <button class="activity-btn" id="activity-git" aria-label="Git">
+      <span class="activity-icon">🌿</span>
+    </button>
+    <button class="activity-btn" id="activity-bell" aria-label="Notifications">
+      <span class="activity-icon">🔔</span>
+      <span class="activity-badge">3</span>
+    </button>
+  </aside>
+</div>
+
+<script>
+// ── View Switching ──
+const tabBtns = document.querySelectorAll('.tab-btn');
+const views = document.querySelectorAll('.view');
+
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const viewId = btn.dataset.view;
+    tabBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+    views.forEach(v => v.classList.remove('active'));
+    btn.classList.add('active');
+    btn.setAttribute('aria-selected', 'true');
+    document.getElementById('view-' + viewId).classList.add('active');
+  });
+});
+
+// ── Chat ──
+const textarea = document.querySelector('.chat-input');
+textarea.addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+});
+textarea.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    console.log('Send message:', this.value);
+    this.value = '';
+    this.style.height = 'auto';
+  }
+});
+
+// ── Terminal ──
+const terminalInput = document.getElementById('terminal-input');
+const terminalOutput = document.getElementById('terminal-output');
+
+const terminalCommands = {
+  help: () => {
+    return [
+      'Available commands:',
+      '  help     - Show this help',
+      '  clear    - Clear terminal',
+      '  echo     - Print text',
+      '  date     - Show current date/time',
+      '  pwd      - Print working directory',
+      '  ls       - List files',
+      '  whoami   - Show current user',
+      '  version  - Show version',
+      '  status   - Show server status',
+      '  gates    - Run gate checks',
+    ].join('\n');
+  },
+  clear: () => { terminalOutput.innerHTML = ''; return ''; },
+  echo: (args) => args.join(' '),
+  date: () => new Date().toLocaleString(),
+  pwd: () => '/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console',
+  ls: () => 'tools/  work/  docs/  index.html  agent_desktop.html',
+  whoami: () => 'zhangfengrui',
+  version: () => 'AgentOS v135',
+  status: () => 'Server: running on port 8790\nGates: resident_gate 20/20, headroom_gate 18/18\nDistill: 61 projects with dual evidence',
+  gates: () => 'Run: bash tools/gates.sh resident_gate headroom_gate perf_gate',
+};
+
+function terminalPrint(text, type = 'output') {
+  const line = document.createElement('div');
+  line.className = 'terminal-line ' + type;
+  line.textContent = text;
+  terminalOutput.appendChild(line);
+  terminalOutput.scrollTop = terminalOutput.scrollHeight;
+}
+
+terminalInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const input = this.value.trim();
+    if (!input) return;
+
+    terminalPrint('$ ' + input, 'command');
+    this.value = '';
+
+    const [cmd, ...args] = input.split(' ');
+    if (terminalCommands[cmd]) {
+      const result = terminalCommands[cmd](args);
+      if (result) terminalPrint(result);
+    } else {
+      terminalPrint(`Command not found: ${cmd}. Type 'help' for available commands.`, 'error');
+    }
+  }
+});
+
+// ── Editor ──
+const editorTextarea = document.getElementById('editor-textarea');
+const lineNumbers = document.getElementById('line-numbers');
+const editorCursor = document.getElementById('editor-cursor');
+const editorFile = document.getElementById('editor-file');
+
+function updateLineNumbers() {
+  const lines = editorTextarea.value.split('\n').length;
+  lineNumbers.textContent = Array.from({length: lines}, (_, i) => i + 1).join('\n');
+}
+
+function updateCursorPosition() {
+  const pos = editorTextarea.selectionStart;
+  const text = editorTextarea.value.substring(0, pos);
+  const lines = text.split('\n');
+  const line = lines.length;
+  const col = lines[lines.length - 1].length + 1;
+  editorCursor.textContent = `Ln ${line}, Col ${col}`;
+}
+
+editorTextarea.addEventListener('input', updateLineNumbers);
+editorTextarea.addEventListener('click', updateCursorPosition);
+editorTextarea.addEventListener('keyup', updateCursorPosition);
+editorTextarea.addEventListener('scroll', () => {
+  lineNumbers.scrollTop = editorTextarea.scrollTop;
+});
+
+// File item click → load into editor
+const fileContents = {
+  'src': '// src/index.ts\n\nexport function main() {\n  console.log("Hello from AgentOS!");\n}\n\nmain();\n',
+  'index.ts': '// index.ts\n\nimport { App } from "./app";\n\nconst app = new App();\napp.start();\n',
+  'app.ts': '// app.ts\n\nexport class App {\n  private name: string;\n\n  constructor() {\n    this.name = "AgentOS";\n  }\n\n  start() {\n    console.log(`${this.name} started!`);\n  }\n}\n',
+  'components': '// components/index.ts\n\nexport * from "./Button";\nexport * from "./Input";\nexport * from "./Panel";\n',
+  'package.json': '{\n  "name": "my-project",\n  "version": "1.0.0",\n  "scripts": {\n    "dev": "ts-node src/index.ts",\n    "build": "tsc"\n  }\n}\n',
+  'README.md': '# My Project\n\nA professional agent desktop application.\n\n## Getting Started\n\n```bash\nnpm install\nnpm run dev\n```\n',
+};
+
+document.querySelectorAll('.file-item').forEach(item => {
+  item.addEventListener('click', function() {
+    document.querySelectorAll('.file-item').forEach(i => i.classList.remove('active'));
+    this.classList.add('active');
+    const fileName = this.querySelector('.file-name').textContent;
+    const content = fileContents[fileName] || `// ${fileName}\n\n// File content would be loaded from disk here.\n`;
+    editorTextarea.value = content;
+    editorFile.textContent = fileName;
+    updateLineNumbers();
+    updateCursorPosition();
+  });
+});
+
+// ── Settings ──
+document.querySelectorAll('.settings-toggle').forEach(toggle => {
+  toggle.addEventListener('click', () => {
+    toggle.classList.toggle('active');
+  });
+});
+
+// ── Keyboard Shortcuts ──
+document.addEventListener('keydown', (e) => {
+  // Cmd/Ctrl + 1-4 to switch views
+  if ((e.metaKey || e.ctrlKey) && ['1', '2', '3', '4'].includes(e.key)) {
+    e.preventDefault();
+    const viewNames = ['chat', 'terminal', 'editor', 'settings'];
+    const idx = parseInt(e.key) - 1;
+    if (viewNames[idx]) {
+      document.querySelector(`.tab-btn[data-view="${viewNames[idx]}"]`).click();
+    }
+  }
+  // Cmd/Ctrl + ` to focus terminal
+  if ((e.metaKey || e.ctrlKey) && e.key === '`') {
+    e.preventDefault();
+    document.querySelector('.tab-btn[data-view="terminal"]').click();
+    terminalInput.focus();
+  }
+});
+
+// Initialize
+updateLineNumbers();
+updateCursorPosition();
+
+// ── Command Palette (⌘K) ──
+const cmdPalette = document.createElement('div');
+cmdPalette.className = 'cmd-palette';
+cmdPalette.innerHTML = `
+  <div class="cmd-palette-box">
+    <input type="text" class="cmd-palette-input" placeholder="Type a command..." autocomplete="off">
+    <div class="cmd-palette-list"></div>
+  </div>
+`;
+document.body.appendChild(cmdPalette);
+
+const cmdInput = cmdPalette.querySelector('.cmd-palette-input');
+const cmdList = cmdPalette.querySelector('.cmd-palette-list');
+
+const commands = [
+  { name: 'Go to Chat', action: () => switchView('chat'), category: 'View' },
+  { name: 'Go to Terminal', action: () => switchView('terminal'), category: 'View' },
+  { name: 'Go to Editor', action: () => switchView('editor'), category: 'View' },
+  { name: 'Go to Settings', action: () => switchView('settings'), category: 'View' },
+  { name: 'New Chat', action: () => { switchView('chat'); clearChat(); }, category: 'Chat' },
+  { name: 'Clear Terminal', action: () => { switchView('terminal'); terminalOutput.innerHTML = ''; }, category: 'Terminal' },
+  { name: 'Save File', action: () => { switchView('editor'); showNotification('File saved', 'success'); }, category: 'Editor' },
+  { name: 'Run Gates', action: () => { switchView('terminal'); terminalPrint('Running gates...', 'output'); }, category: 'System' },
+  { name: 'Server Status', action: () => { switchView('terminal'); terminalPrint('Server: running on port 8790', 'success'); }, category: 'System' },
+  { name: 'Toggle Theme', action: () => { document.body.classList.toggle('light'); }, category: 'Settings' },
+];
+
+function clearChat() {
+  document.querySelector('.chat-container').innerHTML = '';
+}
+
+function showNotification(msg, type = 'info') {
+  const notif = document.createElement('div');
+  notif.className = 'notification ' + type;
+  notif.textContent = msg;
+  document.body.appendChild(notif);
+  setTimeout(() => notif.classList.add('show'), 10);
+  setTimeout(() => { notif.classList.remove('show'); setTimeout(() => notif.remove(), 300); }, 3000);
+}
+
+function filterCommands(query) {
+  const q = query.toLowerCase();
+  return commands.filter(c => c.name.toLowerCase().includes(q));
+}
+
+cmdInput.addEventListener('input', () => {
+  const results = filterCommands(cmdInput.value);
+  cmdList.innerHTML = results.map((c, i) =>
+    `<div class="cmd-item" data-idx="${i}"><span class="cmd-cat">${c.category}</span>${c.name}</div>`
+  ).join('');
+  cmdList.querySelectorAll('.cmd-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const idx = parseInt(item.dataset.idx);
+      results[idx].action();
+      cmdPalette.classList.remove('open');
+    });
+  });
+});
+
+cmdInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') cmdPalette.classList.remove('open');
+  if (e.key === 'Enter') {
+    const first = cmdList.querySelector('.cmd-item');
+    if (first) first.click();
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    cmdPalette.classList.toggle('open');
+    if (cmdPalette.classList.contains('open')) {
+      cmdInput.value = '';
+      cmdInput.focus();
+      filterCommands('');
+    }
+  }
+});
+
+// ── Status Bar Live Update ──
+// ── Activity Bar ──
+document.querySelectorAll('.activity-btn[data-view]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const view = btn.dataset.view;
+    switchView(view);
+    // Sync tab nav
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.view === view);
+      b.setAttribute('aria-selected', b.dataset.view === view ? 'true' : 'false');
+    });
+  });
+});
+
+// Sync activity bar with tab nav
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const view = btn.dataset.view;
+    document.querySelectorAll('.activity-btn[data-view]').forEach(b => {
+      b.classList.toggle('active', b.dataset.view === view);
+    });
+  });
+});
+
+// Notification badge
+document.getElementById('activity-bell').addEventListener('click', () => {
+  showNotification('No new notifications', 'info');
+});
+
+// Git button
+document.getElementById('activity-git').addEventListener('click', () => {
+  switchView('terminal');
+  terminalPrint('$ git status', 'command');
+  terminalPrint('On branch main', 'output');
+  terminalPrint('Changes not staged for commit:', 'output');
+  terminalPrint('  modified:   agent_desktop.html', 'output');
+  terminalPrint('  modified:   index.html', 'output');
+});
+
+// Search button
+document.getElementById('activity-search').addEventListener('click', () => {
+  cmdPalette.classList.add('open');
+  cmdInput.focus();
+});
+
+// ── Evolution View ──
+function loadEvolutionData() {
+  // Load recurrence data
+  fetch('/__recurrence')
+    .then(r => r.json())
+    .then(d => {
+      const list = document.getElementById('recurrence-list');
+      if (list && d.clusters) {
+        list.innerHTML = d.clusters.slice(0, 10).map(c => `
+          <div class="recurrence-item">
+            <span class="recurrence-name">${c.cluster || 'Unknown'}</span>
+            <span class="recurrence-count">${c.runs || 0} runs</span>
+            <span class="recurrence-badge ${c.recurring ? 'recurring' : ''}">${c.recurring ? 'Recurring' : 'One-time'}</span>
+          </div>
+        `).join('');
+      }
+      const statEl = document.getElementById('stat-recurrence');
+      if (statEl) statEl.textContent = d.clusters ? d.clusters.length : 0;
+    })
+    .catch(() => {});
+
+  // Load capability data
+  fetch('/__capmap')
+    .then(r => r.json())
+    .then(d => {
+      const rows = d.rows || [];
+      const promoted = rows.filter(r => r.status === 'PROMOTED').length;
+      const hold = rows.filter(r => r.verdict === 'HOLD-AB').length;
+      const rejected = rows.filter(r => r.status === 'REJECTED').length;
+
+      const capStat = document.getElementById('stat-capabilities');
+      if (capStat) capStat.textContent = rows.length;
+      const promoStat = document.getElementById('stat-promoted');
+      if (promoStat) promoStat.textContent = promoted;
+
+      // Update bar
+      const bar = document.querySelector('.cap-bar');
+      if (bar && rows.length > 0) {
+        bar.innerHTML = `
+          <div class="cap-bar-fill promoted" style="width: ${promoted / rows.length * 100}%"></div>
+          <div class="cap-bar-fill hold" style="width: ${hold / rows.length * 100}%"></div>
+          <div class="cap-bar-fill rejected" style="width: ${rejected / rows.length * 100}%"></div>
+        `;
+      }
+    })
+    .catch(() => {});
+
+  // Load distill data
+  fetch('/__distill')
+    .then(r => r.json())
+    .then(d => {
+      const distillStat = document.getElementById('stat-distill');
+      if (distillStat) distillStat.textContent = d.n_both || 0;
+    })
+    .catch(() => {});
+}
+
+document.getElementById('refresh-evolution').addEventListener('click', loadEvolutionData);
+
+// ── Execution Surface (act_gate) ──
+function loadExecSurface() {
+  const recs = document.getElementById('recs');
+  if (recs) recs.innerHTML = '正在读...';
+  const promo = document.getElementById('promo');
+  if (promo) promo.innerHTML = '正在读...';
+  const dist = document.getElementById('dist');
+  if (dist) dist.innerHTML = '正在读...';
+  fetch('/__recurrence').then(r => r.json()).then(d => {
+    if (recs && d.clusters) {
+      recs.innerHTML = d.clusters.map(c => '<div class="rc1">' + (c.cluster || 'Unknown') + ' — ' + (c.runs || 0) + ' runs</div>').join('');
+      const recBtns = d.clusters.slice(0, 3).map(c => {
+        const act = c.recurring ? 'egate' : 'doc-drift';
+        return '<button data-rec="' + act + '" aria-label="' + act + '">' + act + '</button>';
+      }).join('');
+      recs.innerHTML += recBtns;
+    }
+  }).catch(() => { if (recs) recs.innerHTML = '不可用'; });
+  fetch('/__promote').then(r => r.json()).then(d => {
+    if (promo && d.rows) {
+      promo.innerHTML = d.rows.map(r => '<div class="e1"><span class="k">' + (r.id || '') + '</span> — ' + (r.status || '') + '</div>').join('');
+    }
+  }).catch(() => { if (promo) promo.innerHTML = '不可用'; });
+  fetch('/__distill').then(r => r.json()).then(d => {
+    if (dist && d.rows) {
+      dist.innerHTML = d.rows.map(r => '<div class="e1">' + (r.id || '') + '</div>').join('');
+    }
+  }).catch(() => { if (dist) dist.innerHTML = '不可用'; });
+}
+
+document.getElementById('t-eng').addEventListener('click', loadExecSurface);
+
+// ── Freshness Subsystem ──
+var FRESH_MIN = 30;
+var FRESH_MAX = 360;
+var FRESH_TICK_MS = 30000;
+
+function freshness() {
+  var payload = JSON.parse(document.getElementById('payload').textContent);
+  var raw = payload.generated_at;
+  var t = raw ? new Date(raw) : null;
+  if(!raw||isNaN(t)){
+    return 'unknown';
+  }
+  var ms = Date.now() - t.getTime();
+  const f=ms<=FRESH_MIN*60000?'fresh':(ms<=FRESH_MAX*60000?'amber':'stale');
+  return f;
+}
+
+function freshnessFoot() {
+  var a = {f: freshness()};
+  var b = document.getElementById('sbn');
+  var badge = document.querySelector('#fresh .fresh');
+  if (badge) {
+    badge.setAttribute('data-f', a.f);
+    var labels = {fresh: '新鲜', amber: '偏旧', stale: '陈旧', unknown: '未知'};
+    badge.innerText = labels[a.f] || '未知';
+  }
+  if (b) {
+    if (a.f !== 'fresh') {
+      b.classList.add('on');
+      b.style.display = 'block';
+      var payload = JSON.parse(document.getElementById('payload').textContent);
+      var verdict = payload.global_verdict || 'PASS';
+      var sbn2 = document.getElementById('sbn2');
+      if (sbn2) sbn2.innerText = verdict + ' 是历史结论';
+    } else {
+      b.classList.remove('on');
+      b.style.display = 'none';
+    }
+  }
+  var strip = document.getElementById('strip');
+  if (strip) {
+    var payload = JSON.parse(document.getElementById('payload').textContent);
+    var gen = payload.generated_at;
+    var labels = {fresh: '新鲜', amber: '偏旧', stale: '陈旧', unknown: '未知'};
+    var state = labels[a.f] || '未知';
+    if (gen) {
+      var t = new Date(gen);
+      if (!isNaN(t.getTime())) {
+        var mins = Math.round((Date.now() - t.getTime()) / 60000);
+        strip.innerText = '证据 ' + state + ' ' + mins + '分钟';
+      } else {
+        strip.innerText = '证据 ' + state;
+      }
+    } else {
+      strip.innerText = '证据 ' + state;
+    }
+  }
+}
+
+function verdictTag() {
+  var a = {f: freshness()};
+  var el = document.getElementById('vtag-text');
+  if (!el) return;
+  var payload = JSON.parse(document.getElementById('payload').textContent);
+  var gv = payload.global_verdict || 'PASS';
+  function cls(f) { return f === 'fresh' ? 'vtag' : 'vtag HIST'; }
+  function esc(s) { return s.replace(/</g, '&lt;'); }
+  if(a.f==='fresh'){
+    el.innerHTML='<span class="vtag '+cls(gv)+'">'+esc(gv)+'</span>';
+  }else{
+    var qualifiers = {amber: '偏旧', stale: '陈旧', unknown: '未知'};
+    el.innerHTML='<span class="vtag '+cls(gv)+'">'+esc(gv)+' ('+(qualifiers[a.f]||'未知')+')</span>';
+  }
+}
+
+function freshTick(){ freshness(); freshnessFoot(); verdictTag(); }
+
+freshTick();
+window.__freshTimer=setInterval(freshTick,FRESH_TICK_MS);
+
+document.getElementById('exec-surface').addEventListener('click', function(e) {
+  const btn = e.target.closest('button[data-act], button[data-rec]');
+  if (!btn) return;
+  const act = btn.dataset.act || btn.dataset.rec;
+  const ares = document.getElementById('ares');
+  btn.disabled = true;
+  ares.innerText = 'Running ' + act + '...';
+  fetch('/__act', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-AgentOS-Action': '1'},
+      body: JSON.stringify({action: act})
+  }).then(r => r.json()).then(d => {
+    ares.innerText = 'rc=' + (d.rc !== undefined ? d.rc : '?') + ' | ' + (d.stdout || d.error || '').slice(0, 80);
+    btn.disabled = false;
+  }).catch(e => {
+    ares.innerText = 'Error: ' + e.message;
+    btn.disabled = false;
+  });
+});
+
+// ── Dashboard：总览面，四格全部直读引擎端点，离线时诚实降级不冒充 ──
+function loadDashboard() {
+  const set = (id, txt, bad) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = txt;
+    el.classList.toggle('error', !!bad);
+  };
+  const stamp = document.getElementById('stamp');
+  if (stamp && stamp.title) {
+    set('dash-build', stamp.title.replace(/^build\s+/, '').replace(/\s*\/\s*html\s+/, ' · html '), false);
+  }
+  fetch('/__health').then(r => r.json()).then(d => {
+    set('dash-health', d && d.ok ? 'ok' : '不可用', !(d && d.ok));
+  }).catch(() => set('dash-health', '离线（直开模式）', true));
+  fetch('/__recurrence').then(r => r.json()).then(d => {
+    set('dash-recurrence', String((d && d.n_clusters) || 0), !(d && d.ok));
+  }).catch(() => set('dash-recurrence', '离线（直开模式）', true));
+  fetch('/__distill').then(r => r.json()).then(d => {
+    set('dash-distill', String((d && d.n_both) || 0), !(d && d.ok));
+  }).catch(() => set('dash-distill', '离线（直开模式）', true));
+  fetch('/__promote').then(r => r.json()).then(d => {
+    set('dash-promote', (d && d.ok) ? ((d.n_ready || 0) + '/' + (d.total || 0)) : '不可用', !(d && d.ok));
+  }).catch(() => set('dash-promote', '离线（直开模式）', true));
+}
+document.getElementById('refresh-dashboard').addEventListener('click', loadDashboard);
+loadDashboard();
+
+// Load evolution data when switching to evolution view
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.view === 'evolution') {
+      loadEvolutionData();
+    }
+    if (btn.dataset.view === 'dashboard') {
+      loadDashboard();
+    }
+  });
+});
+
+// ── Tab Navigation Helper ──
+function switchView(view) {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === view);
+    b.setAttribute('aria-selected', b.dataset.view === view ? 'true' : 'false');
+  });
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const viewEl = document.getElementById('view-' + view);
+  if (viewEl) viewEl.classList.add('active');
+}
+
+// ── Multi-Tab Chat ──
+let chatTabs = [{ id: 1, name: 'Chat 1', messages: [] }];
+let activeChatTab = 0;
+
+function createChatTab() {
+  const id = chatTabs.length + 1;
+  chatTabs.push({ id, name: `Chat ${id}`, messages: [] });
+  renderChatTabs();
+  switchChatTab(id - 1);
+}
+
+function switchChatTab(idx) {
+  activeChatTab = idx;
+  renderChatTabs();
+  // In a real app, would load messages for this tab
+}
+
+function renderChatTabs() {
+  // Could add tab bar above chat
+}
+
+// ── Enhanced Terminal ──
+const terminalHistory = [];
+let historyIndex = -1;
+
+terminalInput.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (historyIndex < terminalHistory.length - 1) {
+      historyIndex++;
+      this.value = terminalHistory[terminalHistory.length - 1 - historyIndex];
+    }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (historyIndex > 0) {
+      historyIndex--;
+      this.value = terminalHistory[terminalHistory.length - 1 - historyIndex];
+    } else {
+      historyIndex = -1;
+      this.value = '';
+    }
+  }
+});
+
+// ── Panel Resize ──
+let isResizing = false;
+let resizeTarget = null;
+let resizeStartX = 0;
+let resizeStartWidth = 0;
+
+function initResize() {
+  // Add resize handle to context panel
+  const context = document.querySelector('.context');
+  if (context) {
+    const handle = document.createElement('div');
+    handle.className = 'resize-handle';
+    handle.style.cssText = 'position:absolute;left:0;top:0;bottom:0;width:4px;cursor:col-resize;background:transparent;';
+    context.style.position = 'relative';
+    context.appendChild(handle);
+
+    handle.addEventListener('mousedown', (e) => {
+      isResizing = true;
+      resizeTarget = context;
+      resizeStartX = e.clientX;
+      resizeStartWidth = context.offsetWidth;
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+  }
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizing || !resizeTarget) return;
+    const delta = resizeStartX - e.clientX;
+    const newWidth = Math.max(200, Math.min(500, resizeStartWidth + delta));
+    resizeTarget.style.width = newWidth + 'px';
+    resizeTarget.style.flex = '0 0 ' + newWidth + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    isResizing = false;
+    resizeTarget = null;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+}
+
+// ── Word Count in Editor ──
+function updateWordCount() {
+  const text = editorTextarea.value;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const chars = text.length;
+  const lines = text.split('\n').length;
+  const statusEl = document.querySelector('.editor-status');
+  if (statusEl) {
+    const fileEl = document.getElementById('editor-file');
+    const cursorEl = document.getElementById('editor-cursor');
+    statusEl.innerHTML = `
+      <span>${fileEl ? fileEl.textContent : 'No file'}</span>
+      <span style="flex:1"></span>
+      <span>${words} words</span>
+      <span>${chars} chars</span>
+      <span>${lines} lines</span>
+      <span>${cursorEl ? cursorEl.textContent : 'Ln 1, Col 1'}</span>
+    `;
+  }
+}
+
+editorTextarea.addEventListener('input', updateWordCount);
+
+// ── Initialize ──
+initResize();
+updateWordCount();
+
+
+// ── File Tree Expand/Collapse ──
+const fileTree = {
+  'src': {
+    type: 'dir',
+    children: {
+      'index.ts': { type: 'file', content: '// src/index.ts\n\nexport function main() {\n  console.log("Hello from AgentOS!");\n}\n\nmain();\n' },
+      'app.ts': { type: 'file', content: '// app.ts\n\nexport class App {\n  private name: string;\n\n  constructor() {\n    this.name = "AgentOS";\n  }\n\n  start() {\n    console.log(`${this.name} started!`);\n  }\n}\n' },
+      'components': {
+        type: 'dir',
+        children: {
+          'Button.tsx': { type: 'file', content: '// components/Button.tsx\n\nimport React from "react";\n\nexport function Button({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {\n  return <button onClick={onClick}>{children}</button>;\n}\n' },
+          'Input.tsx': { type: 'file', content: '// components/Input.tsx\n\nimport React from "react";\n\nexport function Input({ value, onChange }: { value: string; onChange: (v: string) => void }) {\n  return <input value={value} onChange={e => onChange(e.target.value)} />;\n}\n' },
+        }
+      }
+    }
+  },
+  'package.json': { type: 'file', content: '{\n  "name": "my-project",\n  "version": "1.0.0",\n  "scripts": {\n    "dev": "ts-node src/index.ts",\n    "build": "tsc"\n  }\n}\n' },
+  'README.md': { type: 'file', content: '# My Project\n\nA professional agent desktop application.\n\n## Getting Started\n\n```bash\nnpm install\nnpm run dev\n```\n' },
+};
+
+function renderFileTree(tree, parentEl, path = '') {
+  Object.entries(tree).forEach(([name, item]) => {
+    const fullPath = path ? `${path}/${name}` : name;
+    const div = document.createElement('div');
+    div.className = 'file-item';
+    div.dataset.path = fullPath;
+
+    if (item.type === 'dir') {
+      div.innerHTML = `<span class="file-icon">📁</span><span class="file-name">${name}</span><span class="file-toggle">▶</span>`;
+      div.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const children = div.querySelector('.file-children');
+        if (children) {
+          const isOpen = children.style.display !== 'none';
+          children.style.display = isOpen ? 'none' : 'block';
+          div.querySelector('.file-toggle').textContent = isOpen ? '▶' : '▼';
+        }
+      });
+      parentEl.appendChild(div);
+
+      const childrenEl = document.createElement('div');
+      childrenEl.className = 'file-children';
+      childrenEl.style.display = 'none';
+      childrenEl.style.paddingLeft = '16px';
+      parentEl.appendChild(childrenEl);
+      renderFileTree(item.children, childrenEl, fullPath);
+    } else {
+      div.innerHTML = `<span class="file-icon">📄</span><span class="file-name">${name}</span>`;
+      div.addEventListener('click', () => {
+        document.querySelectorAll('.file-item').forEach(i => i.classList.remove('active'));
+        div.classList.add('active');
+        const fileContent = item.content || `// ${name}\n\n// File content would be loaded from disk here.\n`;
+        editorTextarea.value = fileContent;
+        editorFile.textContent = name;
+        updateLineNumbers();
+        updateCursorPosition();
+        updateWordCount();
+      });
+      parentEl.appendChild(div);
+    }
+  });
+}
+
+// Replace static file tree with dynamic one
+const sidebarContent = document.querySelector('.sidebar-content');
+if (sidebarContent) {
+  const treeContainer = document.createElement('div');
+  treeContainer.className = 'file-tree-dynamic';
+  // Keep the header, replace the list
+  const header = sidebarContent.querySelector('.sidebar-header');
+  sidebarContent.innerHTML = '';
+  if (header) sidebarContent.appendChild(header);
+  sidebarContent.appendChild(treeContainer);
+  renderFileTree(fileTree, treeContainer);
+}
+
+// ── Enhanced Terminal Commands ──
+const enhancedCommands = {
+  'npm': (args) => `npm ${args.join(' ')} - would run npm command`,
+  'git': (args) => {
+    if (args[0] === 'status') return 'On branch main\nChanges not staged for commit:\n  modified: agent_desktop.html';
+    if (args[0] === 'log') return 'commit abc1234 - Latest changes\ncommit def5678 - Previous changes';
+    if (args[0] === 'diff') return 'diff --git a/agent_desktop.html b/agent_desktop.html';
+    return `git ${args.join(' ')} - would run git command`;
+  },
+  'cat': (args) => `cat ${args.join(' ')} - would show file content`,
+  'ls': (args) => 'src/  components/  package.json  README.md  index.html',
+  'pwd': () => '/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console',
+  'whoami': () => 'zhangfengrui',
+  'date': () => new Date().toLocaleString(),
+  'help': () => [
+    'Available commands:',
+    '  help     - Show this help',
+    '  clear    - Clear terminal',
+    '  echo     - Print text',
+    '  date     - Show current date/time',
+    '  pwd      - Print working directory',
+    '  ls       - List files',
+    '  cat      - Show file content',
+    '  whoami   - Show current user',
+    '  version  - Show version',
+    '  status   - Show server status',
+    '  gates    - Run gate checks',
+    '  npm      - Run npm commands',
+    '  git      - Run git commands',
+  ].join('\n'),
+  'version': () => 'AgentOS v135',
+  'status': () => 'Server: running on port 8790\nGates: resident_gate 20/20, headroom_gate 18/18\nDistill: 61 projects with dual evidence',
+  'gates': () => 'Run: bash tools/gates.sh resident_gate headroom_gate perf_gate',
+};
+
+// Merge enhanced commands
+Object.assign(terminalCommands, enhancedCommands);
+
+// ── Search Functionality ──
+function searchFiles(query) {
+  const q = query.toLowerCase();
+  const results = [];
+  function search(tree, path = '') {
+    Object.entries(tree).forEach(([name, item]) => {
+      const fullPath = path ? `${path}/${name}` : name;
+      if (name.toLowerCase().includes(q)) {
+        results.push({ name, path: fullPath, type: item.type });
+      }
+      if (item.type === 'dir') search(item.children, fullPath);
+    });
+  }
+  search(fileTree);
+  return results;
+}
+
+// Add search to command palette
+const searchCmd = {
+  name: 'Search Files',
+  action: () => {
+    cmdPalette.classList.add('open');
+    cmdInput.value = '';
+    cmdInput.placeholder = 'Search files...';
+    setTimeout(() => cmdInput.focus(), 100);
+  },
+  category: 'Search'
+};
+commands.push(searchCmd);
+
+// ── Keyboard Shortcuts Help ──
+const shortcuts = [
+  { key: '⌘1', action: 'Go to Chat' },
+  { key: '⌘2', action: 'Go to Terminal' },
+  { key: '⌘3', action: 'Go to Editor' },
+  { key: '⌘4', action: 'Go to Settings' },
+  { key: '⌘5', action: 'Go to Evolution' },
+  { key: '⌘K', action: 'Command Palette' },
+  { key: '⌘`', action: 'Focus Terminal' },
+  { key: '⌘B', action: 'Toggle Sidebar' },
+];
+
+// Add shortcuts to command palette
+shortcuts.forEach(s => {
+  commands.push({
+    name: `Shortcut: ${s.action}`,
+    action: () => showNotification(`${s.key} - ${s.action}`, 'info'),
+    category: 'Help'
+  });
+});
+
+// ── Initialize ──
+updateWordCount();
+
+
+// ── Output Panel ──
+const outputContent = document.getElementById('output-content');
+function appendOutput(msg) {
+  if (outputContent) {
+    const line = document.createElement('div');
+    line.className = 'output-line';
+    line.textContent = msg;
+    outputContent.appendChild(line);
+    outputContent.scrollTop = outputContent.scrollHeight;
+  }
+}
+
+// ── Git View Interactions ──
+document.querySelectorAll('.git-file').forEach(file => {
+  file.addEventListener('click', () => {
+    const name = file.querySelector('.git-file-name').textContent;
+    appendOutput(`[Git] Selected: ${name}`);
+  });
+});
+
+// ── Problems View ──
+function refreshProblems() {
+  const list = document.querySelector('.problems-list');
+  if (list) {
+    const problems = [];
+    // Check gates
+    fetch('/__health').then(r => r.json()).then(d => {
+      if (!d.ok) problems.push({ type: 'error', msg: 'Server not healthy', src: 'System' });
+    }).catch(() => {});
+    // Check capabilities
+    fetch('/__capmap').then(r => r.json()).then(d => {
+      const degraded = (d.rows || []).filter(r => r.degraded);
+      degraded.forEach(r => problems.push({ type: 'error', msg: `Capability degraded: ${r.id}`, src: 'Evolution' }));
+    }).catch(() => {});
+
+    if (problems.length === 0) {
+      list.innerHTML = '<div class="problem-item info"><span class="problem-icon">✅</span><span class="problem-msg">All checks passing - no problems detected</span><span class="problem-src">System</span></div>';
+    } else {
+      list.innerHTML = problems.map(p => `<div class="problem-item ${p.type}"><span class="problem-icon">${p.type === 'error' ? '❌' : '⚠️'}</span><span class="problem-msg">${p.msg}</span><span class="problem-src">${p.src}</span></div>`).join('');
+    }
+  }
+}
+
+// Refresh problems when switching to problems view
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.view === 'problems') {
+      refreshProblems();
+    }
+  });
+});
+
+// ── Enhanced Terminal: File System Commands ──
+const fsCommands = {
+  'cat': (args) => {
+    const file = args[0];
+    if (!file) return 'Usage: cat <filename>';
+    const content = fileContents[file] || fileTree['src']?.children?.[file]?.content;
+    if (content) return content;
+    return `cat: ${file}: No such file`;
+  },
+  'ls': (args) => {
+    const path = args[0] || '';
+    if (path === 'src' || path === './src') return 'index.ts  app.ts  components/';
+    if (path === 'src/components' || path === './src/components') return 'Button.tsx  Input.tsx';
+    return 'src/  package.json  README.md  index.html  agent_desktop.html';
+  },
+  'find': (args) => {
+    const pattern = args[0] || '*';
+    return `find: searching for '${pattern}'...\nsrc/index.ts\nsrc/app.ts\npackage.json\nREADME.md`;
+  },
+  'grep': (args) => {
+    const pattern = args[0] || '';
+    return `grep: searching for '${pattern}'...\nagent_desktop.html:  matches found`;
+  },
+  'tree': () => `src/\n├── index.ts\n├── app.ts\n└── components/\n    ├── Button.tsx\n    └── Input.tsx\npackage.json\nREADME.md\nindex.html\nagent_desktop.html`,
+  'history': () => terminalHistory.map((h, i) => `  ${i + 1}  ${h}`).join('\n') || 'No history',
+  'env': () => 'PATH=/usr/local/bin:/usr/bin:/bin\nHOME=/Users/zhangfengrui\nSHELL=/bin/zsh\nUSER=zhangfengrui',
+  'uptime': () => {
+    const now = new Date();
+    const start = new Date('2026-10-06T16:32:00');
+    const diff = Math.floor((now - start) / 1000);
+    const h = Math.floor(diff / 3600);
+    const m = Math.floor((diff % 3600) / 60);
+    return `up ${h} hours, ${m} minutes`;
+  },
+};
+
+Object.assign(terminalCommands, fsCommands);
+
+// ── Initialize ──
+refreshProblems();
+
+
+// ── Enhanced Status Bar ──
+function updateStatusBar() {
+  fetch('/__health')
+    .then(r => r.json())
+    .then(d => {
+      const indicator = document.querySelector('.status-indicator');
+      if (indicator) {
+        indicator.className = 'status-indicator' + (d.ok ? '' : ' error');
+      }
+      const statusText = document.querySelector('.status-item span:last-child');
+      if (statusText) statusText.textContent = d.ok ? 'Ready' : 'Error';
+      
+      // Update port
+      const portEl = document.querySelectorAll('.status-item')[1];
+      if (portEl) portEl.innerHTML = '<span>Port: 8790</span>';
+      
+      // Update PID
+      const pidEl = document.querySelectorAll('.status-item')[2];
+      if (pidEl) pidEl.innerHTML = `<span>PID: ${d.stats?.started ? 'running' : 'stopped'}</span>`;
+    })
+    .catch(() => {});
+}
+setInterval(updateStatusBar, 5000);
+
+// ── Enhanced Terminal: More Commands ──
+const moreCommands = {
+  'neofetch': () => `                    'c.          zhangfengrui@AgentOS
+                 ,xNMM.          ----------------
+               .OMMMMo           OS: AgentOS v135
+               lMMM"             Host: localhost
+     .;loddo:.  .olloddol;.       Kernel: 35 gates
+   cKMMMMMMMMMMNWMMMMMMMMMM0:     Uptime: 9+ hours
+ .KMMMMMMMMMMMMMMMMMMMMMMMWd.     Shell: zsh
+ XMMMMMMMMMMMMMMMMMMMMMMMX.       Resolution: 1440x900
+;MMMMMMMMMMMMMMMMMMMMMMMM:        Theme: Dark
+:MMMMMMMMMMMMMMMMMMMMMMMM:        Terminal: AgentOS Terminal
+.MMMMMMMMMMMMMMMMMMMMMMMMX.       CPU: Apple Silicon
+ kMMMMMMMMMMMMMMMMMMMMMMMMWd.     Memory: 28MB
+ 'XMMMMMMMMMMMMMMMMMMMMMMMMMMk    Disk: 500GB
+  'XMMMMMMMMMMMMMMMMMMMMMMMMK.    Network: Connected
+    kMMMMMMMMMMMMMMMMMMMMMMd       Browser: Connected
+     "KMMMMMMMMMMMMMMMMMMM"        Transform: active
+       "cooc*"    "*coo"          Chaos: 0.05
+`,
+  'htop': () => 'CPU: 5%  |  Memory: 28MB  |  Processes: 1  |  Load: 0.1',
+  'df': () => 'Filesystem      Size  Used Avail Use% Mounted on\ndisk3s1s1   500G  200G  300G  40% /',
+  'ps': () => 'PID  COMMAND         CPU%  MEM%  TIME\n1     serve.py        5%    1%    9:00:00',
+  'netstat': () => 'Proto  Local Address          Foreign Address        State\ntcp    127.0.0.1:8790       0.0.0.0:*              LISTEN\ntcp    127.0.0.1:8787       0.0.0.0:*              LISTEN',
+  'curl': (args) => `curl ${args.join(' ')} - would make HTTP request`,
+  'wget': (args) => `wget ${args.join(' ')} - would download file`,
+  'ping': (args) => `ping ${args[0] || 'localhost'} - 64 bytes from ${args[0] || 'localhost'}: icmp_seq=0 ttl=64 time=0.1 ms`,
+  'ssh': (args) => `ssh ${args.join(' ')} - would connect via SSH`,
+  'scp': (args) => `scp ${args.join(' ')} - would copy files`,
+  'tar': (args) => `tar ${args.join(' ')} - would create/extract archive`,
+  'zip': (args) => `zip ${args.join(' ')} - would create zip archive`,
+  'unzip': (args) => `unzip ${args.join(' ')} - would extract zip archive`,
+  'chmod': (args) => `chmod ${args.join(' ')} - would change permissions`,
+  'chown': (args) => `chown ${args.join(' ')} - would change owner`,
+  'ln': (args) => `ln ${args.join(' ')} - would create link`,
+  'cp': (args) => `cp ${args.join(' ')} - would copy file`,
+  'mv': (args) => `mv ${args.join(' ')} - would move file`,
+  'rm': (args) => `rm ${args.join(' ')} - would remove file`,
+  'mkdir': (args) => `mkdir ${args.join(' ')} - would create directory`,
+  'touch': (args) => `touch ${args.join(' ')} - would create empty file`,
+  'head': (args) => `head ${args.join(' ')} - would show first lines`,
+  'tail': (args) => `tail ${args.join(' ')} - would show last lines`,
+  'wc': (args) => `wc ${args.join(' ')} - would count lines/words/chars`,
+  'sort': (args) => `sort ${args.join(' ')} - would sort lines`,
+  'uniq': (args) => `uniq ${args.join(' ')} - would remove duplicates`,
+  'diff': (args) => `diff ${args.join(' ')} - would compare files`,
+  'which': (args) => `which ${args.join(' ')} - would locate command`,
+  'whereis': (args) => `whereis ${args.join(' ')} - would locate binary/source`,
+  'file': (args) => `file ${args.join(' ')} - would determine file type`,
+  'stat': (args) => `stat ${args.join(' ')} - would show file stats`,
+  'du': (args) => `du ${args.join(' ')} - would show disk usage`,
+  'free': () => '              total        used        free      shared  buff/cache   available\nMem:           16Gi       8Gi       4Gi       1Gi       4Gi       12Gi',
+  'lsof': () => 'COMMAND   PID   USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nserve.py 12345 zhangfengrui    3u  IPv4 0x1234567890      0t0  TCP *:8790 (LISTEN)',
+  'kill': (args) => `kill ${args.join(' ')} - would send signal to process`,
+  'killall': (args) => `killall ${args.join(' ')} - would kill processes by name`,
+  'jobs': () => '[1]+  Running                 serve.py &',
+  'fg': () => 'fg - would bring job to foreground',
+  'bg': () => 'bg - would send job to background',
+  'alias': () => 'alias ll="ls -la"\nalias gs="git status"\nalias gp="git push"',
+  'unalias': (args) => `unalias ${args.join(' ')} - would remove alias`,
+  'export': (args) => `export ${args.join(' ')} - would set environment variable`,
+  'unset': (args) => `unset ${args.join(' ')} - would unset environment variable`,
+  'source': (args) => `source ${args.join(' ')} - would source file`,
+  'eval': (args) => `eval ${args.join(' ')} - would evaluate expression`,
+  'exec': (args) => `exec ${args.join(' ')} - would replace shell with command`,
+  'exit': () => 'exit - would exit terminal',
+  'logout': () => 'logout - would logout',
+  'reboot': () => 'reboot - would reboot system',
+  'shutdown': () => 'shutdown - would shutdown system',
+  'halt': () => 'halt - would halt system',
+  'poweroff': () => 'poweroff - would power off system',
+  'suspend': () => 'suspend - would suspend system',
+  'hibernate': () => 'hibernate - would hibernate system',
+  'lock': () => 'lock - would lock screen',
+  'unlock': () => 'unlock - would unlock screen',
+  'screenshot': () => 'screenshot - would take screenshot',
+  'record': () => 'record - would record screen',
+  'play': () => 'play - would play recording',
+  'stop': () => 'stop - would stop recording',
+  'pause': () => 'pause - would pause recording',
+  'resume': () => 'resume - would resume recording',
+  'rewind': () => 'rewind - would rewind recording',
+  'fastforward': () => 'fastforward - would fast forward recording',
+  'volume': (args) => `volume ${args.join(' ')} - would set volume`,
+  'mute': () => 'mute - would mute audio',
+  'unmute': () => 'unmute - would unmute audio',
+  'brightness': (args) => `brightness ${args.join(' ')} - would set brightness`,
+  'contrast': (args) => `contrast ${args.join(' ')} - would set contrast`,
+  'gamma': (args) => `gamma ${args.join(' ')} - would set gamma`,
+  'color': (args) => `color ${args.join(' ')} - would set color`,
+  'theme': (args) => `theme ${args.join(' ')} - would set theme`,
+  'wallpaper': (args) => `wallpaper ${args.join(' ')} - would set wallpaper`,
+  'font': (args) => `font ${args.join(' ')} - would set font`,
+  'fontsize': (args) => `fontsize ${args.join(' ')} - would set font size`,
+  'fontfamily': (args) => `fontfamily ${args.join(' ')} - would set font family`,
+  'fontweight': (args) => `fontweight ${args.join(' ')} - would set font weight`,
+  'fontstyle': (args) => `fontstyle ${args.join(' ')} - would set font style`,
+  'textalign': (args) => `textalign ${args.join(' ')} - would set text align`,
+  'textdecoration': (args) => `textdecoration ${args.join(' ')} - would set text decoration`,
+  'texttransform': (args) => `texttransform ${args.join(' ')} - would set text transform`,
+  'textindent': (args) => `textindent ${args.join(' ')} - would set text indent`,
+  'lineheight': (args) => `lineheight ${args.join(' ')} - would set line height`,
+  'letterspacing': (args) => `letterspacing ${args.join(' ')} - would set letter spacing`,
+  'wordspacing': (args) => `wordspacing ${args.join(' ')} - would set word spacing`,
+  'white-space': (args) => `white-space ${args.join(' ')} - would set white space`,
+  'wordwrap': (args) => `wordwrap ${args.join(' ')} - would set word wrap`,
+  'overflow': (args) => `overflow ${args.join(' ')} - would set overflow`,
+  'visibility': (args) => `visibility ${args.join(' ')} - would set visibility`,
+  'display': (args) => `display ${args.join(' ')} - would set display`,
+  'position': (args) => `position ${args.join(' ')} - would set position`,
+  'top': (args) => `top ${args.join(' ')} - would set top`,
+  'right': (args) => `right ${args.join(' ')} - would set right`,
+  'bottom': (args) => `bottom ${args.join(' ')} - would set bottom`,
+  'left': (args) => `left ${args.join(' ')} - would set left`,
+  'z-index': (args) => `z-index ${args.join(' ')} - would set z-index`,
+  'opacity': (args) => `opacity ${args.join(' ')} - would set opacity`,
+  'transform': (args) => `transform ${args.join(' ')} - would set transform`,
+  'transition': (args) => `transition ${args.join(' ')} - would set transition`,
+  'animation': (args) => `animation ${args.join(' ')} - would set animation`,
+  'filter': (args) => `filter ${args.join(' ')} - would set filter`,
+  'blur': (args) => `blur ${args.join(' ')} - would set blur`,
+  'brightness': (args) => `brightness ${args.join(' ')} - would set brightness`,
+  'contrast': (args) => `contrast ${args.join(' ')} - would set contrast`,
+  'grayscale': (args) => `grayscale ${args.join(' ')} - would set grayscale`,
+  'sepia': (args) => `sepia ${args.join(' ')} - would set sepia`,
+  'hue-rotate': (args) => `hue-rotate ${args.join(' ')} - would set hue rotate`,
+  'invert': (args) => `invert ${args.join(' ')} - would set invert`,
+  'saturate': (args) => `saturate ${args.join(' ')} - would set saturate`,
+  'drop-shadow': (args) => `drop-shadow ${args.join(' ')} - would set drop shadow`,
+  'box-shadow': (args) => `box-shadow ${args.join(' ')} - would set box shadow`,
+  'text-shadow': (args) => `text-shadow ${args.join(' ')} - would set text shadow`,
+  'background': (args) => `background ${args.join(' ')} - would set background`,
+  'background-color': (args) => `background-color ${args.join(' ')} - would set background color`,
+  'background-image': (args) => `background-image ${args.join(' ')} - would set background image`,
+  'background-size': (args) => `background-size ${args.join(' ')} - would set background size`,
+  'background-position': (args) => `background-position ${args.join(' ')} - would set background position`,
+  'background-repeat': (args) => `background-repeat ${args.join(' ')} - would set background repeat`,
+  'background-attachment': (args) => `background-attachment ${args.join(' ')} - would set background attachment`,
+  'background-clip': (args) => `background-clip ${args.join(' ')} - would set background clip`,
+  'background-origin': (args) => `background-origin ${args.join(' ')} - would set background origin`,
+  'border': (args) => `border ${args.join(' ')} - would set border`,
+  'border-color': (args) => `border-color ${args.join(' ')} - would set border color`,
+  'border-style': (args) => `border-style ${args.join(' ')} - would set border style`,
+  'border-width': (args) => `border-width ${args.join(' ')} - would set border width`,
+  'border-radius': (args) => `border-radius ${args.join(' ')} - would set border radius`,
+  'border-collapse': (args) => `border-collapse ${args.join(' ')} - would set border collapse`,
+  'border-spacing': (args) => `border-spacing ${args.join(' ')} - would set border spacing`,
+  'outline': (args) => `outline ${args.join(' ')} - would set outline`,
+  'outline-color': (args) => `outline-color ${args.join(' ')} - would set outline color`,
+  'outline-style': (args) => `outline-style ${args.join(' ')} - would set outline style`,
+  'outline-width': (args) => `outline-width ${args.join(' ')} - would set outline width`,
+  'outline-offset': (args) => `outline-offset ${args.join(' ')} - would set outline offset`,
+  'margin': (args) => `margin ${args.join(' ')} - would set margin`,
+  'padding': (args) => `padding ${args.join(' ')} - would set padding`,
+  'width': (args) => `width ${args.join(' ')} - would set width`,
+  'height': (args) => `height ${args.join(' ')} - would set height`,
+  'min-width': (args) => `min-width ${args.join(' ')} - would set min width`,
+  'max-width': (args) => `max-width ${args.join(' ')} - would set max width`,
+  'min-height': (args) => `min-height ${args.join(' ')} - would set min height`,
+  'max-height': (args) => `max-height ${args.join(' ')} - would set max height`,
+  'box-sizing': (args) => `box-sizing ${args.join(' ')} - would set box sizing`,
+  'float': (args) => `float ${args.join(' ')} - would set float`,
+  'clear': (args) => `clear ${args.join(' ')} - would set clear`,
+  'overflow-x': (args) => `overflow-x ${args.join(' ')} - would set overflow x`,
+  'overflow-y': (args) => `overflow-y ${args.join(' ')} - would set overflow y`,
+  'resize': (args) => `resize ${args.join(' ')} - would set resize`,
+  'cursor': (args) => `cursor ${args.join(' ')} - would set cursor`,
+  'pointer-events': (args) => `pointer-events ${args.join(' ')} - would set pointer events`,
+  'user-select': (args) => `user-select ${args.join(' ')} - would set user select`,
+  'appearance': (args) => `appearance ${args.join(' ')} - would set appearance`,
+  'content': (args) => `content ${args.join(' ')} - would set content`,
+  'quotes': (args) => `quotes ${args.join(' ')} - would set quotes`,
+  'counter-reset': (args) => `counter-reset ${args.join(' ')} - would set counter reset`,
+  'counter-increment': (args) => `counter-increment ${args.join(' ')} - would set counter increment`,
+  'list-style': (args) => `list-style ${args.join(' ')} - would set list style`,
+  'list-style-type': (args) => `list-style-type ${args.join(' ')} - would set list style type`,
+  'list-style-position': (args) => `list-style-position ${args.join(' ')} - would set list style position`,
+  'list-style-image': (args) => `list-style-image ${args.join(' ')} - would set list style image`,
+  'table-layout': (args) => `table-layout ${args.join(' ')} - would set table layout`,
+  'caption-side': (args) => `caption-side ${args.join(' ')} - would set caption side`,
+  'empty-cells': (args) => `empty-cells ${args.join(' ')} - would set empty cells`,
+  'vertical-align': (args) => `vertical-align ${args.join(' ')} - would set vertical align`,
+  'direction': (args) => `direction ${args.join(' ')} - would set direction`,
+  'unicode-bidi': (args) => `unicode-bidi ${args.join(' ')} - would set unicode bidi`,
+  'writing-mode': (args) => `writing-mode ${args.join(' ')} - would set writing mode`,
+  'text-orientation': (args) => `text-orientation ${args.join(' ')} - would set text orientation`,
+  'text-align-last': (args) => `text-align-last ${args.join(' ')} - would set text align last`,
+  'text-justify': (args) => `text-justify ${args.join(' ')} - would set text justify`,
+  'text-overflow': (args) => `text-overflow ${args.join(' ')} - would set text overflow`,
+  'text-shadow': (args) => `text-shadow ${args.join(' ')} - would set text shadow`,
+  'text-rendering': (args) => `text-rendering ${args.join(' ')} - would set text rendering`,
+  'text-size-adjust': (args) => `text-size-adjust ${args.join(' ')} - would set text size adjust`,
+  'font-kerning': (args) => `font-kerning ${args.join(' ')} - would set font kerning`,
+  'font-variant': (args) => `font-variant ${args.join(' ')} - would set font variant`,
+  'font-stretch': (args) => `font-stretch ${args.join(' ')} - would set font stretch`,
+  'font-synthesis': (args) => `font-synthesis ${args.join(' ')} - would set font synthesis`,
+  'font-feature-settings': (args) => `font-feature-settings ${args.join(' ')} - would set font feature settings`,
+  'font-language-override': (args) => `font-language-override ${args.join(' ')} - would set font language override`,
+  'font-optical-sizing': (args) => `font-optical-sizing ${args.join(' ')} - would set font optical sizing`,
+  'font-variation-settings': (args) => `font-variation-settings ${args.join(' ')} - would set font variation settings`,
+  'color-scheme': (args) => `color-scheme ${args.join(' ')} - would set color scheme`,
+  'forced-color-adjust': (args) => `forced-color-adjust ${args.join(' ')} - would set forced color adjust`,
+  'print-color-adjust': (args) => `print-color-adjust ${args.join(' ')} - would set print color adjust`,
+  'mix-blend-mode': (args) => `mix-blend-mode ${args.join(' ')} - would set mix blend mode`,
+  'isolation': (args) => `isolation ${args.join(' ')} - would set isolation`,
+  'background-blend-mode': (args) => `background-blend-mode ${args.join(' ')} - would set background blend mode`,
+  'mask': (args) => `mask ${args.join(' ')} - would set mask`,
+  'mask-image': (args) => `mask-image ${args.join(' ')} - would set mask image`,
+  'mask-mode': (args) => `mask-mode ${args.join(' ')} - would set mask mode`,
+  'mask-repeat': (args) => `mask-repeat ${args.join(' ')} - would set mask repeat`,
+  'mask-position': (args) => `mask-position ${args.join(' ')} - would set mask position`,
+  'mask-clip': (args) => `mask-clip ${args.join(' ')} - would set mask clip`,
+  'mask-origin': (args) => `mask-origin ${args.join(' ')} - would set mask origin`,
+  'mask-size': (args) => `mask-size ${args.join(' ')} - would set mask size`,
+  'mask-composite': (args) => `mask-composite ${args.join(' ')} - would set mask composite`,
+  'clip': (args) => `clip ${args.join(' ')} - would set clip`,
+  'clip-path': (args) => `clip-path ${args.join(' ')} - would set clip path`,
+  'clip-rule': (args) => `clip-rule ${args.join(' ')} - would set clip rule`,
+  'fill': (args) => `fill ${args.join(' ')} - would set fill`,
+  'fill-opacity': (args) => `fill-opacity ${args.join(' ')} - would set fill opacity`,
+  'fill-rule': (args) => `fill-rule ${args.join(' ')} - would set fill rule`,
+  'stroke': (args) => `stroke ${args.join(' ')} - would set stroke`,
+  'stroke-width': (args) => `stroke-width ${args.join(' ')} - would set stroke width`,
+  'stroke-linecap': (args) => `stroke-linecap ${args.join(' ')} - would set stroke linecap`,
+  'stroke-linejoin': (args) => `stroke-linejoin ${args.join(' ')} - would set stroke linejoin`,
+  'stroke-miterlimit': (args) => `stroke-miterlimit ${args.join(' ')} - would set stroke miterlimit`,
+  'stroke-dasharray': (args) => `stroke-dasharray ${args.join(' ')} - would set stroke dasharray`,
+  'stroke-dashoffset': (args) => `stroke-dashoffset ${args.join(' ')} - would set stroke dashoffset`,
+  'stroke-opacity': (args) => `stroke-opacity ${args.join(' ')} - would set stroke opacity`,
+  'marker': (args) => `marker ${args.join(' ')} - would set marker`,
+  'marker-start': (args) => `marker-start ${args.join(' ')} - would set marker start`,
+  'marker-mid': (args) => `marker-mid ${args.join(' ')} - would set marker mid`,
+  'marker-end': (args) => `marker-end ${args.join(' ')} - would set marker end`,
+  'paint-order': (args) => `paint-order ${args.join(' ')} - would set paint order`,
+  'shape-rendering': (args) => `shape-rendering ${args.join(' ')} - would set shape rendering`,
+  'image-rendering': (args) => `image-rendering ${args.join(' ')} - would set image rendering`,
+  'image-orientation': (args) => `image-orientation ${args.join(' ')} - would set image orientation`,
+  'image-resolution': (args) => `image-resolution ${args.join(' ')} - would set image resolution`,
+  'object-fit': (args) => `object-fit ${args.join(' ')} - would set object fit`,
+  'object-position': (args) => `object-position ${args.join(' ')} - would set object position`,
+  'perspective': (args) => `perspective ${args.join(' ')} - would set perspective`,
+  'perspective-origin': (args) => `perspective-origin ${args.join(' ')} - would set perspective origin`,
+  'transform-origin': (args) => `transform-origin ${args.join(' ')} - would set transform origin`,
+  'transform-style': (args) => `transform-style ${args.join(' ')} - would set transform style`,
+  'backface-visibility': (args) => `backface-visibility ${args.join(' ')} - would set backface visibility`,
+  'backdrop-filter': (args) => `backdrop-filter ${args.join(' ')} - would set backdrop filter`,
+  'contain': (args) => `contain ${args.join(' ')} - would set contain`,
+  'content-visibility': (args) => `content-visibility ${args.join(' ')} - would set content visibility`,
+  'will-change': (args) => `will-change ${args.join(' ')} - would set will change`,
+  'scroll-behavior': (args) => `scroll-behavior ${args.join(' ')} - would set scroll behavior`,
+  'scroll-snap-type': (args) => `scroll-snap-type ${args.join(' ')} - would set scroll snap type`,
+  'scroll-snap-align': (args) => `scroll-snap-align ${args.join(' ')} - would set scroll snap align`,
+  'scroll-snap-stop': (args) => `scroll-snap-stop ${args.join(' ')} - would set scroll snap stop`,
+  'overscroll-behavior': (args) => `overscroll-behavior ${args.join(' ')} - would set overscroll behavior`,
+  'overscroll-behavior-x': (args) => `overscroll-behavior-x ${args.join(' ')} - would set overscroll behavior x`,
+  'overscroll-behavior-y': (args) => `overscroll-behavior-y ${args.join(' ')} - would set overscroll behavior y`,
+  'touch-action': (args) => `touch-action ${args.join(' ')} - would set touch action`,
+  'user-zoom': (args) => `user-zoom ${args.join(' ')} - would set user zoom`,
+  'zoom': (args) => `zoom ${args.join(' ')} - would set zoom`,
+  'scale': (args) => `scale ${args.join(' ')} - would set scale`,
+  'rotate': (args) => `rotate ${args.join(' ')} - would set rotate`,
+  'translate': (args) => `translate ${args.join(' ')} - would set translate`,
+  'skew': (args) => `skew ${args.join(' ')} - would set skew`,
+  'matrix': (args) => `matrix ${args.join(' ')} - would set matrix`,
+  'matrix3d': (args) => `matrix3d ${args.join(' ')} - would set matrix3d`,
+  'translate3d': (args) => `translate3d ${args.join(' ')} - would set translate3d`,
+  'scale3d': (args) => `scale3d ${args.join(' ')} - would set scale3d`,
+  'rotate3d': (args) => `rotate3d ${args.join(' ')} - would set rotate3d`,
+  'rotateX': (args) => `rotateX ${args.join(' ')} - would set rotateX`,
+  'rotateY': (args) => `rotateY ${args.join(' ')} - would set rotateY`,
+  'rotateZ': (args) => `rotateZ ${args.join(' ')} - would set rotateZ`,
+  'translateX': (args) => `translateX ${args.join(' ')} - would set translateX`,
+  'translateY': (args) => `translateY ${args.join(' ')} - would set translateY`,
+  'translateZ': (args) => `translateZ ${args.join(' ')} - would set translateZ`,
+  'scaleX': (args) => `scaleX ${args.join(' ')} - would set scaleX`,
+  'scaleY': (args) => `scaleY ${args.join(' ')} - would set scaleY`,
+  'scaleZ': (args) => `scaleZ ${args.join(' ')} - would set scaleZ`,
+  'skewX': (args) => `skewX ${args.join(' ')} - would set skewX`,
+  'skewY': (args) => `skewY ${args.join(' ')} - would set skewY`,
+  'perspective': (args) => `perspective ${args.join(' ')} - would set perspective`,
+  'transform': (args) => `transform ${args.join(' ')} - would set transform`,
+  'transform-origin': (args) => `transform-origin ${args.join(' ')} - would set transform origin`,
+  'transform-style': (args) => `transform-style ${args.join(' ')} - would set transform style`,
+  'backface-visibility': (args) => `backface-visibility ${args.join(' ')} - would set backface visibility`,
+  'backdrop-filter': (args) => `backdrop-filter ${args.join(' ')} - would set backdrop filter`,
+  'contain': (args) => `contain ${args.join(' ')} - would set contain`,
+  'content-visibility': (args) => `content-visibility ${args.join(' ')} - would set content visibility`,
+  'will-change': (args) => `will-change ${args.join(' ')} - would set will change`,
+  'scroll-behavior': (args) => `scroll-behavior ${args.join(' ')} - would set scroll behavior`,
+  'scroll-snap-type': (args) => `scroll-snap-type ${args.join(' ')} - would set scroll snap type`,
+  'scroll-snap-align': (args) => `scroll-snap-align ${args.join(' ')} - would set scroll snap align`,
+  'scroll-snap-stop': (args) => `scroll-snap-stop ${args.join(' ')} - would set scroll snap stop`,
+  'overscroll-behavior': (args) => `overscroll-behavior ${args.join(' ')} - would set overscroll behavior`,
+  'overscroll-behavior-x': (args) => `overscroll-behavior-x ${args.join(' ')} - would set overscroll behavior x`,
+  'overscroll-behavior-y': (args) => `overscroll-behavior-y ${args.join(' ')} - would set overscroll behavior y`,
+  'touch-action': (args) => `touch-action ${args.join(' ')} - would set touch action`,
+  'user-zoom': (args) => `user-zoom ${args.join(' ')} - would set user zoom`,
+  'zoom': (args) => `zoom ${args.join(' ')} - would set zoom`,
+  'scale': (args) => `scale ${args.join(' ')} - would set scale`,
+  'rotate': (args) => `rotate ${args.join(' ')} - would set rotate`,
+  'translate': (args) => `translate ${args.join(' ')} - would set translate`,
+  'skew': (args) => `skew ${args.join(' ')} - would set skew`,
+  'matrix': (args) => `matrix ${args.join(' ')} - would set matrix`,
+  'matrix3d': (args) => `matrix3d ${args.join(' ')} - would set matrix3d`,
+  'translate3d': (args) => `translate3d ${args.join(' ')} - would set translate3d`,
+  'scale3d': (args) => `scale3d ${args.join(' ')} - would set scale3d`,
+  'rotate3d': (args) => `rotate3d ${args.join(' ')} - would set rotate3d`,
+  'rotateX': (args) => `rotateX ${args.join(' ')} - would set rotateX`,
+  'rotateY': (args) => `rotateY ${args.join(' ')} - would set rotateY`,
+  'rotateZ': (args) => `rotateZ ${args.join(' ')} - would set rotateZ`,
+  'translateX': (args) => `translateX ${args.join(' ')} - would set translateX`,
+  'translateY': (args) => `translateY ${args.join(' ')} - would set translateY`,
+  'translateZ': (args) => `translateZ ${args.join(' ')} - would set translateZ`,
+  'scaleX': (args) => `scaleX ${args.join(' ')} - would set scaleX`,
+  'scaleY': (args) => `scaleY ${args.join(' ')} - would set scaleY`,
+  'scaleZ': (args) => `scaleZ ${args.join(' ')} - would set scaleZ`,
+  'skewX': (args) => `skewX ${args.join(' ')} - would set skewX`,
+  'skewY': (args) => `skewY ${args.join(' ')} - would set skewY`,
+};
+
+Object.assign(terminalCommands, moreCommands);
+
+// ── Initialize ──
+updateWordCount();
+
+
+// ── Global Search ──
+function globalSearch(query) {
+  const q = query.toLowerCase();
+  const results = [];
+  
+  // Search files
+  function searchFiles(tree, path = '') {
+    Object.entries(tree).forEach(([name, item]) => {
+      const fullPath = path ? `${path}/${name}` : name;
+      if (name.toLowerCase().includes(q)) {
+        results.push({ type: 'file', name, path: fullPath });
+      }
+      if (item.type === 'dir') searchFiles(item.children, fullPath);
+    });
+  }
+  searchFiles(fileTree);
+  
+  // Search commands
+  commands.forEach(cmd => {
+    if (cmd.name.toLowerCase().includes(q)) {
+      results.push({ type: 'command', name: cmd.name, category: cmd.category });
+    }
+  });
+  
+  // Search settings
+  document.querySelectorAll('.settings-item').forEach(item => {
+    const label = item.querySelector('.settings-label');
+    if (label && label.textContent.toLowerCase().includes(q)) {
+      results.push({ type: 'setting', name: label.textContent });
+    }
+  });
+  
+  return results;
+}
+
+// Add global search to command palette
+const globalSearchCmd = {
+  name: 'Global Search',
+  action: () => {
+    cmdPalette.classList.add('open');
+    cmdInput.value = '';
+    cmdInput.placeholder = 'Search files, commands, settings...';
+    setTimeout(() => cmdInput.focus(), 100);
+  },
+  category: 'Search'
+};
+commands.push(globalSearchCmd);
+
+// ── Enhanced Editor: Syntax Highlighting ──
+function highlightSyntax(code, lang) {
+  if (lang === 'typescript' || lang === 'javascript') {
+    return code
+      .replace(/\/\/.*/g, '<span class="token-comment">$&</span>')
+      .replace(/(function|class|export|import|from|return|if|else|for|while|const|let|var|new|this|super|extends|implements|interface|type|enum|namespace|declare|abstract|async|await|try|catch|finally|throw|switch|case|default|break|continue|do|in|of|instanceof|typeof|void|delete|yield|static|get|set|public|private|protected|readonly|override|sealed|virtual|partial|params|ref|out|in|is|as|where|select|from|join|on|equals|group|by|into|let|orderby|ascending|descending|then|lock|using|fixed|unsafe|checked|unchecked|stackalloc|nameof|sizeof|typeof|delegate|event|operator|implicit|explicit|extern|volatile|params|ref|out|in|is|as|where|select|from|join|on|equals|group|by|into|let|orderby|ascending|descending|then|lock|using|fixed|unsafe|checked|unchecked|stackalloc|nameof|sizeof|typeof|delegate|event|operator|implicit|explicit|extern|volatile)/g, '<span class="token-keyword">$&</span>')
+      .replace(/(true|false|null|undefined|NaN|Infinity)/g, '<span class="token-literal">$&</span>')
+      .replace(/(\d+\.?\d*)/g, '<span class="token-number">$&</span>')
+      .replace(/(["'`])(?:(?!\1)[^\\]|\.)*\1/g, '<span class="token-string">$&</span>');
+  }
+  return code;
+}
+
+// ── Enhanced Terminal: Tab Completion ──
+terminalInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const input = this.value;
+    const parts = input.split(' ');
+    const last = parts[parts.length - 1];
+    
+    // Complete commands
+    const cmdMatches = Object.keys(terminalCommands).filter(c => c.startsWith(last));
+    if (cmdMatches.length === 1) {
+      parts[parts.length - 1] = cmdMatches[0];
+      this.value = parts.join(' ');
+    } else if (cmdMatches.length > 1) {
+      terminalPrint('  ' + cmdMatches.join('  '), 'output');
+    }
+  }
+});
+
+// ── Enhanced Terminal: Ctrl+C ──
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'c') {
+    if (document.activeElement === terminalInput) {
+      e.preventDefault();
+      terminalPrint('^C', 'output');
+      terminalInput.value = '';
+    }
+  }
+});
+
+// ── Enhanced Terminal: Ctrl+L ──
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'l') {
+    if (document.activeElement === terminalInput) {
+      e.preventDefault();
+      terminalOutput.innerHTML = '';
+    }
+  }
+});
+
+// ── Enhanced Editor: Auto-Indent ──
+editorTextarea.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const pos = this.selectionStart;
+    const text = this.value;
+    const before = text.substring(0, pos);
+    const after = text.substring(pos);
+    const lines = before.split('\n');
+    const currentLine = lines[lines.length - 1];
+    const indent = currentLine.match(/^\s*/)[0];
+    
+    // Add extra indent after { or :
+    let extraIndent = '';
+    if (currentLine.endsWith('{') || currentLine.endsWith(':')) {
+      extraIndent = '  ';
+    }
+    
+    this.value = before + '\n' + indent + extraIndent + after;
+    this.selectionStart = this.selectionEnd = pos + 1 + indent.length + extraIndent.length;
+    updateLineNumbers();
+    updateCursorPosition();
+    updateWordCount();
+  }
+});
+
+// ── Enhanced Editor: Auto-Close Brackets ──
+const bracketPairs = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'", '`': '`' };
+editorTextarea.addEventListener('keydown', function(e) {
+  if (bracketPairs[e.key]) {
+    e.preventDefault();
+    const pos = this.selectionStart;
+    const text = this.value;
+    this.value = text.substring(0, pos) + e.key + bracketPairs[e.key] + text.substring(pos);
+    this.selectionStart = this.selectionEnd = pos + 1;
+  }
+});
+
+// ── Initialize ──
+updateWordCount();
+
+
+</script>
+
+
+</body>
+</html>

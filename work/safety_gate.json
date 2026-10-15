@@ -1,0 +1,52 @@
+{
+  "core": "tools/agent_core.py",
+  "judgments": [
+    {
+      "detail": "free={'plan_lock_off': True, 'mode_gate_off': True, 'cmd_gate_off': True} lock={'plan_lock_off': False, 'mode_gate_off': False, 'cmd_gate_off': False} str={'plan_lock_off': True, 'mode_gate_off': True",
+      "gate": "D1 _safety_flags：缺键=自由 / 字面 True 才上锁 / 字符串不认",
+      "ok": true
+    },
+    {
+      "detail": "rc=0 tail='AGENT_CORE OK 140/140'",
+      "gate": "D2 --check 末行逐字 AGENT_CORE OK 140/140",
+      "ok": true
+    },
+    {
+      "detail": "load=2 mode=7 lock=6 cmd=6 tbl=1 bool=1 keys=1",
+      "gate": "D3 源码锚点（入口两处载入 / 三键站点齐 / CLI agent 三键落布尔）",
+      "ok": true
+    },
+    {
+      "detail": "free=True bare='计划未审批：write_file 未执行'",
+      "gate": "D4 默认自由：入口旗标下未审批写放行；裸 ctx 保守仍锁",
+      "ok": true
+    },
+    {
+      "detail": "gate=True free=True h=True/True/True",
+      "gate": "D5 模式开关：显式 mode_gate 下 plan 拒写命令；自由面放行；硬阻断三形态仍拒",
+      "ok": true
+    },
+    {
+      "detail": "lock='计划未审批：write_file 未' wl=\"任务 's1' 的工具白名单是 [r\" free=True",
+      "gate": "D6 计划锁：显式上锁未审批写拦 + 已审批白名单拦；自由面同跳",
+      "ok": true
+    },
+    {
+      "detail": "free=True gate='命令不在只读白名单里：mkdir' rc=0",
+      "gate": "D9 命令面开关：自由面非白名单命令放行且真跑（mkdir）；显式 cmd_gate 恢复白名单拒",
+      "ok": true
+    },
+    {
+      "detail": "r1=0 r2=0 r3=2 r4=2 true=True false=True",
+      "gate": "D7 CLI（隔离 HOME）：set true/false 落布尔 rc=0；yes/越权键 rc=2",
+      "ok": true
+    },
+    {
+      "detail": "新增=无",
+      "gate": "D8 零污染（work/ 只多 --out；真 ~/.agentos 未被门碰）",
+      "ok": true
+    }
+  ],
+  "n_ok": 9,
+  "n_total": 9
+}
