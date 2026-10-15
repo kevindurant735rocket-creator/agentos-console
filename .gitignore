@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.venv-pw/
+work/gates/*.log
+work/agent_sessions/
+work/agent_snapshots/
+*.bak*
+*.bak-*
