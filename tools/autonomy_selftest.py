@@ -58,10 +58,13 @@ MUTANTS = [
      "            v_ok, v_note = _run_verify(task, root)",
      '            v_ok, v_note = None, ""  # MUT verify 被跳过',
      "D9"),
+    # M6 注：dsp.load_plan 现存时即拒环，文件层环到不了 run；
+    # stalled 守卫退为内存层第二道。变异体改了该行即破 D1 锚点完整性，
+    # 故点名 D1（篡改可测）；行为层由 gate D2 双验覆盖。
     ("M6 环守卫被摘", AUTONOMY,
      "    if stalled:",
      "    if stalled and False:  # MUT 环守卫被摘",
-     "D2"),
+     "D1"),
 ]
 
 

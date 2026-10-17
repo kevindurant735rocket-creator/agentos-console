@@ -1,0 +1,9 @@
+{"event": "run_start", "goal": "自救实战：三连读", "mode": "run", "retries": 2, "ts": 1792147339.075}
+{"event": "steer", "n": 1, "texts": ["boss 已审批：按计划执行，证据逐条留痕"], "ts": 1792147339.075}
+{"attempt": 1, "dur": 23.3, "event": "dispatch", "out": "work/autonomy/e2e-heal/t1.a1.out", "rc": 0, "status": "done", "task": "t1", "ts": 1792147362.444, "verify": "verify rc=0"}
+{"dur": 23.4, "event": "run_end", "mode": "run", "remain": ["t2", "t3"], "ts": 1792147362.446}
+{"event": "run_start", "goal": "自救实战：三连读", "mode": "resume", "retries": 2, "ts": 1792147374.169}
+{"event": "steer", "n": 1, "texts": ["boss 自救 t2：判据没过：收紧判据命令，先手工跑通判据再交活"], "ts": 1792147374.171}
+{"attempt": 1, "dur": 22.3, "event": "dispatch", "out": "work/autonomy/e2e-heal/t2.a1.out", "rc": 0, "status": "done", "task": "t2", "ts": 1792147396.427, "verify": "verify rc=0"}
+{"attempt": 1, "dur": 17.8, "event": "dispatch", "out": "work/autonomy/e2e-heal/t3.a1.out", "rc": 0, "status": "done", "task": "t3", "ts": 1792147414.205, "verify": "verify rc=0"}
+{"dur": 40.0, "event": "run_end", "mode": "resume", "remain": [], "ts": 1792147414.206}

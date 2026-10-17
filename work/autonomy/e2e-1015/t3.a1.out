@@ -1,0 +1,17 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+做了什么（t3 实施A 落盘+验证）：
+- 新建 `pilot-probe/todo.py:1-13`（13 行，≤30 行）：`add/list/done` 三命令，数据落 `pilot-probe/todos.json`（标准库 json/os/sys，无依赖）
+- 真实运行验证全过：
+  - `python3 pilot-probe/todo.py add "buy milk"` → `added #1` rc=0 PASS
+  - `python3 pilot-probe/todo.py list` → `[ ] 1. buy milk` rc=0 PASS
+  - `python3 pilot-probe/todo.py done 1` → `done #1` rc=0 PASS
+  - 复验 `list` → `[x] 1. buy milk` rc=0 PASS
+  - `wc -l pilot-probe/todo.py` → `13` 行 rc=0 OK
+  - `git diff HEAD` rc=0（主树 README 有既有未提交改动；本次新增 `pilot-probe/` 为 untracked，不在 HEAD diff 内，属预期）
+
+证据行：改动落盘 OK + add rc=0 PASS + list rc=0 PASS + done rc=0 PASS + 行数 13/30 OK
+
+还剩什么没做：无（t3 判据全满足）；`pilot-probe/todos.json` 为验证副产物，如需干净可删，不影响脚本。
+
+--- agent_core：10 步，32.5s，工具调用 9 次（其中 0 次未执行：被拒/参数不对）

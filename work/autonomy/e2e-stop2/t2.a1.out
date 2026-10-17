@@ -1,0 +1,31 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+t2 定案完成（圈改动面 + 可复算判据）。
+
+## 做了什么
+- 定案改动面清单（仅 1 目录 + 1 文件，均为新增，不碰现有代码）：
+  1. 新建目录 `probe-stop2/`（单一新增目录）
+  2. 新建脚本 `probe-stop2/temp.py`（唯一新增文件，支持摄氏↔华氏互转：C→F 用 `F=C*9/5+32`，F→C 用 `C=(F-32)*5/9`，参考模板 `probe-stop/calc.py:1-24` 的 CLI 风格）
+- 每项钉成可复算判据（下游 t3 直接执行）：
+  - D1 存在性：`test -d probe-stop2 && test -f probe-stop2/temp.py` → rc=0 为 PASS
+  - D2 C→F：`python3 probe-stop2/temp.py C2F 100` 输出 `212` → PASS（判据：stdout 去空格等于 `212`）
+  - D3 F→C：`python3 probe-stop2/temp.py F2C 32` 输出 `0` → PASS（判据：stdout 去空格等于 `0`）
+
+## 证据行（含 rc/PASS/FAIL）
+- `list_dir probe-stop2` → 不存在（ok=false, error=不是目录）FAIL=缺失确认 OK
+- `ls -la`（仓库根）→ rc=0，39 项中有 `probe-stop/` 无 `probe-stop2/` PASS
+- `ls -la probe-stop` → rc=0，含 `calc.py/test_calc.py/README.md` PASS（模板可用）
+- `read_file plan.md:1-46` → ok，确认本任务不在既有 plan 改动面内 PASS
+- `read_file progress.md:1-20` → ok，无 probe-stop2 实现记录 PASS
+- `search probe-stop pattern` → rc=0, n=20，仅命中 `probe-stop/` + t1 留痕，无 `probe-stop2/` 实现 PASS
+- `read_file probe-stop/calc.py:1-24` → ok，24 行 CLI 模板可复用 PASS
+- `test -e probe-stop2` → rc=1（不存在，符合预期缺失）OK
+- `python3 --version` → rc=0, `Python 3.14.8` PASS（运行环境就绪）
+
+## 验证命令真实 rc
+以上 9 条证据均已执行，无跳过；写动作零执行（本任务只定案）。
+
+## 还剩什么没做
+- t3 实现+逐个运行验证（新建 `probe-stop2/temp.py` 并跑 D1/D2/D3）未做，待下游派发。
+
+--- agent_core：10 步，46.0s，工具调用 9 次（其中 0 次未执行：被拒/参数不对）

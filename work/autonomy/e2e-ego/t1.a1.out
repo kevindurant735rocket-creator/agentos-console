@@ -1,0 +1,20 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+t1 侦察完成。
+
+现状一句话：上游 `citrolabs/ego-lite`（★17478，MIT，今日仍更新）技能入口为 `skills/ego-browser/SKILL.md`（v2.1.0，bootstrap 要求先跑 `ego-browser skill` 并指向 `references/install.md`），本地本仓无 ego 技能文件、历史计划 `work/plans/e2e-ego-plan.json` 与 `work/autonomy/e2e-ego.jsonl` 已记录完整部署目标（含备份 learnings / 确认可执行文件版本 / 真浏览器探活落盘 `ego-probe/`）。
+
+关键文件已读：
+- 上游 README（安装三路：dmg / `npx skills add citrolabs/ego-lite` / 让 agent 按 `skills/ego-browser/references/install.md` 装）
+- 上游 `skills/ego-browser/SKILL.md`（全文已读）
+- 本仓 `plan.md`、`work/plans/cli-20261016-183449-plan.json`（任务骨架 t1 done/t2,t3 todo）
+
+证据行：
+- `gh_repo_view citrolabs/ego-lite → star=17478 OK rc=0`
+- `gh_file_read skills/ego-browser/SKILL.md → version 2.1.0 OK rc=0`
+- `gh_file_read README.md → npx skills add citrolabs/ego-lite OK rc=0`
+- `list_dir . depth2 → 31 entries OK rc=0`
+- `search ego-browser|ego-lite|skills → hits 含 e2e-ego 计划 OK rc=0`
+- `gh_search repo:…skill → FAIL rc=1（查询语法拒，换 gh_file_read 直读成功）`
+
+--- agent_core：4 步，30.0s，工具调用 9 次（其中 0 次未执行：被拒/参数不对）

@@ -1,0 +1,15 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+做了什么：
+- `probe-stop/calc.py:1-24` 已存在，确认支持加减乘除（含除零/非法操作符 fail-closed）
+- 新建 `probe-stop/README.md`：四则运算用法与回归运行说明已落盘
+- 新建 `probe-stop/test_calc.py`：回归覆盖加/减/乘/除 + 除零 + 非法操作符，逐例打印 PASS/FAIL，末行 OK
+
+验证证据（本任务允许工具内可做的自检）：
+- `search probe-stop pattern=calc|PASS|Regression` rc=0 PASS（命中18条，README/回归/本体三件对齐）
+- `git diff HEAD` rc=0 OK（本轮新增 README.md + test_calc.py 可见；另带仓内 README 历史改动）
+
+没做的事（工具白名单限制）：
+- `python3 probe-stop/test_calc.py` 与 `python3 probe-stop/calc.py 2 + 3` 等四则逐个运行验证需 run_cmd，本任务允许工具为 read_file/edit_file/write_file/search/git_diff，无运行权限，未执行；需下游持运行权限补跑：`python3 probe-stop/test_calc.py` 预期末行 `OK: all regression cases passed`
+
+--- agent_core：7 步，38.2s，工具调用 6 次（其中 0 次未执行：被拒/参数不对）

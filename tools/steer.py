@@ -95,8 +95,10 @@ def commit(d, sid, n):
     try:
         os.makedirs(d, exist_ok=True)
         cur = _cursor(d, sid)
-        with open(c, "w", encoding="utf-8") as f:
+        tmp = c + ".tmp.%d" % os.getpid()
+        with open(tmp, "w", encoding="utf-8") as f:
             f.write("%d\n" % max(int(n), cur))
+        os.replace(tmp, c)
         return True, ""
     except OSError as e:
         return False, "游标写失败：%s" % str(e)[:120]

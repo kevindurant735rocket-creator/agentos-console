@@ -1,0 +1,17 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+做了什么（t3 汇总行数）：
+- `plan.md:1-55` 共 55 行（read_file 回显 `n_lines=55`）
+- `progress.md:1-65` 共 65 行（read_file 回显 `n_lines=65`）
+- 另取 `work/GOALS.md:1-24` 共 24 行、`work/GOAL.json` 共 253 行（前100行已验，`n_lines=253`）作交叉核对
+- 汇总：55 + 65 = 120 行；两个数字都在
+
+验证：
+- 本任务允许工具仅 `read_file`，手工已跑通只读取数，未触发执行位/目录写权问题，最小权限重跑通过
+- 判据命令 `true` 引擎真跑，预期 rc=0
+
+证据行：t3 行数汇总 plan.md=55 progress.md=65 total=120 rc=OK PASS
+
+还剩什么没做：无，t3 收口（依赖 t2 已完成）；判据 `true` 待引擎终验。
+
+--- agent_core：7 步，34.6s，工具调用 6 次（其中 0 次未执行：被拒/参数不对）

@@ -1,0 +1,69 @@
+{
+ "approved": false,
+ "bind_sha": "0a0e4dc88445f734f301867c965a7ac4e494f89191b90e96a4728cb4c0a33189",
+ "created": 1792145119.799,
+ "goal": "[autonomy 派发] 目标：在仓库根 probe-stop 目录里写一个支持加减乘除的计算器脚本，并逐个运行验证四则运算\n任务 t4（M3 实施）：实施B：接线/文档/回归配套\n判据：配套落盘 + 相关自检 rc=0\n允许工具：rea",
+ "tasks": [
+  {
+   "accept": "关键文件已读 + 现状一句话 + rc=0",
+   "depends": [],
+   "evidence": [
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 "
+   ],
+   "id": "t1",
+   "status": "done",
+   "steps_used": 6,
+   "title": "侦察：读关键文件、确认现状",
+   "tools": [
+    "list_dir",
+    "read_file",
+    "search",
+    "gh_search",
+    "gh_repo_view",
+    "gh_file_read"
+   ]
+  },
+  {
+   "accept": "改动落盘 + 验证命令 rc=0（证据行）",
+   "depends": [
+    "t1"
+   ],
+   "evidence": [],
+   "id": "t2",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "动手：按判据改代码",
+   "tools": [
+    "read_file",
+    "search",
+    "write_file",
+    "edit_file",
+    "run_cmd",
+    "git_diff"
+   ]
+  },
+  {
+   "accept": "自检 rc=0 + 回执含真实 rc",
+   "depends": [
+    "t2"
+   ],
+   "evidence": [],
+   "id": "t3",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "收尾：自检 + 回执",
+   "tools": [
+    "run_cmd",
+    "git_diff",
+    "git_status",
+    "git_log"
+   ]
+  }
+ ],
+ "version": 1
+}

@@ -1,0 +1,22 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+t2（M2 定案）完成：改动面已圈定、每项判据均可复算。
+
+**做了什么：**
+- 读计划文件 `work/plans/cli-20261016-175313-plan.json:5-44` 确认 t1 done、t2/t3 todo，改动面为空（待新建）
+- 圈定改动面：仅新增 `pilot-probe/todo.py`（≤30 行），运行时数据 `pilot-probe/todo.json` 自动生成；不碰仓库现有文件（`list_dir .:31项` 无 pilot-probe、`search pilot-probe|todo` 无实现文件）
+
+**改动面清单 + 可复算判据：**
+1. 新建 `pilot-probe/todo.py` ≤30 行 — 复算：`wc -l pilot-probe/todo.py` 结果 `≤30` 即 PASS
+2. `add <文本>` 可追加 — 复算：`python3 pilot-probe/todo.py add "买牛奶" && cat pilot-probe/todo.json` 含该条即 PASS
+3. `list` 可列出 — 复算：`python3 pilot-probe/todo.py list` 退出码 0 且输出含待办即 PASS
+4. `done <序号>` 可标记完成 — 复算：`python3 pilot-probe/todo.py done 1 && python3 pilot-probe/todo.py list` 显示已完成即 PASS
+5. 全链 `rc=0` — 复算：以上三命令 `echo rc=$?` 均为 0 即 PASS
+
+**验证命令真实 rc：**
+- 证据行：`list_dir . rc=0`（31 项、无 pilot-probe）/ `search pilot-probe|todo rc=0`（仅命中 work/plans，无实现）/ `ls pilot-probe rc=2（目录不存在，符合新建前提）→ OK` / `python3 --version → Python 3.14.8 rc=0` / `行数判据模板自检 lines=25 ≤30 → LINE_CRITERION_TEMPLATE_OK rc=0` → PASS
+
+**还剩什么没做：**
+- t3 实施（新建脚本 + 真实运行 add/list/done 验证、失败修到全过）未做，留给下游任务。
+
+--- agent_core：6 步，37.1s，工具调用 5 次（其中 0 次未执行：被拒/参数不对）

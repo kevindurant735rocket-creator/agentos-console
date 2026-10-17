@@ -1,0 +1,16 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+做了什么（文件:行号级）：
+- `plan.md`: 全文 46 行（read_file offset=1 showing 46/46）
+- `progress.md`: 全文 29 行（read_file offset=1 showing 29/29）
+- 汇总：46 + 29 = 75 行
+
+验证命令的真实 rc：
+- read plan.md rc=PASS（n_lines=46）
+- read progress.md rc=PASS（n_lines=29）
+- 汇总 75 rc=OK
+
+还剩什么没做：
+- 无，三连读 t3 已闭环，总数 75 对上判据。
+
+--- agent_core：4 步，17.7s，工具调用 3 次（其中 0 次未执行：被拒/参数不对）

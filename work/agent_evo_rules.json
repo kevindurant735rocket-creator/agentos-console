@@ -1,0 +1,23 @@
+{
+ "rules": [
+  {
+   "advice": "端点失败：先 GET /v1/models 探活；HTTP 403/400 多为 key 或网关路由问题，不可达为网络/代理问题；/model 可现场换模型",
+   "count": 5,
+   "created": "2026-10-16 21:34:47",
+   "id": "evo-err-provider",
+   "notified": true,
+   "sig": "err:provider",
+   "state": "CANDIDATE"
+  },
+  {
+   "advice": "查 stderr 里 [失败 kind] 的原文；同类失败连续出现会在此聚成经验规则",
+   "count": 3,
+   "created": "2026-10-16 21:37:36",
+   "id": "evo-tool-fail-gh_repo_view",
+   "notified": true,
+   "sig": "tool-fail:gh_repo_view",
+   "state": "CANDIDATE"
+  }
+ ],
+ "version": 1
+}

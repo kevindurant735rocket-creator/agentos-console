@@ -4,7 +4,11 @@
 # 顺序：项目 venv -> capvenv -> 系统 python3。
 # 门的执行顺序也有讲究：neg_a11y 会还原 index.html（mtime 变新），
 # 所以它必须排在 shoot 之前，否则 ux_audit 会以「shots.json 早于 index.html」判 FAIL。
-# 正确链：bash tools/gates.sh resident_gate headroom_gate flake_retry_selftest indep_field_gate neg_a11y freshness_gate shoot view_dod view_dod_selftest http_shot_gate snap_gate a11y_walk a11y_human neg_a11y_human ux_audit a11y_served projspace_gate act_gate promo_gate capmap_gate abort_gate abort_e2e intent_gate retro_gate goal_gate round_gate close_gate layout_gate env_gate web_gate native_gate native_gate_selftest agent_core_gate neg_agent_core at_selftest neg_at_selftest minimize_check gh_gate tui_walk_gate cli_gate cli_gate_selftest evolution_gate capability_gate evolution_gate_selftest perf_gate dsp_gate dsp_gate_selftest leader_gate leader_selftest evo_merge_gate evo_merge_selftest kbd_gate_selftest rewind_gate rewind_selftest subagent_gate subagent_selftest mcp_gate mcp_selftest hooks_gate hooks_selftest repl_ux_gate repl_ux_selftest branches_gate branches_selftest supervise_gate supervise_selftest safety_gate safety_selftest autonomy_gate autonomy_selftest
+# 正确链：bash tools/gates.sh resident_gate headroom_gate flake_retry_selftest indep_field_gate neg_a11y freshness_gate shoot view_dod view_dod_selftest http_shot_gate snap_gate a11y_walk a11y_human neg_a11y_human ux_audit a11y_served projspace_gate act_gate promo_gate capmap_gate abort_gate abort_e2e intent_gate retro_gate goal_gate round_gate close_gate layout_gate env_gate web_gate native_gate native_gate_selftest agent_core_gate neg_agent_core at_selftest neg_at_selftest minimize_check gh_gate tui_walk_gate cli_gate cli_gate_selftest evolution_gate capability_gate evolution_gate_selftest perf_gate dsp_gate dsp_gate_selftest leader_gate leader_selftest evo_merge_gate evo_merge_selftest kbd_gate_selftest rewind_gate rewind_selftest subagent_gate subagent_selftest mcp_gate mcp_selftest hooks_gate hooks_selftest repl_ux_gate repl_ux_selftest branches_gate branches_selftest supervise_gate supervise_selftest safety_gate safety_selftest autonomy_gate autonomy_selftest boss_gate
+# boss_gate 收尾（2026-10-15 第三波，70→71）：人不审、机器审 —— 坏工具/环计划
+# 必拒且说清理由，好计划才 approve；含 run_cmd 无全权拒、有全权放；monitor
+# 报告形状齐。纯离线（无模型调用），放链尾 autonomy_selftest 之后，
+# 不抢端口不碰浏览器，不扰动任何一门的顺序理由。
 # perf_gate 收尾（2026-10-11 补链，44→45）：它此前只手工跑、不在链上，而 README
 # 又引它的 OK 令牌 —— 属「文档引了门、链里却没有门」的自洽缺口。补链后 R6 性能面
 # （8790 的 API/页面响应、内存/进程/fd、serve.py 冷启动，外加 `agentos health`
@@ -411,7 +415,7 @@
 # 把 leader「派发之后」的空白补满：一次审批后全流程无人干预收口（判据
 # verify 命令组真跑、双闸 done 语义反假绿、失败确定性分类带修法自救 ≤2 次、
 # 封顶 blocked 且下游按 DAG 不派发、断点检查点强杀可续、终局 REPORT 诚实
-# 收口 rc=0/1）。正向 autonomy_gate 12 判据（纯面/环负控/**未审批拒跑锁面**/
+# 收口 rc=0/1）。正向 autonomy_gate 13 判据（纯面/环负控/**未审批拒跑锁面**/
 # 一次调用 5/5 全流程含 verify marker 物证/自救先红后绿/**封顶+DAG 传播**/
 # SIGKILL 强杀续跑零重跑/预算边界干净停/反假绿双闸/steer 监督/CLI/零污染）；
 # autonomy_selftest 10 例（6 变异体：绕锁/无自救/封顶差一/续跑重跑/verify

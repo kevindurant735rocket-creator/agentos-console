@@ -1,0 +1,28 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+t2 定案完成（M2）：
+
+**做了什么（改动面清单，圈定最小改动面）：**
+- 现状确认：仓库根 31 项、无 `probe-stop` 目录（`list_dir:.` ok；`ls probe-stop` rc=2 不存在；`test ! -e probe-stop` rc=0 确认缺失）
+- 全库搜索 `probe-stop|calc|计算器` 仅命中 CSS `calc()`、data.json 业务串、`work/plans/e2e-stop-plan.json:6`、`work/autonomy/e2e-stop.jsonl:1`，无计算器脚本实现（证据：search rc=0, n=16/20）
+- 关键文件已读：`plan.md:1-46`、`progress.md:1-20`、`work/plans/e2e-stop-plan.json:1-50`、`work/autonomy/e2e-stop/t1.a1.out:1-16`（证据：read ok）
+- 定案改动面（仅新增，不碰存量）：
+  1. 新建目录 `probe-stop/`（单一新增目录）
+  2. 新建脚本 `probe-stop/calc.py`（唯一新增文件，支持加减乘除）
+  3. 存量文件零修改（plan.md/progress.md/tools/ 均不动）
+
+**每项可复算判据（t3 按此复算）：**
+- D1 存在性：`test -d probe-stop && test -f probe-stop/calc.py` → rc=0 为 PASS
+- D2 加法：`python3 probe-stop/calc.py add 2 3` → 输出 `5`，rc=0
+- D3 减法：`python3 probe-stop/calc.py sub 5 2` → 输出 `3`，rc=0
+- D4 乘法：`python3 probe-stop/calc.py mul 4 3` → 输出 `12`，rc=0
+- D5 除法：`python3 probe-stop/calc.py div 8 2` → 输出 `4`，rc=0
+
+**验证命令真实 rc：**
+- `test ! -e probe-stop && echo MISSING...; echo rc=$?` → rc=0 / PASS（改动面为空、需新建）
+- `search: probe-stop|calc|计算器` → rc=0 / PASS（无现有实现）
+
+**还剩什么没做：**
+- t3 实施：新建 `probe-stop/calc.py` 并逐个运行验证 D1–D5（需 rc=0 证据行）；本次 t2 范围内无未做项。
+
+--- agent_core：6 步，40.7s，工具调用 8 次（其中 0 次未执行：被拒/参数不对）

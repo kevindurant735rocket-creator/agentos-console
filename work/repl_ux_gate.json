@@ -7,8 +7,8 @@
       "ok": true
     },
     {
-      "detail": "rc=0 tail='AGENT_CORE OK 140/140'",
-      "gate": "D2 --check 末行逐字 AGENT_CORE OK 140/140",
+      "detail": "rc=0 tail='AGENT_CORE OK 145/145'",
+      "gate": "D2 --check 末行逐字 AGENT_CORE OK 145/145",
       "ok": true
     },
     {

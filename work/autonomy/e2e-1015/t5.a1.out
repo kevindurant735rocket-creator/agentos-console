@@ -1,0 +1,17 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+做了什么（t5 收尾全链自检）：
+- `pilot-probe/todo.py:1-13` 共 13 行（≤30 行，含 add/list/done 三分支：L9/L10-12/L13）
+- `pilot-probe/todos.json` 含 2 条记录，字段 task/done 齐全
+
+验证命令真实 rc（证据行）：
+- `python3 pilot-probe/todo.py add selfcheck-item-t5` → `added #2` rc=0 PASS
+- `python3 pilot-probe/todo.py list`（done 前）→ 2 条，一空一待办 rc=0 PASS
+- `python3 pilot-probe/todo.py done 2` → `done #2` rc=0 PASS
+- `python3 pilot-probe/todo.py list`（终态）→ `[x] 1 / [x] 2` rc=0 PASS
+- 汇总断言 `lines=13 todos=2` → `SELFCHECK PASS` rc=0 OK
+- `git status` rc=0 / `git diff HEAD` rc=0（仅展示既有工作区状态，未做提交/push）
+
+还剩什么没做：无 — 三命令全过，自检 rc=0；`todos.json` 被自检写入一条 `selfcheck-item-t5`（预期内副作用），如需干净可手动删该条。
+
+--- agent_core：10 步，57.0s，工具调用 9 次（其中 0 次未执行：被拒/参数不对）

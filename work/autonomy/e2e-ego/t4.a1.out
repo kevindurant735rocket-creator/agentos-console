@@ -1,0 +1,16 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+做了什么（t4/M3 配套）：
+- 新建 `ego-probe/README.md:1-22`：技能链/版本对照（本地 v2.0.0 vs 上游 v2.1.0/二进制 0.5.1.13）/探活产物/下一步（`ego-browser upgrade` 后重读）。
+- 新建 `ego-probe/CHECK.md:1-12`：J1–J5 回归清单（技能链/上游版本/二进制版本/探活产物/先备份安全）。
+- 依据 t2 定案（`work/autonomy/e2e-ego/t2.a1.out:5-16`：C1-C4/J1-J5）与 t3 落盘（`ego-probe/VERSION.md:1-9`、`ego-probe/snapshot.txt:1-19`、`ego-probe/probe.err:1-18`）接线，未碰门链/工具代码。
+
+验证（真实 rc）：
+- `search ego-probe Example Domain|shot.png|v2.1.0|0.5.1.13|learnings 备份 → rc=0 n=18 PASS`（J2/J3/J4/J5 全命中，见 VERSION.md:3,5,7-9 / snapshot.txt:2 / README.md:10-11）
+- `git_diff HEAD → rc=0`（已落盘确认；新文件为 untracked 故 diff 截断只显 README.md 历史改动，配套文件以 search 命中为准）OK
+- 证据行：t4 配套 PASS rc=0
+
+还剩什么：
+- t5 收尾（全链自检+回执）待下游派发；`ego-browser upgrade` 需用户确认后重读 Skill（VERSION.md:5 已注明）。
+
+--- agent_core：15 步，79.4s，工具调用 14 次（其中 0 次未执行：被拒/参数不对）

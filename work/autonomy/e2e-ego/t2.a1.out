@@ -1,0 +1,28 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+t2 定案完成（M2）：
+
+**改动面清单（圈定 4 项，不碰门链/工具代码）：**
+- C1 本地技能本体定位：`~/.agents/skills/ego-browser`→`~/.codex/skills/ego-browser`→`~/.local/share/ego/ego-skills`→`active_version_dir/.../ego-browser`（实目录含 SKILL.md/learnings/references/scripts）
+- C2 上游对齐源：`citrolabs/ego-lite:skills/ego-browser/SKILL.md`（v2.1.0）+ references/scripts；先备份 learnings 再按需更新
+- C3 可执行文件：`~/.local/bin/ego-browser`，已确认可用 `0.5.1.13`
+- C4 真浏览器探活产物：仓库根 `ego-probe/`（当前缺失，待 t3 新建：snapshot 文本 + 截图）
+
+**每项可复算判据（t3 按此复算）：**
+- J1 技能链可复算：`ls -la ~/.agents/skills/ego-browser && ls -la <实目录>` → rc=0，链尾含 SKILL.md+learnings（PASS）
+- J2 上游版本可复算：`gh_file_read skills/ego-browser/SKILL.md` 读到 version 2.1.0 → rc=0（OK）
+- J3 二进制可复算：`ego-browser --version` 输出 `ego-browser 0.5.1.13` → rc=0（OK）
+- J4 产物可复算：`ls -la ego-probe/` 含 snapshot 文本 + png 各≥1 → rc=0（t3 落盘后验；当前 FAIL 预期内）
+- J5 安全可复算：learnings 备份先行（t3 做 `cp -r learnings <bak>` 后 `ls <bak>` rc=0），不做直接覆盖（FAIL）
+
+**证据行：**
+- `ls -la ~/.agents/skills/ego-browser → symlink OK rc=0`
+- `ls -la 实目录 → SKILL.md+learnings+references+scripts OK rc=0`
+- `which ego-browser → ~/.local/bin/ego-browser OK rc=0`
+- `ego-browser --version → 0.5.1.13 OK rc=0`
+- `ls -la ego-probe → missing FAIL rc=2（待 t3 建）`
+- t3 未做：备份 learnings / 同步上游 diff / 探活落盘，待下游派发。
+
+证据行：t2 定案 PASS rc=0
+
+--- agent_core：13 步，43.5s，工具调用 16 次（其中 0 次未执行：被拒/参数不对）

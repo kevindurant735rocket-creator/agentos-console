@@ -1,0 +1,16 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+t1 侦察完成：
+
+做了什么：
+- `list_dir:.`（depth=1）确认仓库根 31 项，无 `probe-stop` 目录（证据：list_dir ok）
+- `search:probe-stop|calc|计算器` 全库仅命中 CSS `calc()`、data.json 业务串、`work/autonomy/e2e-stop.jsonl:1` 与 `work/plans/e2e-stop-plan.json:6`，无计算器脚本实现（证据：rc=0, n=16）
+- `read_file:work/plans/e2e-stop-plan.json:1-50` 已读，确认目标与 t1/t2/t3 判据（证据：read ok）
+
+现状一句话：仓库根缺 `probe-stop` 目录、无加减乘除计算器脚本，需新建目录+脚本并逐个运行验证。
+
+验证：search rc=0 → PASS
+
+还剩：t2 定案（改动面清单）、t3 实施（写脚本+四则验证 rc=0），本次 t1 范围内无未做项。
+
+--- agent_core：4 步，35.0s，工具调用 3 次（其中 0 次未执行：被拒/参数不对）

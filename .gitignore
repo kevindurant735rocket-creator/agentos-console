@@ -8,3 +8,4 @@ work/agent_sessions/
 work/agent_snapshots/
 *.bak*
 *.bak-*
+work/superpowers-upstream/

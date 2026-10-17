@@ -1,0 +1,63 @@
+{
+ "approved": false,
+ "bind_sha": "e6c01124933c9ee12ac26861a3e79fb03a427139998616bb24e798d9e069c2fa",
+ "created": 1792150843.262,
+ "goal": "研究 GitHub 高星安全/沙箱/权限项目（superpowers, headroom 相关或 opensource safety gate实现）：总结 AgentOS 硬阻断/审计链可借鉴的 2-3 条改进，给出源仓库",
+ "tasks": [
+  {
+   "accept": "关键文件已读 + 现状一句话 + rc=0",
+   "depends": [],
+   "evidence": [],
+   "id": "t1",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "侦察：读关键文件、确认现状",
+   "tools": [
+    "list_dir",
+    "read_file",
+    "search",
+    "gh_search",
+    "gh_repo_view",
+    "gh_file_read"
+   ]
+  },
+  {
+   "accept": "改动落盘 + 验证命令 rc=0（证据行）",
+   "depends": [
+    "t1"
+   ],
+   "evidence": [],
+   "id": "t2",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "动手：按判据改代码",
+   "tools": [
+    "read_file",
+    "search",
+    "write_file",
+    "edit_file",
+    "run_cmd",
+    "git_diff"
+   ]
+  },
+  {
+   "accept": "自检 rc=0 + 回执含真实 rc",
+   "depends": [
+    "t2"
+   ],
+   "evidence": [],
+   "id": "t3",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "收尾：自检 + 回执",
+   "tools": [
+    "run_cmd",
+    "git_diff",
+    "git_status",
+    "git_log"
+   ]
+  }
+ ],
+ "version": 1
+}}1
+}

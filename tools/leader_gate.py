@@ -19,7 +19,7 @@
     D6  监督串联面：任务边界消费 steer（送进派发书 + 跑账 + 游标只进）
     D7  复盘面：retro 落 RETRO.md，任务账逐行含 rc 证据、结论/steer 段齐
     D8  CLI 面：agentos leader --help rc=0；真 CLI plan 端到端；锚点齐
-    D9  负控面：坏工具名计划必拒；有环 DAG 必拒（dsp 不查环，leader 补）
+    D9  负控面：坏工具名计划必拒；有环 DAG 必拒（dsp 存时拒收在前、leader 兜底在后）
     D10 零污染：跑完 work/ 只多 --out；tools/ 零残留；夹具全清
 
 用法: python3 tools/leader_gate.py [--leader P] [--agentos P] [--out P]
@@ -394,6 +394,7 @@ def main():
                  False, repr(e)[:120])
 
         # D8 CLI 面
+        import re as _re  # 括号内可换行：格式化会把 add("leader", …) 拆多行
         try:
             ph = subprocess.run([sys.executable, AGENTOS, "leader", "--help"],
                                 capture_output=True, text=True, timeout=60)
@@ -411,12 +412,12 @@ def main():
             gate("D8 CLI 面：leader --help rc=0 + 真 CLI plan + 三锚点齐",
                  ph.returncode == 0 and pc.returncode == 0
                  and os.path.exists(cpath)
-                 and asrc.count('add("leader"') == 1
+                 and len(_re.findall(r'add\(\s*"leader"', asrc)) == 1
                  and lsrc.count("def compile_goal(") == 1
                  and "leader_gate" in gsrc,
                  "help=%s cli=%s anchor=%s/%s chain=%s"
                  % (ph.returncode, pc.returncode,
-                    asrc.count('add("leader"'),
+                    len(_re.findall(r'add\(\s*"leader"', asrc)),
                     lsrc.count("def compile_goal("),
                     "leader_gate" in gsrc))
         except Exception as e:                                 # noqa: BLE001

@@ -23,7 +23,8 @@ def snapshot(root, sid, tail=_TAIL):
     """聚合一屏监督面。任何一块取不到都如实标原因，绝不抛穿。"""
     sid = str(sid or "").strip()
     snap = {"sid": sid, "ts": time.time(), "plan": None, "plan_err": "",
-            "tasks": [], "steer_n": 0, "steer_total": 0, "tail": []}
+            "tasks": [], "steer_n": 0, "steer_total": 0, "tail": [],
+            "steer_err": "", "sess_err": ""}
     tools_dir = os.path.join(root, "tools")
     if tools_dir not in sys.path:
         sys.path.insert(0, tools_dir)
@@ -49,8 +50,8 @@ def snapshot(root, sid, tail=_TAIL):
         items, total = _steer.pending(d, sid)
         snap["steer_n"] = len(items)
         snap["steer_total"] = total
-    except Exception:                             # noqa: BLE001
-        pass
+    except Exception as e:                        # noqa: BLE001
+        snap["steer_err"] = "读指令异常：%s" % str(e)[:80]
     tp = os.path.join(root, "work", "agent_sessions", "%s.jsonl" % sid)
     try:
         with open(tp, encoding="utf-8") as f:
@@ -64,8 +65,10 @@ def snapshot(root, sid, tail=_TAIL):
                 snap["tail"].append({"kind": r.get("kind") or "?",
                                      "ts": r.get("ts") or 0,
                                      "text": str(r.get("text") or "")[:64]})
-    except OSError:
-        pass
+    except FileNotFoundError:
+        pass  # 新 sid 尚无会话 = 真无记录，不是坏
+    except OSError as e:
+        snap["sess_err"] = "会话不可读：%s" % str(e)[:80]
     return snap
 
 
@@ -93,8 +96,11 @@ def render(snap):
             lines.append("  %s %-8s %s（证据 %d）"
                          % (g, t.get("id") or "?", t.get("title") or "",
                             t.get("evidence") or 0))
-    lines.append("老板指令：未消费 %s 条（累计 %s 条）"
-                 % (s.get("steer_n") or 0, s.get("steer_total") or 0))
+    if s.get("steer_err"):
+        lines.append("老板指令：未知（%s）" % s.get("steer_err"))
+    else:
+        lines.append("老板指令：未消费 %s 条（累计 %s 条）"
+                     % (s.get("steer_n") or 0, s.get("steer_total") or 0))
     tail = s.get("tail") or []
     if tail:
         lines.append("会话尾：")
@@ -102,6 +108,8 @@ def render(snap):
             hh = time.strftime("%H:%M", time.localtime(r.get("ts") or 0))
             lines.append("  [%s] %-8s %s" % (hh, r.get("kind") or "?",
                                              r.get("text") or ""))
+    elif s.get("sess_err"):
+        lines.append("会话尾：（%s）" % s.get("sess_err"))
     else:
         lines.append("会话尾：（无记录）")
     lines.append("提示：agentos steer <sid> \"指令\"；/branch 分支；/verify 对账")

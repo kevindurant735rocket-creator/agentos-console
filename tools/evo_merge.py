@@ -38,7 +38,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FORBIDDEN_PREFIX = ("work/", "native/", ".venv-pw", "AgentOS.app",
                     ".zcode", ".codex")
 
-DEFAULT_GATES = ("dsp_gate", "leader_gate")
+DEFAULT_GATES = ("dsp_gate", "leader_gate", "safety_gate")
 
 
 def _sha(path):

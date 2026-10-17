@@ -1,0 +1,8 @@
+{"event": "run_start", "goal": "在仓库根 pilot-probe 目录里用 Python 写一个 30 行内的待办清单脚本（支持 add/list/done 三个命令），并真实运行验证每个命令，失败就修到全过", "mode": "run", "retries": 2, "ts": 1792144381.988}
+{"event": "steer", "n": 1, "texts": ["boss 已审批：按计划执行，证据逐条留痕"], "ts": 1792144381.988}
+{"attempt": 1, "dur": 11.9, "event": "dispatch", "out": "work/autonomy/e2e-1015/t1.a1.out", "rc": 0, "status": "done", "task": "t1", "ts": 1792144393.913, "verify": ""}
+{"attempt": 1, "dur": 37.2, "event": "dispatch", "out": "work/autonomy/e2e-1015/t2.a1.out", "rc": 0, "status": "done", "task": "t2", "ts": 1792144431.139, "verify": ""}
+{"attempt": 1, "dur": 32.6, "event": "dispatch", "out": "work/autonomy/e2e-1015/t3.a1.out", "rc": 0, "status": "done", "task": "t3", "ts": 1792144463.791, "verify": ""}
+{"attempt": 1, "dur": 45.0, "event": "dispatch", "out": "work/autonomy/e2e-1015/t4.a1.out", "rc": 0, "status": "done", "task": "t4", "ts": 1792144508.783, "verify": ""}
+{"attempt": 1, "dur": 57.2, "event": "dispatch", "out": "work/autonomy/e2e-1015/t5.a1.out", "rc": 0, "status": "done", "task": "t5", "ts": 1792144565.937, "verify": ""}
+{"dur": 184.0, "event": "run_end", "mode": "run", "remain": [], "ts": 1792144565.938}

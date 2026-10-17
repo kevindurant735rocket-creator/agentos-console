@@ -7,7 +7,7 @@
       "ok": true
     },
     {
-      "detail": "rc=2 环=True rows=0",
+      "detail": "save拒环 run_rc=2 rows=0/0",
       "gate": "D2 负控面：有环计划 rc=2 拒跑 + 零派发 + 零落账",
       "ok": true
     },
@@ -57,11 +57,16 @@
       "ok": true
     },
     {
+      "detail": "rc1=1 n1=1 rc2=2 n2=1",
+      "gate": "D12 撤销面：跑1个后 unapprove → 再跑拒跑零新增派发",
+      "ok": true
+    },
+    {
       "detail": "新增work=无 新增tools=无 残留=无",
-      "gate": "D12 零污染：work/ 只多 --out；tools/ 零残留；夹具按 sid 全清",
+      "gate": "D13 零污染：work/ 只多 --out；tools/ 零残留；夹具按 sid 全清",
       "ok": true
     }
   ],
-  "n_ok": 12,
-  "n_total": 12
+  "n_ok": 13,
+  "n_total": 13
 }

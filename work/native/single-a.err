@@ -1,9 +1,9 @@
-[probe 2026-10-15T10:45:44Z] probe: step 0 begin
-[probe 2026-10-15T10:45:44Z] probe: step 1 begin
-[probe 2026-10-15T10:45:46Z] probe: step 2 begin
-[probe 2026-10-15T10:45:47Z] probe: step 3 begin
-[probe 2026-10-15T10:45:49Z] probe: step 4 begin
-[probe 2026-10-15T10:45:50Z] probe: step 5 begin
-[probe 2026-10-15T10:46:00Z] probe: step 6 begin
-[probe 2026-10-15T10:46:14Z] probe: sequence drained -> final shot + flush
-[probe 2026-10-15T10:46:14Z] probe: evidence flushed, exiting now
+[probe 2026-10-17T14:57:41Z] probe: step 0 begin
+[probe 2026-10-17T14:57:41Z] probe: step 1 begin
+[probe 2026-10-17T14:57:43Z] probe: step 2 begin
+[probe 2026-10-17T14:57:44Z] probe: step 3 begin
+[probe 2026-10-17T14:57:45Z] probe: step 4 begin
+[probe 2026-10-17T14:57:47Z] probe: step 5 begin
+[probe 2026-10-17T14:57:57Z] probe: step 6 begin
+[probe 2026-10-17T14:58:11Z] probe: sequence drained -> final shot + flush
+[probe 2026-10-17T14:58:11Z] probe: evidence flushed, exiting now

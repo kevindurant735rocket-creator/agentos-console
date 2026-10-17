@@ -1,0 +1,21 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+做了什么（M4 收尾全链自检）：
+- 技能本体：`~/.agents/skills/ego-browser/SKILL.md` 存在，头 `version: "2.0.0" date: "2026-09-09"`，`references/api.md:51902B`、`install.md`、`clearing-state.md`、`scripts/install.sh` 均在（`ls -l` 见证）。
+- 本地 learnings：`learnings/github|google|x-com` 三目录完整保留（含 manifest.json/notes/tools/browser-tools）。
+- 备份检查：`~/.agents/skills/ego-browser.learnings.bak.*` 与 `ego-browser.bak.*` 均无命中（`ls` rc=2 无文件）——本次未新增备份文件，learnings 原位 intact。
+- 可执行文件：`/Users/zhangfengrui/.local/bin/ego-browser -> .../ego/active_version_dir/Helpers/ego-browser`，`ego-browser --version` 输出 `0.5.1.13 / chromium 152.0.7977.54 / node v24.18.1`。
+
+验证命令真实 rc：
+- `ls -R ~/.agents/skills/ego-browser` rc=0 PASS
+- `head SKILL.md + ls refs/scripts + ls learnings` rc=0 PASS
+- `which ego-browser (rc_which=0) + ego-browser --version (rc_version=0)` rc=0 PASS
+- 自检汇总 `test SKILL.md + test learnings/github + ego-browser --version` 输出 SKILL_OK/LEARNINGS_OK/VERIFY_PASS rc=0 PASS
+- `git status --porcelain` rc=0（工作树有既有 M/?? 改动，与本技能无关）；`git diff HEAD` rc=0（截断输出，仅 README/tools/work 改动）
+
+还剩什么没做：
+- 真实浏览器打开 `https:/` 未在本收尾步执行（URL 截断无判据，留待 t3/t4 链路任务）。
+
+回执：自检 rc=0 OK
+
+--- agent_core：7 步，50.0s，工具调用 6 次（其中 0 次未执行：被拒/参数不对）

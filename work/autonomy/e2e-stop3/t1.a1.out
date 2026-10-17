@@ -1,0 +1,14 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+t1 侦察完成。
+
+做了什么：
+- 列仓库根目录（`list_dir . depth=2`）：确认 `probe-stop/` 存在（`calc.py`/`test_calc.py`），`probe-stop3/` 尚不存在（文件级：`probe-stop/calc.py:1-24`、`probe-stop/test_calc.py:1-40` 已读）
+- 读计划（文件级：`work/plans/e2e-stop3-plan.json:1-100`、`plan.md:1-46` 已读）
+- 搜 `probe-stop3` 全仓：仅命中 plan/autonomy 记录 4 条，无实现代码
+
+现状一句话：`probe-stop3` 目录与摄氏华氏互转脚本均缺失，需新建，可仿照 `probe-stop/calc.py` 函数+CLI+回归测试结构实现。
+
+证据行：`list_dir rc=0` / `read_file probe-stop/calc.py OK` / `read_file probe-stop/test_calc.py OK` / `search probe-stop3 rc=0 PASS`
+
+--- agent_core：5 步，24.4s，工具调用 6 次（其中 0 次未执行：被拒/参数不对）

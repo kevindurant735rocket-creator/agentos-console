@@ -11,7 +11,8 @@ tui_walk.py 是终端侧唯一的真走查：真 PTY、真按键、按剥 ANSI �
 要求它们必须被判红。桩只落 /tmp 临时目录，不落仓库。
 
 判据（双向，缺一条即 rc=2）：
-  BASE  零参数生产调用（真 CLI `python3 tools/agentos.py tui`）必须 rc=0，
+  BASE  生产 CLI（`python3 tools/agentos.py tui --url <本门自起的新服务>`）
+         必须 rc=0，
          且 JSON: ok=true、键全绿且 ≥14 键、13 视图全访并与 VIEWS 常量一致、
          无 fail-closed、无薄壳、reader_at 诚实等于 AT-UNVERIFIED。
   M1    首帧后立即退出的桩（任何键都不响应）必须 rc≠0。
@@ -73,6 +74,40 @@ def load_json(path):
             return json.load(f)
     except Exception:
         return None
+
+
+def start_fresh_server():
+    """本门自己起一个**新** serve（free_port 现拿端口），等 health 起来。
+
+    为什么不用零参数打常驻 8790：常驻那个进程可能已经跑了几天、状态退化
+    （实测同一套 CLI：打常驻 8790 十三视图 75s，打新起的 3s —— 慢了 25 倍，
+    每个面 5.8s）。那样量具测的是「某个跑了七天的进程有多脏」，不是产品
+    面板本身。服务端健康由 serve/perf 门负责，这里只管把 UI 测准。
+    返回 (proc, url)；起不来返回 (None, "")。
+    """
+    import socket
+    import urllib.request
+    srv = os.path.join(HERE, "serve.py")
+    sk = socket.socket()
+    sk.bind(("127.0.0.1", 0))
+    port = sk.getsockname()[1]
+    sk.close()
+    proc = subprocess.Popen(
+        [sys.executable, srv, "--port", str(port)],
+        cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )
+    url = "http://127.0.0.1:%d" % port
+    t0 = time.time()
+    while time.time() - t0 < 25:
+        if proc.poll() is not None:
+            return None, ""
+        try:
+            with urllib.request.urlopen(url + "/__health", timeout=2) as r:
+                if r.status == 200:
+                    return proc, url
+        except Exception:  # noqa: BLE001  还没起来，继续等
+            time.sleep(0.2)
+    return None, ""
 
 
 def walk_with_retry(argv, out_path):
@@ -183,19 +218,25 @@ def main():
     td = tempfile.mkdtemp(prefix="tuiwalk-gate-")
     stubs = {"M1": os.path.join(td, "stub_quit.py"),
              "M2": os.path.join(td, "stub_freeze.py")}
+    srv_proc = None
     try:
         write_stub(stubs["M1"], STUB_QUIT)
         write_stub(stubs["M2"], STUB_FREEZE)
 
-        # ---------- BASE：零参数生产调用必须绿 ----------
-        rc, out, err, doc, retried = walk_with_retry([], OUT_JSON)
+        # ---------- BASE：生产 CLI 打在本门自起的新服务上，必须绿 ----------
+        srv_proc, srv_url = start_fresh_server()
+        base_argv = (
+            ["--cmd", "%s %s tui --url %s" % (sys.executable, ENTRY, srv_url)]
+            if srv_url else [])
+        rc, out, err, doc, retried = walk_with_retry(base_argv, OUT_JSON)
         note = "量具无结论重试 %d 次；" % retried if retried else ""
         if "TUI_WALK" not in out:
             gate("BASE 量具有结论（stdout 有 TUI_WALK 汇总行）", False,
                  note + "stderr=%r" % (err.strip()[-160:],))
             return _finish(nviews_const)
         g = doc.get("gates") or {}
-        gate("BASE 零参数生产调用 rc=0 且汇总行 OK",
+        gate("BASE 生产调用（本门新起服务 %s）rc=0 且汇总行 OK"
+             % (srv_url or "起不来→退回默认 8790"),
              rc == 0 and "TUI_WALK OK" in out and doc.get("ok") is True,
              note + "rc=%s %s" % (rc, notes(doc)))
         keys_total = g.get("keys_total") or 0
@@ -296,6 +337,12 @@ def main():
              % (sum(1 for _n, o in pos if o), len(pos),
                 len(caught), len(muts)))
     finally:
+        if srv_proc is not None and srv_proc.poll() is None:
+            srv_proc.terminate()
+            try:
+                srv_proc.wait(timeout=5)
+            except Exception:  # noqa: BLE001
+                srv_proc.kill()
         shutil.rmtree(td, ignore_errors=True)
     return _finish(nviews_const)
 

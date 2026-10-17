@@ -26,7 +26,8 @@
         含 rc=0
     D10 监督面：任务边界消费 steer（进派发书 + 跑账 + 游标只进）
     D11 CLI 面：status rc=0（计划+跑账尾）；report rc=0（结论/下一步段齐）
-    D12 零污染：夹具按 sid 精准清；work/ 只多 --out；tools/ 零残留
+    D12 撤销面：跑1个后 unapprove → 再跑拒跑零新增派发（老板叫停真生效）
+    D13 零污染：夹具按 sid 精准清；work/ 只多 --out；tools/ 零残留
 
 用法: python3 tools/autonomy_gate.py [--autonomy P] [--out P]
 裁决：AUTONOMY_GATE OK n/n（rc=0）/ AUTONOMY_GATE RED（rc=2，有漏网）
@@ -249,6 +250,7 @@ def main():
     sid_main, sid_fail, sid_cap = pf + "-main", pf + "-fail", pf + "-cap"
     sid_kill, sid_bud, sid_judge = pf + "-kill", pf + "-bud", pf + "-judge"
     sid_cyc = pf + "-cyc"
+    sid_rev = pf + "-rev"
     stub = os.path.join(tmp, "stub.py")
     vone = os.path.join(tmp, "vone.py")
     with open(stub, "w", encoding="utf-8") as f:
@@ -297,7 +299,7 @@ def main():
             gate("D1 纯面：--help rc=0 + 分类表（timeout/verify/budget/"
                  "notfound）+ 6 锚点各 1 处", False, repr(e)[:120])
 
-        # D2 负控面：有环计划拒跑
+        # D2 负控面：有环计划拒跑（dsp存时拒收优先，run时环守卫兜底，双层）
         try:
             okc, errc, _pc = _mk_plan(sid_cyc, "环夹具", [
                 {"id": "c1", "title": "环1", "accept": "rc=0",
@@ -305,14 +307,42 @@ def main():
                 {"id": "c2", "title": "环2", "accept": "rc=0",
                  "tools": ["run_cmd"], "depends": ["c1"]},
             ])
-            _dsp.approve_plan(sid_cyc)      # 锁面在环守卫之前，先过锁
-            p = run_autonomy("run", sid_cyc, "--worker", worker, env=env)
             rows = _read_ledger(sid_cyc)
-            gate("D2 负控面：有环计划 rc=2 拒跑 + 零派发 + 零落账",
-                 okc and p.returncode == 2 and "环" in (p.stderr or "")
-                 and not rows,
-                 "rc=%s 环=%s rows=%d"
-                 % (p.returncode, "环" in (p.stderr or ""), len(rows)))
+            if not okc and "环" in (errc or ""):
+                # 存时已拒 + 跑时兜底双验：绕过 validate 直写环计划，run 仍须 rc=2
+                import json as _js
+                _cyc = {"goal": "环夹具", "approved": True,
+                        "tasks": [
+                            {"id": "c1", "title": "环1", "accept": "rc=0",
+                             "tools": ["run_cmd"], "depends": ["c2"],
+                             "status": "todo", "steps_used": 0, "evidence": []},
+                            {"id": "c2", "title": "环2", "accept": "rc=0",
+                             "tools": ["run_cmd"], "depends": ["c1"],
+                             "status": "todo", "steps_used": 0, "evidence": []}],
+                        "bind_sha": "cyc"}
+                _pp = os.path.join(ROOT, "work", "plans", "%s-plan.json" % sid_cyc)
+                try:
+                    os.makedirs(os.path.dirname(_pp), exist_ok=True)
+                    with open(_pp, "w", encoding="utf-8") as _fh:
+                        _js.dump(_cyc, _fh, ensure_ascii=False)
+                except OSError:
+                    pass
+                p = run_autonomy("run", sid_cyc, "--worker", worker, env=env)
+                rows2 = _read_ledger(sid_cyc)
+                gate("D2 负控面：有环计划 rc=2 拒跑 + 零派发 + 零落账",
+                     not rows and p.returncode == 2
+                     and "环" in ((p.stderr or "") + (p.stdout or ""))
+                     and not rows2,
+                     "save拒环 run_rc=%s rows=%d/%d" % (p.returncode, len(rows), len(rows2)))
+            else:
+                _dsp.approve_plan(sid_cyc)      # 锁面在环守卫之前，先过锁
+                p = run_autonomy("run", sid_cyc, "--worker", worker, env=env)
+                rows = _read_ledger(sid_cyc)
+                gate("D2 负控面：有环计划 rc=2 拒跑 + 零派发 + 零落账",
+                     okc and p.returncode == 2 and "环" in (p.stderr or "")
+                     and not rows,
+                     "rc=%s 环=%s rows=%d"
+                     % (p.returncode, "环" in (p.stderr or ""), len(rows)))
         except Exception as e:                                 # noqa: BLE001
             gate("D2 负控面：有环计划 rc=2 拒跑 + 零派发 + 零落账",
                  False, repr(e)[:120])
@@ -642,12 +672,38 @@ def main():
         except Exception as e:                                 # noqa: BLE001
             gate("D11 CLI 面：status rc=0（计划+跑账尾）+ report rc=0"
                  "（结论/下一步段齐）", False, repr(e)[:120])
+
+        # D12 撤销面：审批→跑1个→撤销→再跑必拒且零新增派发
+        try:
+            plan_r = L.compile_goal("撤销夹具：叫停真生效")
+            for _t in plan_r["tasks"]:
+                _t["verify"] = [_vcmd("green")]
+            okr, _e = _dsp.save_plan(plan_r, sid_rev)
+            _dsp.approve_plan(sid_rev)
+            p1 = run_autonomy("run", sid_rev, "--worker", worker,
+                              "--max-tasks", "1", env=env)
+            n1 = sum(1 for r in _read_ledger(sid_rev)
+                     if r.get("event") == "dispatch")
+            okr2, _e2 = _dsp.unapprove_plan(sid_rev)
+            p2 = run_autonomy("run", sid_rev, "--worker", worker, env=env)
+            n2 = sum(1 for r in _read_ledger(sid_rev)
+                     if r.get("event") == "dispatch")
+            msg2 = (p2.stdout or "") + (p2.stderr or "")
+            gate("D12 撤销面：跑1个后 unapprove → 再跑拒跑零新增派发",
+                 okr and p1.returncode == 1 and n1 == 1 and okr2
+                 and p2.returncode == 2
+                 and ("未审批" in msg2 or "撤销" in msg2) and n2 == n1,
+                 "rc1=%s n1=%d rc2=%s n2=%d" % (p1.returncode, n1,
+                                               p2.returncode, n2))
+        except Exception as e:                                 # noqa: BLE001
+            gate("D12 撤销面：跑1个后 unapprove → 再跑拒跑零新增派发",
+                 False, repr(e)[:120])
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
-    # D12 零污染：清夹具后 work/ 只多 --out、tools/ 零残留、夹具全清
+    # D13 零污染：清夹具后 work/ 只多 --out、tools/ 零残留、夹具全清
     cleanup_fixtures([sid_main, sid_fail, sid_cap, sid_kill, sid_bud,
-                      sid_judge, sid_cyc])
+                      sid_judge, sid_cyc, sid_rev])
     after_w = set(os.listdir(work)) if os.path.isdir(work) else set()
     after_t = set(os.listdir(tools))
     new_w = sorted((after_w - before_w)
@@ -661,7 +717,7 @@ def main():
                      if nm.startswith(pf)]
         except OSError:
             pass
-    gate("D12 零污染：work/ 只多 --out；tools/ 零残留；夹具按 sid 全清",
+    gate("D13 零污染：work/ 只多 --out；tools/ 零残留；夹具按 sid 全清",
          not new_w and not new_t and not left,
          "新增work=%s 新增tools=%s 残留=%s"
          % (new_w or "无", new_t or "无", left or "无"))

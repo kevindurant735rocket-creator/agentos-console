@@ -1,0 +1,16 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+t4（M3 配套）完成：接线/文档/回归配套已落盘。
+
+**做了什么（文件:行号级）：**
+- 新建 `pilot-probe/README.md:1-16`（用法 + 数据文件 + 4 条可复算回归判据），对接 `pilot-probe/todo.py:1-13`（13 行，≤30 行，`add/list/done` 三命令，数据 `pilot-probe/todos.json`）
+- 依赖 t2 改动面不变：仅新增 `pilot-probe/`，不碰仓库现有文件
+
+**验证命令的真实 rc：**
+- 证据行：`read_file pilot-probe/todo.py n_lines=13 ≤30 → PASS` / `read_file pilot-probe/README.md:1-16 OK` / `search pilot-probe rc=0 n=10（todo.py+README 落盘可查）→ PASS` / `git_diff HEAD rc=0（主树既有 README 改动外，本次 pilot-probe/ 为 untracked 新增，属预期）→ OK`
+- 说明：本任务工具白名单无 `run_cmd`，三命令真实运行验证由 t3 已执行（`add/list/done` 均 rc=0，`wc -l=13`），此处配套回归指引用法与判据与 t3 口径一致，未重复跑即如实说明
+
+**还剩什么没做：**
+- 无；t4 配套落盘 + 相关自检 rc=0 判据已满足，可收口
+
+--- agent_core：8 步，44.8s，工具调用 7 次（其中 0 次未执行：被拒/参数不对）

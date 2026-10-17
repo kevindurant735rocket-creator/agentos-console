@@ -1,0 +1,18 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+做了什么：
+- `AGENTS.md:1-5` 直读：未执行成功，工具回 `ok:false error=不是文件：AGENTS.md`
+- `agents.md:1-5` 换路子：未执行成功，`ok:false error=不是文件：agents.md`
+- `AGENTS.md/README.md:1-5` 试目录下入口：未执行成功，`ok:false error=不是文件：AGENTS.md/README.md`
+
+验证：
+- 本任务允许工具仅 `read_file`，无 `rc` 返回，以工具真相为准，未拿到行数（判据 行数>0 未满足）
+- 判据命令 `true` 未由我代跑，无真实 rc 可转述
+
+证据行：读AGENTS.md前5行报行数 rc=FAIL err=不是文件（3次直读均ok:false）
+
+还没做：
+- AGENTS.md 真实位置确认（需 list_dir/search，但本次 t2 允许工具外，无法执行）
+- 拿到前5行并报行数>0，仍未完成；建议下游不要派发或放宽工具后重试
+
+--- agent_core：4 步，22.1s，工具调用 3 次（其中 0 次未执行：被拒/参数不对）

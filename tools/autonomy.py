@@ -85,6 +85,48 @@ def ledger_append(root, sid, row):
         pass
 
 
+def _save_checkpoint(dsp, plan, sid, current=None):
+    """检查点落盘 + 合并：并行老板可能改了别的任务，不能 whole-plan 覆盖。
+    current=正干的任务 id：只写它，别任务沿用盘上新值（含 boss 重开）。"""
+    """检查点落盘：进度照存，但盘上已撤销则批准态不复活；
+    返回 False 时调用方停跑（已撤销）。"""
+    try:
+        fresh, _ = dsp.load_plan(sid)
+        if fresh is not None and not fresh.get("approved"):
+            plan["approved"] = False
+            plan.pop("approved_at", None)
+    except Exception:                            # noqa: BLE001
+        pass
+    if current is not None:
+        try:
+            fresh2, _ = dsp.load_plan(sid)
+            if fresh2 is not None:
+                _fresh_tasks = {x.get("id"): x
+                                for x in fresh2.get("tasks") or []}
+                for _t in plan.get("tasks") or []:
+                    if _t.get("id") == current:
+                        continue
+                    _f = _fresh_tasks.get(_t.get("id"))
+                    if _f is None:
+                        continue
+                    if _f.get("status") != _t.get("status"):
+                        _t["status"] = _f.get("status")
+                    for _ev in _f.get("evidence") or []:
+                        if _ev not in (_t.get("evidence") or []):
+                            _t.setdefault("evidence", []).append(_ev)
+                _mem_ids = {x.get("id") for x in plan.get("tasks") or []}
+                for _f in fresh2.get("tasks") or []:
+                    if _f.get("id") not in _mem_ids:
+                        (plan.setdefault("tasks", [])).append(_f)
+                if fresh2 is not None and not fresh2.get("approved"):
+                    plan["approved"] = False
+                    plan.pop("approved_at", None)
+        except Exception:                        # noqa: BLE001
+            pass
+    ok, _ = dsp.save_plan(plan, sid)
+    return bool(ok and plan.get("approved"))
+
+
 def _read_ledger(root, sid):
     rows = []
     try:
@@ -246,12 +288,20 @@ def run_goal(sid, root="", worker="", task_timeout=300, max_tasks=12,
         return 3
     ledger_append(root, sid, {"event": "run_start", "mode": mode,
                               "goal": plan.get("goal", ""),
-                              "retries": retries})
+                              "retries": retries, "pid": os.getpid()})
     t0 = time.time()
     say("autonomy %s 开跑：sid=%s 任务=%d worker=%s 自救=%d 次"
         % (mode, sid, len(tasks), worker or "默认 headless agent", retries))
     dispatched = 0
     while dispatched < int(max_tasks):
+        # 老板中途撤销：每轮重读盘上审批态，未审批即停（unapprove_plan生效点）。
+        try:
+            _fresh, _ferr = dsp.load_plan(sid)
+            if _fresh is not None and not _fresh.get("approved"):
+                sys.stderr.write("autonomy 停：审批被撤销（%s）—— 剩任务可续\n" % sid)
+                break
+        except Exception:
+            pass
         tid = dsp.next_task(plan)
         if not tid:
             break
@@ -301,7 +351,8 @@ def run_goal(sid, root="", worker="", task_timeout=300, max_tasks=12,
                                           "dur": dur,
                                           "out": os.path.relpath(outp,
                                                                  root)})
-                dsp.save_plan(plan, sid)
+                if not _save_checkpoint(dsp, plan, sid, tid):
+                    break  # 叫停：检查点不覆盖撤销
                 say("  [%s] rc=0 %s → %s（第 %d 次尝试，%.1fs）"
                     % (tid, v_note or "evidence", st, attempt, dur))
                 break
@@ -312,18 +363,28 @@ def run_goal(sid, root="", worker="", task_timeout=300, max_tasks=12,
                                       "verify": v_note, "status": st,
                                       "kind": kind, "dur": dur,
                                       "out": os.path.relpath(outp, root)})
-            dsp.save_plan(plan, sid)       # 每步检查点：强杀也不丢账
+            if not _save_checkpoint(dsp, plan, sid, tid):
+                break  # 叫停：检查点不覆盖撤销
             say("  [%s] 第 %d 次未过（%s rc=%d %s）→ %s"
                 % (tid, attempt, kind, wrc, v_note or "",
                    "带修法重试" if attempt <= retries else "封顶"))
         if not passed:
+            try:
+                _fr, _ = dsp.load_plan(sid)
+                _revoked = _fr is not None and not _fr.get("approved")
+            except Exception:                        # noqa: BLE001
+                _revoked = False
+            if _revoked:
+                dispatched += 1
+                continue  # 叫停：不记 blocked，轮转到循环顶即停
             task["status"] = "blocked"
             task.setdefault("evidence", []).append(
                 "blocked(kind=%s)：连续 %d 次未过（rc=%d %s %s）"
                 % (kind, attempt, wrc, v_note or "", hint[:90]))
             ledger_append(root, sid, {"event": "blocked", "task": tid,
                                       "kind": kind, "attempts": attempt})
-            dsp.save_plan(plan, sid)
+            if not _save_checkpoint(dsp, plan, sid, tid):
+                break  # 叫停：检查点不覆盖撤销
             say("  [%s] 封顶 %d 次仍未过（%s）→ blocked，下游不派发"
                 % (tid, attempt, kind))
         dispatched += 1

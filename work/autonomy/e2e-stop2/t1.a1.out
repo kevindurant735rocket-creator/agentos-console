@@ -1,0 +1,16 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+t1 侦察完成。
+
+现状一句话：仓库根尚无 `probe-stop2` 目录，仅有同类参考 `probe-stop/calc.py`（四则运算）+ `test_calc.py` 可作模板，需新建温度换算脚本。
+
+关键文件已读：
+- `probe-stop/calc.py:1-24` — 四则运算 CLI 模板（已读）
+- `probe-stop/test_calc.py:1-40` — 回归测试模板（已读）
+- `work/plans/e2e-stop2-plan.json:1-100` — 任务计划 t1-t5（已读）
+- `list_dir .` — 32 项，无 probe-stop2（rc=0）
+- `search probe-stop2` — 仅命中 plan/jsonl，无目录（rc=0）
+
+证据行：t1 侦察 PASS rc=0
+
+--- agent_core：4 步，13.4s，工具调用 6 次（其中 0 次未执行：被拒/参数不对）

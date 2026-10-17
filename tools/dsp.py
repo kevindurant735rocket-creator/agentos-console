@@ -121,6 +121,21 @@ def validate_plan(d):
             if dep not in ids:
                 return False, ("任务 %r 的 depends 指向不存在的任务 %r"
                                 % (t.get("id"), dep))
+    # 环检查（根源补强：直调 save_plan 也不可落环计划；此前只靠 leader.has_cycle）。
+    adj = {t.get("id"): list(t.get("depends") or []) for t in tasks}
+    color = {}
+    def _dfs(u, stack):
+        color[u] = 1
+        for v in adj.get(u, []):
+            if color.get(v, 0) == 1:
+                return True
+            if color.get(v, 0) == 0 and _dfs(v, stack + [v]):
+                return True
+        color[u] = 2
+        return False
+    for tid in adj:
+        if color.get(tid, 0) == 0 and _dfs(tid, [tid]):
+            return False, "计划有环：依赖成环，autonomy 永无可做任务（先解环）"
     return True, ""
 
 
@@ -249,6 +264,22 @@ def approve_plan(sid):
     if not ok:
         return False, err2
     _chain_append(sid, "approve", plan["bind_sha"])
+    return True, ""
+
+
+def unapprove_plan(sid):
+    """撤销审批：approved=false → 落盘 → 上链。老板中途叫停用。"""
+    plan, err = load_plan(sid)
+    if plan is None:
+        if err == "missing":
+            return False, "还没有计划"
+        return False, err
+    plan["approved"] = False
+    plan.pop("approved_at", None)
+    ok, err2 = save_plan(plan, sid)
+    if not ok:
+        return False, err2
+    _chain_append(sid, "unapprove", plan["bind_sha"])
     return True, ""
 
 

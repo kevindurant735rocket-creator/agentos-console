@@ -3,17 +3,17 @@
   "judgments": [
     {
       "detail": "subagent_in=True cap=12",
-      "gate": "D1 可 import + 符号齐（TOOLS 含 subagent、钳=12）",
+      "gate": "D1 可 import + 符号齐（TOOLS 含 subagent、默认单轮=12）",
       "ok": true
     },
     {
-      "detail": "rc=0 tail='AGENT_CORE OK 140/140'",
-      "gate": "D2 --check 末行逐字 AGENT_CORE OK 140/140",
+      "detail": "rc=0 tail='AGENT_CORE OK 145/145'",
+      "gate": "D2 --check 末行逐字 AGENT_CORE OK 145/145",
       "ok": true
     },
     {
       "detail": "fn=1 depth=1 cap=1 subset=1",
-      "gate": "D3 源码锚点（工具本体/嵌套闸/步数钳/子集闸 各恰 1）",
+      "gate": "D3 源码锚点（工具本体/嵌套闸/步数不钳/子集闸 各恰 1）",
       "ok": true
     },
     {
@@ -27,8 +27,8 @@
       "ok": true
     },
     {
-      "detail": "steps=12 seen=12",
-      "gate": "D6 步数封顶：99 钳到 12（请求数=钳值）",
+      "detail": "steps=18 seen=43",
+      "gate": "D6 步数解封：99 不钳（40 个不同动作全走完）",
       "ok": true
     },
     {
@@ -72,11 +72,21 @@
       "ok": true
     },
     {
+      "detail": "stopped=1 seen=1",
+      "gate": "D16 chain 交接钥匙：缺钥匙第二段不开工（stopped_at=1）",
+      "ok": true
+    },
+    {
+      "detail": "file=True board=True",
+      "gate": "D17 共享黑板：结论落盘 + 进下一段 prompt",
+      "ok": true
+    },
+    {
       "detail": "新增=无",
       "gate": "D9 零污染（work/ 只多 --out；夹具已清）",
       "ok": true
     }
   ],
-  "n_ok": 15,
-  "n_total": 15
+  "n_ok": 17,
+  "n_total": 17
 }

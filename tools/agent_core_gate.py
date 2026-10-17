@@ -74,7 +74,8 @@ CORE = os.path.join(ROOT, "tools", "agent_core.py")
 #   mcp_gate.py(2) · hooks_gate.py(2) · repl_ux_gate.py(2) · gates.sh(相关注释)。
 # 改这个数必须与 agent_core._selftest 的真实用例数同时改，否则门形同虚设。
 # 131 → 134：W13 自主执行 3 例（/goal 建计划 / 未审批拒跑 / 桩小闭环）
-EXPECT_N = 140
+# 140 → 142：W18 no_fallback 2 例（主端点抖动只重试主端点 / cancel 出口）。
+EXPECT_N = 145
 TOKEN = "AGENT_CORE OK %d/%d" % (EXPECT_N, EXPECT_N)
 # 自检临时目录带 pid（并发安全），所以残留判据用 glob，别去猜具体名字。
 STRAY_GLOB = os.path.join(ROOT, "work", "_st_agent_core*")
@@ -98,14 +99,12 @@ def verdict(out):
 
 
 def _sh(argv, timeout=900):
-    return subprocess.run(argv, capture_output=True, text=True,
-                          timeout=timeout)
+    return subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
 
 
 def main():
     bad = []
-    print("== agent_core_gate：内核自检 %d 条 + 编译 + 硬阻断独立复核"
-          % EXPECT_N)
+    print("== agent_core_gate：内核自检 %d 条 + 编译 + 硬阻断独立复核" % EXPECT_N)
 
     # 1+2. 真跑 --check，读真实 rc 与逐字令牌 -------------------
     p = _sh([sys.executable, CORE, "--check"])
@@ -113,17 +112,16 @@ def main():
     if p.stderr.strip():
         sys.stderr.write(p.stderr)
     if p.returncode != 0:
-        bad.append("agent_core.py --check rc=%d（真实退出码，不是看输出猜的）"
-                   % p.returncode)
+        bad.append(
+            "agent_core.py --check rc=%d（真实退出码，不是看输出猜的）" % p.returncode
+        )
     if verdict(p.stdout) != 0:
-        bad.append("stdout 里没有逐字 %s，或 PASS 行不足 %d 条"
-                   % (TOKEN, EXPECT_N))
+        bad.append("stdout 里没有逐字 %s，或 PASS 行不足 %d 条" % (TOKEN, EXPECT_N))
 
     # 3. 编译必须过 -------------------------------------------
     c = _sh([sys.executable, "-m", "py_compile", CORE])
     if c.returncode != 0:
-        bad.append("py_compile rc=%d：%s"
-                   % (c.returncode, (c.stderr or "")[-200:]))
+        bad.append("py_compile rc=%d：%s" % (c.returncode, (c.stderr or "")[-200:]))
     else:
         print("PASS py_compile rc=0")
 
@@ -131,15 +129,17 @@ def main():
     sys.path.insert(0, os.path.join(ROOT, "tools"))
     try:
         import agent_core as ac
-    except Exception as e:                        # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         bad.append("import agent_core 失败：%s" % e)
         ac = None
     if ac is not None:
-        denials = [("git push", ["git", "push"]),
-                   ("rm -rf /", ["rm", "-rf", "/"]),
-                   ("find -delete", ["find", ".", "-delete"]),
-                   ("git reset --hard", ["git", "reset", "--hard"]),
-                   ("dd", ["dd", "if=/dev/zero", "of=/dev/sda"])]
+        denials = [
+            ("git push", ["git", "push"]),
+            ("rm -rf /", ["rm", "-rf", "/"]),
+            ("find -delete", ["find", ".", "-delete"]),
+            ("git reset --hard", ["git", "reset", "--hard"]),
+            ("dd", ["dd", "if=/dev/zero", "of=/dev/sda"]),
+        ]
         for label, argv in denials:
             why = ac._hard_deny(argv)
             if not why:
@@ -156,10 +156,13 @@ def main():
 
     # 5. 自检不许把临时文件留在项目里 -------------------------
     import glob
+
     stray = sorted(os.path.basename(p) for p in glob.glob(STRAY_GLOB))
     if stray:
-        bad.append("work/%s* 没被清掉：自检在项目里留了活文件（%s）"
-                   % (STRAY_NAME, ", ".join(stray[:5])))
+        bad.append(
+            "work/%s* 没被清掉：自检在项目里留了活文件（%s）"
+            % (STRAY_NAME, ", ".join(stray[:5]))
+        )
     else:
         print("PASS 自检临时目录已清空（work/%s* 无残留）" % STRAY_NAME)
 
@@ -167,13 +170,17 @@ def main():
     if os.environ.get("AGENT_CORE_GATE_REAL") == "1":
         try:
             import time
+
             t0 = time.time()
-            r = _sh([sys.executable, CORE, "-p",
-                     "reply with exactly: PONG"], timeout=600)
+            r = _sh(
+                [sys.executable, CORE, "-p", "reply with exactly: PONG"], timeout=600
+            )
             took = time.time() - t0
             if r.returncode != 0 or "PONG" not in r.stdout:
-                bad.append("真端点冒烟 rc=%d（%.1fs）：%s"
-                           % (r.returncode, took, (r.stdout or "")[-200:]))
+                bad.append(
+                    "真端点冒烟 rc=%d（%.1fs）：%s"
+                    % (r.returncode, took, (r.stdout or "")[-200:])
+                )
             else:
                 print("PASS 真端点冒烟 rc=0，%.1fs，回答里有 PONG" % took)
         except subprocess.TimeoutExpired:
@@ -186,8 +193,10 @@ def main():
         for b in bad:
             print("FAIL %s" % b)
         return 1
-    print("AGENT_CORE_GATE OK 自检 %d 条全绿 / 编译 rc=0 / 硬阻断 5 项独立复核通过"
-          % EXPECT_N)
+    print(
+        "AGENT_CORE_GATE OK 自检 %d 条全绿 / 编译 rc=0 / 硬阻断 5 项独立复核通过"
+        % EXPECT_N
+    )
     return 0
 
 

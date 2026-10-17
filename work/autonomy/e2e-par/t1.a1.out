@@ -1,0 +1,11 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+t1 完成：读 README 报行数。
+
+- 文件：`README.md:1-119`，共 **119 行**（`read_file` 回显 `n_lines=119`，`bytes≈50722` 见目录项）
+- 判据：行数大于0 → 119>0 成立
+- 判据命令 `true` → rc=0
+
+证据行：t1 README.md n_lines=119 rc=0 PASS
+
+--- agent_core：3 步，12.5s，工具调用 2 次（其中 0 次未执行：被拒/参数不对）

@@ -93,6 +93,11 @@
    "detail": "hits=['.env'] clean=[]"
   },
   {
+   "gate": "W13b 扫描器不误伤：venv 内文件 + 带默认值的 .env.example 放行，填了真 key 的 .env.example 照拒（ghp_ / sk- 各一），.env 仍命中",
+   "ok": true,
+   "detail": "venv_tpl=[] filled=['.env.example'] sk=['.env.example'] env=['.env']"
+  },
+  {
    "gate": "W14 repo-create dry-run rc=0 且审计 EXEC-DRY 留痕",
    "ok": true,
    "detail": "rc=0 sub=repo-create"

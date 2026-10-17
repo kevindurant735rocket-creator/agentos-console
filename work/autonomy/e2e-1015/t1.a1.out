@@ -1,0 +1,16 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+t1 侦察完成（PASS）
+
+做了什么：
+- `list_dir` 仓库根（`.`）：31 项，无 `pilot-probe` 目录 — rc=0
+- `search` 正则 `pilot-probe|todo\.py`：仅命中 `work/plans/e2e-1015-plan.json`、`work/plans/cli-20261016-175302-plan.json`、`work/autonomy/e2e-1015.jsonl`，无实现文件 — rc=0
+- `read_file work/plans/e2e-1015-plan.json:1-50`：确认 goal 为新建 30 行内 Python 待办脚本（add/list/done）+ 真实运行验证 — OK
+
+现状一句话：仓库根尚无 `pilot-probe` 目录和待办脚本，需新建（判据：关键文件已读 + rc=0 已满足）。
+
+证据行：`list_dir . rc=0` / `search pilot-probe rc=0 n=4（无实现）` / `read_file e2e-1015-plan.json:1-50 OK` → PASS
+
+还剩：t2 定案圈改动面、t3 实施落盘+三命令真实验证。
+
+--- agent_core：4 步，11.8s，工具调用 3 次（其中 0 次未执行：被拒/参数不对）

@@ -1,0 +1,25 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+做了什么（定案 M2，可复算口径锁定）：
+
+**改动面清单（仅圈定，未动手写文件）：**
+1. 新建目录 `probe-stop3/` —— 现场不存在（`ls probe-stop3` rc=2 不存在，见证据 E1），需新建，不碰仓库其他路径
+2. 新建 `probe-stop3/temp.py` —— 摄氏↔华氏互转脚本，提供 `c2f(c)=c*9/5+32`、`f2c(f)=(f-32)*5/9` 两个函数 + CLI
+3. 新建 `probe-stop3/test_temp.py` —— 回归脚本，仿参照 `probe-stop/test_calc.py:1-40` 模式（PASS/FAIL逐行 + 尾行OK + 非零退出）
+4. 不改：`plan.md:1-46`（AgentOS补强计划，与本任务无关）、`probe-stop/calc.py:1-24` / `probe-stop/test_calc.py:1-40`（仅作参照，不动）
+
+**每项可复算判据（给下游 t3 执行）：**
+- J1 C→F：`0→32`、`100→212`，容差 `1e-9`，命令 `python3 probe-stop3/test_temp.py` 必须打印 `PASS` 且尾行 `OK`
+- J2 F→C：`32→0`、`212→100`，容差 `1e-9`，同一命令必须 `PASS` 且尾行 `OK`
+- J3 总闸：上述命令 `rc=0`；任一 FAIL 则 `rc≠0` 即判 FAIL
+
+**验证命令的真实 rc（本步实际跑的，只读）：**
+- E1 现场确认：`ls -la probe-stop3 probe-stop plan.md` → rc=2（probe-stop3缺失，probe-stop/plan.md存在）FAIL-预期内（缺目录正是要建的）
+- E2 解释器：`python3 --version` → rc=0，out=`Python 3.14.8` OK
+- E3 存量冲突：`search celsius|fahrenheit|probe-stop3` → rc=1（0命中，无冲突）PASS
+- E4 参照可读：`read plan.md / probe-stop/calc.py / probe-stop/test_temp.py` → 均OK
+
+还剩什么没做：
+- t3 待做：新建 `probe-stop3/` + `temp.py` + `test_temp.py`，跑通 J1/J2/J3 两种换算验证（需拿 `rc=0` + `PASS/OK` 行作证据）
+
+--- agent_core：6 步，39.6s，工具调用 7 次（其中 0 次未执行：被拒/参数不对）

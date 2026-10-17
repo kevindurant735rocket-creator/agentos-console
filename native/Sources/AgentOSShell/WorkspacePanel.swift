@@ -914,6 +914,15 @@ final class WorkspacePanel: NSView {
     /// 不在 DOM 里，那道门量不到这里。NSOutlineView 的行是 cell 里的
     /// NSTextField，所以要自己遍历视图树才能确认「屏幕上真有这些字」。
     func axSummary() -> [String: Any] {
+        // 行是按需物化的：根目录条目变多后「tools」落在可视区外，前面
+        // code 探针又把视图停在了中间行 —— 不滚到底就遍历不到它（walk
+        // 走的是视图树，视图树里只有已物化的行）。axSummary 只在探针
+        // 序列里被调用，这里的滚动只影响证据采集，不影响用户。
+        if outline.numberOfRows > 0 {
+            outline.scrollRowToVisible(outline.numberOfRows - 1)
+            outline.layoutSubtreeIfNeeded()
+            outline.displayIfNeeded()
+        }
         var items: [String] = []
         func walk(_ v: NSView) {
             if let t = v as? NSTextField, !t.stringValue.isEmpty {

@@ -1,35 +1,35 @@
 {
- "ok": true,
+ "ok": false,
  "checks": [
   {
    "name": "perf-api-health",
-   "ok": true,
-   "detail": "HTTP=200, 响应时间=0.009s (目标<0.1s)"
+   "ok": false,
+   "detail": "HTTP=200, 响应时间中位=0.127s [0.02635478973388672, 0.12691020965576172, 0.5182437896728516] (目标<0.1s)"
   },
   {
    "name": "perf-api-distill",
-   "ok": true,
-   "detail": "HTTP=200, 响应时间=0.006s (目标<0.2s)"
+   "ok": false,
+   "detail": "HTTP=200, 响应时间中位=0.739s [0.18450284004211426, 0.7386090755462646, 1.1134941577911377] (目标<0.2s)"
   },
   {
    "name": "perf-api-capmap",
-   "ok": true,
-   "detail": "HTTP=200, 响应时间=0.008s (目标<0.2s)"
+   "ok": false,
+   "detail": "HTTP=200, 响应时间中位=0.310s [0.13073110580444336, 0.30997800827026367, 0.4576449394226074] (目标<0.2s)"
   },
   {
    "name": "perf-page-load",
    "ok": true,
-   "detail": "HTTP=200, 加载时间=0.006s (目标<1.0s)"
+   "detail": "HTTP=200, 加载时间=0.064s (目标<1.0s)"
   },
   {
    "name": "perf-memory",
    "ok": true,
-   "detail": "内存=31.5MB (目标<200MB)"
+   "detail": "内存=32.8MB (目标<200MB)"
   },
   {
    "name": "perf-processes",
    "ok": true,
-   "detail": "进程数=2 (目标<=3)"
+   "detail": "进程数=3 (目标<=3)"
   },
   {
    "name": "perf-fds",
@@ -39,12 +39,12 @@
   {
    "name": "perf-cold-start",
    "ok": true,
-   "detail": "冷启动=0.055s (目标<3s) 监听=0.053s"
+   "detail": "冷启动=0.253s (目标<3s) 监听=0.248s"
   },
   {
    "name": "perf-cli-perceived",
    "ok": true,
-   "detail": "agentos health 端到端=0.077s rc=0 (目标<3s 且 rc=0)"
+   "detail": "agentos health 端到端=0.641s rc=0 (目标<3s 且 rc=0)"
   }
  ],
  "port": 8790

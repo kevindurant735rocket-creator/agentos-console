@@ -1,0 +1,10 @@
+{"event": "run_start", "goal": "并行监工实证", "mode": "run", "pid": 69579, "retries": 2, "ts": 1792153603.846}
+{"event": "steer", "n": 1, "texts": ["boss 已审批：按计划执行，证据逐条留痕"], "ts": 1792153603.846}
+{"attempt": 1, "dur": 12.7, "event": "dispatch", "out": "work/autonomy/e2e-par/t1.a1.out", "rc": 0, "status": "done", "task": "t1", "ts": 1792153616.542, "verify": "verify rc=0"}
+{"action": "reset", "event": "boss", "task": "t2", "ts": 1792153620.318}
+{"attempt": 1, "dur": 41.9, "event": "dispatch", "out": "work/autonomy/e2e-par/t2.a1.out", "rc": 0, "status": "done", "task": "t2", "ts": 1792153658.444, "verify": "verify rc=0"}
+{"event": "steer", "n": 1, "texts": ["boss 并行自救 t2：判据没过：收紧判据命令，先手工跑通判据再交活"], "ts": 1792153658.447}
+{"attempt": 1, "dur": 54.8, "event": "dispatch", "kind": "denied", "out": "work/autonomy/e2e-par/t3.a1.out", "rc": 3, "status": "doing", "task": "t3", "ts": 1792153713.232, "verify": "verify rc=0"}
+{"attempt": 2, "dur": 48.9, "event": "dispatch", "kind": "denied", "out": "work/autonomy/e2e-par/t3.a2.out", "rc": 3, "status": "doing", "task": "t3", "ts": 1792153762.139, "verify": "verify rc=0"}
+{"attempt": 3, "dur": 34.7, "event": "dispatch", "out": "work/autonomy/e2e-par/t3.a3.out", "rc": 0, "status": "done", "task": "t3", "ts": 1792153796.854, "verify": "verify rc=0"}
+{"dur": 193.0, "event": "run_end", "mode": "run", "remain": [], "ts": 1792153796.856}

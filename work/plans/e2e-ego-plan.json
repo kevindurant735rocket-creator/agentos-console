@@ -1,0 +1,112 @@
+{
+ "approved": true,
+ "approved_at": 1792146889.351,
+ "bind_sha": "9f73bfa9aa52732c0d7df372be4181b802ec10592912ef3107acb15ac2d88290",
+ "created": 1792146889.35,
+ "goal": "从GitHub仓库citrolabs/ego-lite部署ego-browser技能到本机：拉取上游技能内容并与本地~/.agents/skills/ego-browser比对，按需更新技能本体（先备份本地learnings目录），确认ego-browser可执行文件可用并记录版本号；然后用真实浏览器打开https://example.com，取页面快照文本并截一张图落盘到仓库根ego-probe/目录；全程自主，失败就修到全过，最后报告版本号与产物路径",
+ "tasks": [
+  {
+   "accept": "关键文件已读 + 现状一句话 + rc=0",
+   "depends": [],
+   "evidence": [
+    "rc=0 verify=- [完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）"
+   ],
+   "id": "t1",
+   "milestone": "M1 侦察",
+   "status": "done",
+   "steps_used": 1,
+   "title": "侦察：确认「从GitHub仓库citrolabs/ego-lite部署ego-browser技能到本机：拉取上游技能内容并与本地~/.agents/skills/ego-b」的现状与关键文件",
+   "tools": [
+    "list_dir",
+    "read_file",
+    "search",
+    "gh_search",
+    "gh_repo_view",
+    "gh_file_read"
+   ]
+  },
+  {
+   "accept": "改动面清单 + 每项判据可复算 + rc=0",
+   "depends": [
+    "t1"
+   ],
+   "evidence": [
+    "rc=0 verify=- [完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）"
+   ],
+   "id": "t2",
+   "milestone": "M2 定案",
+   "status": "done",
+   "steps_used": 1,
+   "title": "定案：圈改动面、每项钉成可复算判据",
+   "tools": [
+    "read_file",
+    "search",
+    "run_cmd"
+   ]
+  },
+  {
+   "accept": "改动落盘 + 验证命令 rc=0（证据行）",
+   "depends": [
+    "t2"
+   ],
+   "evidence": [
+    "rc=0 verify=- [完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）"
+   ],
+   "id": "t3",
+   "milestone": "M3 实施",
+   "status": "done",
+   "steps_used": 1,
+   "title": "实施A：主改动落盘",
+   "tools": [
+    "read_file",
+    "edit_file",
+    "write_file",
+    "run_cmd",
+    "git_diff"
+   ]
+  },
+  {
+   "accept": "配套落盘 + 相关自检 rc=0",
+   "depends": [
+    "t2"
+   ],
+   "evidence": [
+    "rc=0 verify=- [完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）"
+   ],
+   "id": "t4",
+   "milestone": "M3 实施",
+   "status": "done",
+   "steps_used": 1,
+   "title": "实施B：接线/文档/回归配套",
+   "tools": [
+    "read_file",
+    "edit_file",
+    "write_file",
+    "search",
+    "git_diff"
+   ]
+  },
+  {
+   "accept": "自检 rc=0 + 回执含真实 rc",
+   "depends": [
+    "t3",
+    "t4"
+   ],
+   "evidence": [
+    "rc=0 verify=- [完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）"
+   ],
+   "id": "t5",
+   "milestone": "M4 收尾",
+   "status": "done",
+   "steps_used": 1,
+   "title": "收尾：全链自检 + 回执",
+   "tools": [
+    "run_cmd",
+    "git_diff",
+    "git_status",
+    "read_file"
+   ]
+  }
+ ],
+ "version": 1
+}

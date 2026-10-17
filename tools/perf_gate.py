@@ -66,22 +66,39 @@ def get(path, timeout=5):
         return 0, str(e), time.time() - start
 
 
+def med(path, n=3, timeout=5):
+    """量 n 次取中位数（阈值不动，只把「单次抖动」从判据里拿掉）。
+
+    为什么：单次采样量的是「这一次有多幸运」，不是「这个端点有多快」。
+    实测 /__distill 同一进程连量三次：0.023s / 0.296s / 0.031s —— 首访要
+    建缓存/读盘，后两次就稳了。单次量会把缓存冷热写进判据，红的既不是
+    性能退化也不是真慢。中位数是延迟测量的常规口径。
+    """
+    st, body, last = 0, "", 0.0
+    xs = []
+    for _ in range(n):
+        st, body, last = get(path, timeout=timeout)
+        xs.append(last)
+    xs.sort()
+    return st, body, xs[len(xs) // 2], xs
+
+
 print("== 性能门 R6 port=%d" % PORT)
 
 # 1. API 响应时间
-st, body, elapsed = get("/__health")
+st, body, elapsed, xs = med("/__health")
 chk("perf-api-health", st == 200 and elapsed < 0.1,
-    "HTTP=%s, 响应时间=%.3fs (目标<0.1s)" % (st, elapsed))
+    "HTTP=%s, 响应时间中位=%.3fs %r (目标<0.1s)" % (st, elapsed, xs))
 
 # 2. 蒸馏 API 响应时间
-st, body, elapsed = get("/__distill")
+st, body, elapsed, xs = med("/__distill")
 chk("perf-api-distill", st == 200 and elapsed < 0.2,
-    "HTTP=%s, 响应时间=%.3fs (目标<0.2s)" % (st, elapsed))
+    "HTTP=%s, 响应时间中位=%.3fs %r (目标<0.2s)" % (st, elapsed, xs))
 
 # 3. 能力地图 API 响应时间
-st, body, elapsed = get("/__capmap")
+st, body, elapsed, xs = med("/__capmap")
 chk("perf-api-capmap", st == 200 and elapsed < 0.2,
-    "HTTP=%s, 响应时间=%.3fs (目标<0.2s)" % (st, elapsed))
+    "HTTP=%s, 响应时间中位=%.3fs %r (目标<0.2s)" % (st, elapsed, xs))
 
 # 4. 页面加载时间
 st, body, elapsed = get("/")

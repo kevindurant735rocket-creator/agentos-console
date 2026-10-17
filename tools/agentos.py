@@ -27,6 +27,7 @@
   · 轮次/矩阵先走引擎只读入口 POST /__goal/chain，409/超时再退到
     GET /__fs 只读面取同一份 work/GOAL.json —— 两条路读的是同一个真源。
 """
+
 import argparse
 import json
 import os
@@ -51,14 +52,27 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 SERVE = os.path.join(HERE, "serve.py")
 DEFAULT_PORT = 8790
-FORBIDDEN_PORT = 8787     # headroom proxy 常驻端口，serve 不得抢
+FORBIDDEN_PORT = 8787  # headroom proxy 常驻端口，serve 不得抢
 
 # 十三视图：名字、顺序、条数都与 web 端 index.template.html 的 13 个 tab
 # （data-v = over/round/mx/led/eng/work/goal/retro/cap/ws/term/file/set）
 # 逐项对应。CLI 不另立一套视图表 —— 两份表迟早漂移，而漂移的那天
 # 「终端里能看到」和「浏览器里能看到」就不再是同一个产品。
-VIEWS = ("总览", "轮次", "阶段矩阵", "证据账本", "引擎", "Agent 台",
-         "目标台", "复盘台", "能力地图", "工作区", "终端", "文件", "设置")
+VIEWS = (
+    "总览",
+    "轮次",
+    "阶段矩阵",
+    "证据账本",
+    "引擎",
+    "Agent 台",
+    "目标台",
+    "复盘台",
+    "能力地图",
+    "工作区",
+    "终端",
+    "文件",
+    "设置",
+)
 AGENT_NAME = "Agent 台"
 # 靠**名字**定位 Agent 台，不靠 len(VIEWS)-1：下标写法在只有六个视图时
 # 恰好等于末位，一旦中间插视图就静默指错面，而 _FACES/face is not None/
@@ -70,10 +84,13 @@ TERM_VI = VIEWS.index(TERM_NAME)
 # index.template.html 的 k==='0'?10:+k 同一口径），第 11 面起没有键，
 # 必须 Tab。footer 写死 "1-6" 会在视图涨到 13 个后变成假说明；
 # 反过来，十三个视图时还把 "0" 说成无操作，就是界面上撒谎。
-DIGIT_HINT = ("1-9,0=10" if len(VIEWS) >= 10
-              else ("1-%d" % len(VIEWS) if len(VIEWS) > 1 else "无"))
-LOADERS = []                       # 十三个视图的取数函数，main 前填充（见下）
-FS_PEEK = 262144                   # 与 serve.py FS_MAX_BYTES 同口径（只读上限）
+DIGIT_HINT = (
+    "1-9,0=10"
+    if len(VIEWS) >= 10
+    else ("1-%d" % len(VIEWS) if len(VIEWS) > 1 else "无")
+)
+LOADERS = []  # 十三个视图的取数函数，main 前填充（见下）
+FS_PEEK = 262144  # 与 serve.py FS_MAX_BYTES 同口径（只读上限）
 # CLI 自身版本。它和 index.html 的构建指纹是两件事：指纹说「屏上这份产物是哪次
 # 构建」，版本说「命令行契约是哪一版」。混成一个数，就没法在 --version 里回答
 # 「你的 CLI 支不支持 -p」这种问题。
@@ -82,8 +99,7 @@ VERSION = "0.2.0"
 
 def _dw(s):
     """终端显示列宽：CJK/全角算 2 列，其余 1 列。"""
-    return sum(2 if unicodedata.east_asian_width(c) in "WF" else 1
-               for c in s)
+    return sum(2 if unicodedata.east_asian_width(c) in "WF" else 1 for c in s)
 
 
 def _clip(s, w):
@@ -117,7 +133,7 @@ def _short(s, n):
     s = str(s)
     if len(s) <= n:
         return s
-    return s[:max(0, n - 1)] + "…"
+    return s[: max(0, n - 1)] + "…"
 
 
 # ── Claude Code 皮：TUI 交互面的配色 ────────────────────────────────
@@ -128,11 +144,11 @@ def _short(s, n):
 # tui_walk / cli_gate 的 PTY 都固定 TERM=xterm-256color，两具量具的解析
 # 全在「剥 ANSI 后的文本」层；唯一被钉死的色码是红字 \x1b[31m（见 paint）。
 _SKIN_SGR = {
-    "brand": "\x1b[38;2;217;119;87m",   # Claude 橙 #D97757
-    "cyan":  "\x1b[38;2;126;168;188m",  # 标签青
-    "dim":   "\x1b[38;2;146;139;132m",  # 次要灰
-    "bold":  "\x1b[1m",
-    "r":     "\x1b[0m",
+    "brand": "\x1b[38;2;217;119;87m",  # Claude 橙 #D97757
+    "cyan": "\x1b[38;2;126;168;188m",  # 标签青
+    "dim": "\x1b[38;2;146;139;132m",  # 次要灰
+    "bold": "\x1b[1m",
+    "r": "\x1b[0m",
 }
 
 
@@ -140,14 +156,14 @@ def _skin_ok():
     t = os.environ.get("TERM", "")
     if os.environ.get("NO_COLOR") or t in ("", "dumb"):
         return False
-    return ("256color" in t
-            or os.environ.get("COLORTERM", "") in ("truecolor", "24bit"))
+    return "256color" in t or os.environ.get("COLORTERM", "") in ("truecolor", "24bit")
 
 
 def base_url(args):
     if getattr(args, "url", None):
         return args.url.rstrip("/")
     return "http://127.0.0.1:%d" % getattr(args, "port", DEFAULT_PORT)
+
 
 # 本机自连必须绕开代理。用户终端里 http_proxy/https_proxy 常年是开着的
 # （本机实测就是 127.0.0.1:7897），而 urllib.getproxies() 优先吃环境变量、
@@ -158,6 +174,7 @@ def base_url(args):
 # 全红，而服务明明是同一个机器上的进程。所以凡是 base_url 的自连都走
 # 无代理 opener。
 _OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
 
 def http_json(url, payload=None, timeout=20):
     """GET（payload=None）或 POST（dict，自动带 X-AgentOS-Action:1）。
@@ -170,9 +187,11 @@ def http_json(url, payload=None, timeout=20):
     else:
         body = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
-            url, data=body, method="POST",
-            headers={"Content-Type": "application/json",
-                     "X-AgentOS-Action": "1"})
+            url,
+            data=body,
+            method="POST",
+            headers={"Content-Type": "application/json", "X-AgentOS-Action": "1"},
+        )
     try:
         with _OPENER.open(req, timeout=timeout) as r:
             raw = r.read().decode("utf-8", "replace")
@@ -184,18 +203,20 @@ def http_json(url, payload=None, timeout=20):
         try:
             raw = e.read().decode("utf-8", "replace")
             return e.code, json.loads(raw) if raw.strip() else {}
-        except Exception:                          # noqa: BLE001
+        except Exception:  # noqa: BLE001
             return e.code, {}
-    except Exception as e:                     # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         raise RuntimeError("HTTP %s 失败: %s" % (url, str(e)[:120]))
 
 
 # ── serve：exec 到 serve.py，单一真相源 ───────────────────────────
 def cmd_serve(args):
     if args.port == FORBIDDEN_PORT:
-        print("FAIL: %d 是 headroom proxy 的常驻端口，serve 不得抢占"
-              "（默认 %d，占用顺延）" % (FORBIDDEN_PORT, DEFAULT_PORT),
-              file=sys.stderr)
+        print(
+            "FAIL: %d 是 headroom proxy 的常驻端口，serve 不得抢占"
+            "（默认 %d，占用顺延）" % (FORBIDDEN_PORT, DEFAULT_PORT),
+            file=sys.stderr,
+        )
         return 2
     argv = [sys.executable, SERVE]
     if args.port != DEFAULT_PORT:
@@ -210,7 +231,7 @@ def cmd_serve(args):
         argv += ["--open"]
     # execv 取代本进程：信号（Ctrl+C）与退出码都直接属于 serve.py
     os.execv(sys.executable, argv)
-    return 0                                  # 不可达
+    return 0  # 不可达
 
 
 # ── health：判 __health ok:true ───────────────────────────────────
@@ -218,7 +239,7 @@ def cmd_health(args):
     base = base_url(args)
     try:
         st, h = http_json(base + "/__health")
-    except Exception as e:                     # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         print("health FAIL: %s" % e)
         return 1
     if st != 200 or h.get("ok") is not True:
@@ -232,8 +253,7 @@ def cmd_health(args):
     print("  data      %s" % h.get("data"))
     print("  clients   %s" % h.get("clients"))
     print("  started   %s" % s.get("started"))
-    print("  rebuilds  %s (tree %s)" % (s.get("rebuilds"),
-                                          s.get("tree_rebuilds")))
+    print("  rebuilds  %s (tree %s)" % (s.get("rebuilds"), s.get("tree_rebuilds")))
     print("  actions   %s" % " ".join(h.get("actions") or []))
     print("  code_sha  %s" % h.get("code_sha"))
     return 0
@@ -243,12 +263,15 @@ def cmd_health(args):
 def cmd_gates(args):
     if not args.gates:
         # 与 gates.sh 同口径：零参数 = 一道门都没跑 = 假绿，必须拒。
-        print("FAIL: 零参数 = 假绿。用法: agentos.py gates <门名> [门名…]"
-              "（如 resident_gate headroom_gate）", file=sys.stderr)
+        print(
+            "FAIL: 零参数 = 假绿。用法: agentos.py gates <门名> [门名…]"
+            "（如 resident_gate headroom_gate）",
+            file=sys.stderr,
+        )
         return 2
     return subprocess.run(
-        ["bash", os.path.join(ROOT, "tools", "gates.sh")] + args.gates,
-        cwd=ROOT).returncode
+        ["bash", os.path.join(ROOT, "tools", "gates.sh")] + args.gates, cwd=ROOT
+    ).returncode
 
 
 def cmd_open(args):
@@ -260,14 +283,14 @@ def cmd_open(args):
 
 def cmd_resident(args):
     return subprocess.run(
-        [sys.executable, os.path.join(HERE, "resident_gate.py")],
-        cwd=ROOT).returncode
+        [sys.executable, os.path.join(HERE, "resident_gate.py")], cwd=ROOT
+    ).returncode
 
 
 def cmd_headroom(args):
     return subprocess.run(
-        [sys.executable, os.path.join(HERE, "headroom_gate.py")],
-        cwd=ROOT).returncode
+        [sys.executable, os.path.join(HERE, "headroom_gate.py")], cwd=ROOT
+    ).returncode
 
 
 # ── gh：GitHub 只读面 ────────────────────────────────────────────
@@ -300,8 +323,16 @@ _GH_USAGE = """用法: agentos gh <子功能> [参数...]
 
 # 失败 kind → CLI 退出码。写清楚而不是笼统给 1：使用者要能分清
 # 「gh 没装/限流」和「这个仓库读不到」不是一回事。
-_GH_KIND_RC = {"no-binary": 3, "timeout": 3, "network": 3, "ratelimit": 3,
-               "usage": 2, "rc": 1, "json": 1, "empty": 1}
+_GH_KIND_RC = {
+    "no-binary": 3,
+    "timeout": 3,
+    "network": 3,
+    "ratelimit": 3,
+    "usage": 2,
+    "rc": 1,
+    "json": 1,
+    "empty": 1,
+}
 
 
 def _gh_load():
@@ -309,6 +340,7 @@ def _gh_load():
     if HERE not in sys.path:
         sys.path.insert(0, HERE)
     import gh_client
+
     return gh_client
 
 
@@ -362,6 +394,7 @@ _GH_WRITE_REASONS = {
 
 def _sha_hex(s):
     import hashlib
+
     return hashlib.sha256(s.encode("utf-8")).hexdigest()
 
 
@@ -422,13 +455,20 @@ def _gh_audit_append(kind, sub, repo, num, vals, rc, note):
     本函数抛异常 = 不得继续执行远端写。标题/正文只记 SHA 前缀+长度（SEC I2），
     原文永不落审计。"""
     prev = _gh_audit_last_sha()
-    payload = {"ts": round(time.time(), 3), "kind": kind, "sub": sub,
-               "repo": repo, "num": num, "rc": rc, "note": note,
-               "title_sha": _sha_hex(vals.get("title") or "")[:16],
-               "title_len": len(vals.get("title") or ""),
-               "body_sha": _sha_hex(vals.get("body") or "")[:16],
-               "body_len": len(vals.get("body") or ""),
-               "prev": prev}
+    payload = {
+        "ts": round(time.time(), 3),
+        "kind": kind,
+        "sub": sub,
+        "repo": repo,
+        "num": num,
+        "rc": rc,
+        "note": note,
+        "title_sha": _sha_hex(vals.get("title") or "")[:16],
+        "title_len": len(vals.get("title") or ""),
+        "body_sha": _sha_hex(vals.get("body") or "")[:16],
+        "body_len": len(vals.get("body") or ""),
+        "prev": prev,
+    }
     line = json.dumps(payload, ensure_ascii=False, sort_keys=True)
     payload["sha"] = _sha_hex(prev + line)
     with open(_GH_AUDIT, "a", encoding="utf-8") as f:
@@ -454,8 +494,11 @@ def _gh_audit_rows():
 
 def _gh_audit_exec_rows():
     """真写行 [(ts, repo)]（EXEC 不含 EXEC-DRY）—— 限速的输入。"""
-    return [(r.get("ts", 0), r.get("repo") or "") for r in _gh_audit_rows()
-            if r.get("kind") == "EXEC"]
+    return [
+        (r.get("ts", 0), r.get("repo") or "")
+        for r in _gh_audit_rows()
+        if r.get("kind") == "EXEC"
+    ]
 
 
 def _gh_audit_verify(path=None):
@@ -475,8 +518,7 @@ def _gh_audit_verify(path=None):
             except ValueError:
                 return False, n, n, "第 %d 行不是合法 JSON" % (n + 1)
             got = d.pop("sha", None)
-            want = _sha_hex(prev + json.dumps(d, ensure_ascii=False,
-                                              sort_keys=True))
+            want = _sha_hex(prev + json.dumps(d, ensure_ascii=False, sort_keys=True))
             if got != want:
                 return False, n, n, "第 %d 行 sha 断链（被改过或 prev 错）" % (n + 1)
             prev = got
@@ -490,9 +532,10 @@ def _gh_cfg_flag():
         if HERE not in sys.path:
             sys.path.insert(0, HERE)
         import agent_core
+
         cfg = agent_core._read_agentos_config()
         return (cfg.get("gh") or {}).get("write_enabled")
-    except Exception:                              # noqa: BLE001
+    except Exception:  # noqa: BLE001
         return None
 
 
@@ -501,13 +544,19 @@ def _gh_write_argv(sub, repo, num, vals):
     flag）；slug 已过 owner/repo 形状校验，num 已过整数界校验。"""
     t, b = vals.get("title"), vals.get("body")
     if sub == "issue-create":
-        return ["issue", "create", "-R", repo,
-                "--title=%s" % t, "--body=%s" % b]
+        return ["issue", "create", "-R", repo, "--title=%s" % t, "--body=%s" % b]
     if sub == "issue-comment":
         return ["issue", "comment", str(num), "-R", repo, "--body=%s" % b]
-    return ["pr", "create", "-R", repo, "--draft",
-            "--head=%s" % vals.get("head"), "--title=%s" % t,
-            "--body=%s" % b]
+    return [
+        "pr",
+        "create",
+        "-R",
+        repo,
+        "--draft",
+        "--head=%s" % vals.get("head"),
+        "--title=%s" % t,
+        "--body=%s" % b,
+    ]
 
 
 def _gh_write_cmd(sub, rest, out):
@@ -529,15 +578,18 @@ def _gh_write_cmd(sub, rest, out):
             if len(pos) != 2:
                 raise ValueError("issue-comment 需要 <owner/repo> <issue号>")
             repo = _gh_slug(pos[:1], "repo")
-            num = _gh_int(pos[1], "issue号", 1, 10 ** 7)
+            num = _gh_int(pos[1], "issue号", 1, 10**7)
             if vals.get("body") is None:
                 raise ValueError("issue-comment 需要 --body")
         else:
             if len(pos) != 1:
                 raise ValueError("pr-create 需要 <owner/repo>")
             repo, num = _gh_slug(pos, "repo"), None
-            if not vals.get("head") or not vals.get("title") \
-                    or vals.get("body") is None:
+            if (
+                not vals.get("head")
+                or not vals.get("title")
+                or vals.get("body") is None
+            ):
                 raise ValueError("pr-create 需要 --head --title --body")
         argv = _gh_write_argv(sub, repo, num, vals)
     except ValueError as e:
@@ -545,47 +597,64 @@ def _gh_write_cmd(sub, rest, out):
     disp = "gh " + " ".join(argv)
     if dry:
         try:
-            _gh_audit_append("EXEC-DRY", sub, repo, num, vals, 0,
-                             "dry-run 预演（未联网未起进程）")
-        except Exception as e:                      # noqa: BLE001
+            _gh_audit_append(
+                "EXEC-DRY", sub, repo, num, vals, 0, "dry-run 预演（未联网未起进程）"
+            )
+        except Exception as e:  # noqa: BLE001
             return out(1, sub, [], [], "审计落盘失败（fail-closed）：%s" % e)
-        return out(0, sub, [("将执行", disp),
-                            ("模式", "dry-run：零网络零进程，只预演"),
-                            ("审计", _GH_AUDIT)], [disp])
+        return out(
+            0,
+            sub,
+            [
+                ("将执行", disp),
+                ("模式", "dry-run：零网络零进程，只预演"),
+                ("审计", _GH_AUDIT),
+            ],
+            [disp],
+        )
     okp, reason = gc.write_policy(
-        yes, sys.stdin.isatty(), _gh_cfg_flag(), repo, _gh_audit_exec_rows())
+        yes, sys.stdin.isatty(), _gh_cfg_flag(), repo, _gh_audit_exec_rows()
+    )
     if not okp:
         try:
             _gh_audit_append("DENY", sub, repo, num, vals, 1, reason)
-        except Exception:                           # noqa: BLE001
-            pass                                    # 拒绝方向本就安全
-        return out(1, sub, [], [],
-                   "写被拒（%s）：%s" % (reason,
-                                        _GH_WRITE_REASONS.get(reason, reason)))
-    sys.stderr.write("即将执行远端写（%s）：\n  %s\n确认？[y/N] "
-                     % (sub, disp))
+        except Exception:  # noqa: BLE001
+            pass  # 拒绝方向本就安全
+        return out(
+            1,
+            sub,
+            [],
+            [],
+            "写被拒（%s）：%s" % (reason, _GH_WRITE_REASONS.get(reason, reason)),
+        )
+    sys.stderr.write("即将执行远端写（%s）：\n  %s\n确认？[y/N] " % (sub, disp))
     sys.stderr.flush()
     ans = (sys.stdin.readline() or "").strip().lower()
     if ans != "y":
         try:
             _gh_audit_append("DENY", sub, repo, num, vals, 1, "confirm-no")
-        except Exception:                           # noqa: BLE001
+        except Exception:  # noqa: BLE001
             pass
         return out(1, sub, [], [], "已取消（未确认 y，未执行）")
     try:
         _gh_audit_append("EXEC", sub, repo, num, vals, 0, "已确认，审计先行")
-    except Exception as e:                          # noqa: BLE001
-        return out(1, sub, [], [],
-                   "审计落盘失败（fail-closed，不执行远端写）：%s" % e)
+    except Exception as e:  # noqa: BLE001
+        return out(1, sub, [], [], "审计落盘失败（fail-closed，不执行远端写）：%s" % e)
     r = gc.run_gh_write(argv)
     if not r.get("ok"):
         k = r.get("kind", "rc")
-        return out(_GH_KIND_RC.get(k, 1), sub, [], [],
-                   "gh 写失败：%s" % r.get("error"))
+        return out(_GH_KIND_RC.get(k, 1), sub, [], [], "gh 写失败：%s" % r.get("error"))
     lines = (r.get("stdout") or "").strip().splitlines()
-    return out(0, sub, [("已执行", disp),
-                        ("结果", lines[-1] if lines else "（gh rc=0，无 stdout）"),
-                        ("审计", _GH_AUDIT)], [disp])
+    return out(
+        0,
+        sub,
+        [
+            ("已执行", disp),
+            ("结果", lines[-1] if lines else "（gh rc=0，无 stdout）"),
+            ("审计", _GH_AUDIT),
+        ],
+        [disp],
+    )
 
 
 def _gh_repo_parse(rest, bools, valflags):
@@ -621,66 +690,88 @@ def _gh_repo_parse(rest, bools, valflags):
 def _gh_repo_create_cmd(rest, out):
     gc = _gh_load()
     try:
-        pos, vals, bset = _gh_repo_parse(rest, ("--yes", "--dry-run"),
-                                         ("public", "private"))
+        pos, vals, bset = _gh_repo_parse(
+            rest, ("--yes", "--dry-run"), ("public", "private")
+        )
         name = pos[0] if pos else ""
         if not name or "/" in name and name.count("/") != 1:
-            raise ValueError("repo-create 需要 <name> 或 <owner/name>：%r"
-                             % name)
-        vis = "private" if "--private" in bset else (
-            "public" if "--public" in bset else "private")
+            raise ValueError("repo-create 需要 <name> 或 <owner/name>：%r" % name)
+        vis = (
+            "private"
+            if "--private" in bset
+            else ("public" if "--public" in bset else "private")
+        )
     except ValueError as e:
         return out(1, "repo-create", [], [], "参数不合法：%s" % e)
     argv = ["repo", "create", name, "--" + vis]
     disp = "gh " + " ".join(argv)
     if "--dry-run" in bset:
         try:
-            gc.audit_append("EXEC-DRY", "repo-create", name, None, {}, 0,
-                            "dry-run 预演（未联网未起进程）")
-        except Exception as e:                     # noqa: BLE001
-            return out(1, "repo-create", [], [],
-                       "审计落盘失败（fail-closed）：%s" % e)
-        return out(0, "repo-create", [("将执行", disp),
-                                      ("模式", "dry-run：零网络零进程")],
-                   [disp])
+            gc.audit_append(
+                "EXEC-DRY",
+                "repo-create",
+                name,
+                None,
+                {},
+                0,
+                "dry-run 预演（未联网未起进程）",
+            )
+        except Exception as e:  # noqa: BLE001
+            return out(1, "repo-create", [], [], "审计落盘失败（fail-closed）：%s" % e)
+        return out(
+            0,
+            "repo-create",
+            [("将执行", disp), ("模式", "dry-run：零网络零进程")],
+            [disp],
+        )
     okp, reason = gc.write_policy(
-        "--yes" in bset, sys.stdin.isatty(), _gh_cfg_flag(), name,
-        _gh_audit_exec_rows())
+        "--yes" in bset, sys.stdin.isatty(), _gh_cfg_flag(), name, _gh_audit_exec_rows()
+    )
     if not okp:
         try:
-            _gh_audit_append("DENY", "repo-create", name, None, {}, 1,
-                             reason)
-        except Exception:                          # noqa: BLE001
+            _gh_audit_append("DENY", "repo-create", name, None, {}, 1, reason)
+        except Exception:  # noqa: BLE001
             pass
-        return out(1, "repo-create", [], [],
-                   "写被拒（%s）：%s" % (reason,
-                                        _GH_WRITE_REASONS.get(reason,
-                                                              reason)))
+        return out(
+            1,
+            "repo-create",
+            [],
+            [],
+            "写被拒（%s）：%s" % (reason, _GH_WRITE_REASONS.get(reason, reason)),
+        )
     sys.stderr.write("即将创建远端仓库：\n  %s\n确认？[y/N] " % disp)
     sys.stderr.flush()
     if (sys.stdin.readline() or "").strip().lower() != "y":
         return out(1, "repo-create", [], [], "已取消（未确认 y）")
     try:
-        _gh_audit_append("EXEC", "repo-create", name, None, {}, 0,
-                         "已确认，审计先行")
-    except Exception as e:                         # noqa: BLE001
-        return out(1, "repo-create", [], [],
-                   "审计落盘失败（fail-closed，不执行）：%s" % e)
+        _gh_audit_append("EXEC", "repo-create", name, None, {}, 0, "已确认，审计先行")
+    except Exception as e:  # noqa: BLE001
+        return out(
+            1, "repo-create", [], [], "审计落盘失败（fail-closed，不执行）：%s" % e
+        )
     r = gc.run_gh_write(argv)
     if not r.get("ok"):
-        return out(_GH_KIND_RC.get(r.get("kind", "rc"), 1), "repo-create",
-                   [], [], "gh 失败：%s" % r.get("error"))
-    return out(0, "repo-create", [("已执行", disp),
-                                  ("结果", (r.get("stdout") or "-")[:120])],
-               [disp])
+        return out(
+            _GH_KIND_RC.get(r.get("kind", "rc"), 1),
+            "repo-create",
+            [],
+            [],
+            "gh 失败：%s" % r.get("error"),
+        )
+    return out(
+        0,
+        "repo-create",
+        [("已执行", disp), ("结果", (r.get("stdout") or "-")[:120])],
+        [disp],
+    )
 
 
 def _gh_deploy_cmd(rest, out):
     gc = _gh_load()
     try:
-        pos, vals, bset = _gh_repo_parse(rest, ("--yes", "--dry-run",
-                                                "--public", "--private"),
-                                         ("repo",))
+        pos, vals, bset = _gh_repo_parse(
+            rest, ("--yes", "--dry-run", "--public", "--private"), ("repo",)
+        )
         d = pos[0] if pos else ""
         repo = (vals.get("repo") or "").strip()
         if not d:
@@ -692,43 +783,61 @@ def _gh_deploy_cmd(rest, out):
             raise ValueError("目录不存在：%s" % dirpath)
     except ValueError as e:
         return out(1, "deploy", [], [], "参数不合法：%s" % e)
-    vis = "private" if "--private" in bset else (
-        "public" if "--public" in bset else "private")
+    vis = (
+        "private"
+        if "--private" in bset
+        else ("public" if "--public" in bset else "private")
+    )
 
     def _aud(kind, sub, rp, num, v):
         try:
-            return _gh_audit_append(kind, sub, rp, num, v, 0,
-                                    "CLI deploy（%s）" % vis) is not None
-        except Exception:                          # noqa: BLE001
+            return (
+                _gh_audit_append(kind, sub, rp, num, v, 0, "CLI deploy（%s）" % vis)
+                is not None
+            )
+        except Exception:  # noqa: BLE001
             return False
 
     if "--dry-run" in bset:
-        r = gc.deploy_dir(dirpath, repo, public=vis == "public",
-                          dry_run=True)
+        r = gc.deploy_dir(dirpath, repo, public=vis == "public", dry_run=True)
         if not r.get("ok"):
             return out(1, "deploy", [], [], r.get("error"))
-        return out(0, "deploy", [("计划", "；".join(r.get("steps") or [])),
-                                 ("密钥扫描", "命中 %d"
-                                  % len(r.get("secret_hits") or []))],
-                   [])
+        return out(
+            0,
+            "deploy",
+            [
+                ("计划", "；".join(r.get("steps") or [])),
+                ("密钥扫描", "命中 %d" % len(r.get("secret_hits") or [])),
+            ],
+            [],
+        )
     okp, reason = gc.write_policy(
-        "--yes" in bset, sys.stdin.isatty(), _gh_cfg_flag(), repo,
-        _gh_audit_exec_rows())
+        "--yes" in bset, sys.stdin.isatty(), _gh_cfg_flag(), repo, _gh_audit_exec_rows()
+    )
     if not okp:
-        return out(1, "deploy", [], [],
-                   "写被拒（%s）：%s" % (reason,
-                                        _GH_WRITE_REASONS.get(reason,
-                                                              reason)))
-    sys.stderr.write("即将部署目录 %s → %s（%s）：\n  建库(若缺)+init+commit"
-                     "+push\n确认？[y/N] " % (dirpath, repo, vis))
+        return out(
+            1,
+            "deploy",
+            [],
+            [],
+            "写被拒（%s）：%s" % (reason, _GH_WRITE_REASONS.get(reason, reason)),
+        )
+    sys.stderr.write(
+        "即将部署目录 %s → %s（%s）：\n  建库(若缺)+init+commit"
+        "+push\n确认？[y/N] " % (dirpath, repo, vis)
+    )
     sys.stderr.flush()
     if (sys.stdin.readline() or "").strip().lower() != "y":
         return out(1, "deploy", [], [], "已取消（未确认 y）")
     r = gc.deploy_dir(dirpath, repo, public=vis == "public", audit=_aud)
     if not r.get("ok"):
         return out(1, "deploy", [], [], "部署失败：%s" % r.get("error"))
-    return out(0, "deploy", [("已完成", "%s（建库=%s，push=OK）"
-                              % (repo, r.get("created")))], [])
+    return out(
+        0,
+        "deploy",
+        [("已完成", "%s（建库=%s，push=OK）" % (repo, r.get("created")))],
+        [],
+    )
 
 
 def _gh_audit_cmd(rest, out):
@@ -742,12 +851,19 @@ def _gh_audit_cmd(rest, out):
     rows = [("审计文件", _GH_AUDIT), ("哈希链", msg)]
     if ok:
         for r in _gh_audit_rows()[-lim:]:
-            rows.append(("%s %s" % (r.get("kind"), r.get("sub")),
-                         "%s repo=%s num=%s rc=%s %s"
-                         % (time.strftime("%m-%d %H:%M:%S",
-                                          time.localtime(r.get("ts", 0))),
-                            r.get("repo"), r.get("num"), r.get("rc"),
-                            r.get("note", ""))))
+            rows.append(
+                (
+                    "%s %s" % (r.get("kind"), r.get("sub")),
+                    "%s repo=%s num=%s rc=%s %s"
+                    % (
+                        time.strftime("%m-%d %H:%M:%S", time.localtime(r.get("ts", 0))),
+                        r.get("repo"),
+                        r.get("num"),
+                        r.get("rc"),
+                        r.get("note", ""),
+                    ),
+                )
+            )
         return out(0, "audit", rows, [])
     return out(2, "audit", rows, [], "审计链断（%s）——写面可信度归零，先查人" % msg)
 
@@ -782,11 +898,15 @@ def cmd_gh(args):
 
     def out(code, sub, rows, sources, err=None):
         if fmt == "json":
-            rec = {"ok": int(code) == 0, "exit_code": int(code),
-                   "action": "gh" + ((" " + sub) if sub else ""),
-                   "rows": [[l, v] for l, v in rows],
-                   "sources": list(sources or []),
-                   "dur": round(time.time() - t0, 2), "error": err}
+            rec = {
+                "ok": int(code) == 0,
+                "exit_code": int(code),
+                "action": "gh" + ((" " + sub) if sub else ""),
+                "rows": [[l, v] for l, v in rows],
+                "sources": list(sources or []),
+                "dur": round(time.time() - t0, 2),
+                "error": err,
+            }
             sys.stdout.write(json.dumps(rec, ensure_ascii=False) + "\n")
         else:
             for l, v in rows:
@@ -810,7 +930,7 @@ def cmd_gh(args):
     gc = None
     try:
         gc = _gh_load()
-    except Exception as e:                     # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         # 基础设施错（模块缺失/语法坏）：rc=3，且绝不静默降级成空列表。
         return out(3, sub, [], [], "gh_client 加载失败：%s" % e)
     try:
@@ -825,11 +945,13 @@ def cmd_gh(args):
         elif sub == "repo":
             rows, srcs = gc.repo(_gh_slug(pos, "repo"))
         elif sub == "issues":
-            rows, srcs = gc.issues(_gh_slug(pos, "issues"),
-                                   state=opts.get("state", "open"), limit=lim)
+            rows, srcs = gc.issues(
+                _gh_slug(pos, "issues"), state=opts.get("state", "open"), limit=lim
+            )
         elif sub == "prs":
-            rows, srcs = gc.prs(_gh_slug(pos, "prs"),
-                                state=opts.get("state", "open"), limit=lim)
+            rows, srcs = gc.prs(
+                _gh_slug(pos, "prs"), state=opts.get("state", "open"), limit=lim
+            )
         elif sub == "runs":
             rows, srcs = gc.runs(_gh_slug(pos, "runs"), limit=lim)
         elif sub == "search":
@@ -852,8 +974,7 @@ def cmd_gh(args):
     except _gh_exc(gc) as e:
         # GhError 的 kind 就是 rc 的真源；不认 kind 一律按远端失败 1。
         kind = getattr(e, "kind", None) or "rc"
-        return out(_GH_KIND_RC.get(kind, 1), sub, [], [],
-                   "%s: %s" % (kind, e))
+        return out(_GH_KIND_RC.get(kind, 1), sub, [], [], "%s: %s" % (kind, e))
     except ValueError as e:
         return out(2, sub, [], [], "%s" % e)
     return out(0, sub, rows, srcs)
@@ -868,18 +989,23 @@ def cmd_term(args):
     """
     argv = list(args.argv or [])
     if not argv:
-        print("FAIL: 零参数 = 什么都没跑。用法: agentos.py term <命令> [参数…]"
-              "（如 agentos.py term ls -1 tools）", file=sys.stderr)
+        print(
+            "FAIL: 零参数 = 什么都没跑。用法: agentos.py term <命令> [参数…]"
+            "（如 agentos.py term ls -1 tools）",
+            file=sys.stderr,
+        )
         return 2
     base = base_url(args)
     try:
         st, j = http_json(base + "/__term", {"argv": argv}, timeout=45)
-    except Exception as e:                     # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         print("FAIL: %s 不可达：%s" % (base, e), file=sys.stderr)
         return 1
     if st != 200:
-        print("FAIL: HTTP=%s %s" % (st, _short(j.get("error") or "", 160)),
-              file=sys.stderr)
+        print(
+            "FAIL: HTTP=%s %s" % (st, _short(j.get("error") or "", 160)),
+            file=sys.stderr,
+        )
         return 1
     out = j.get("out") or ""
     if out:
@@ -889,11 +1015,12 @@ def cmd_term(args):
     rc = j.get("rc")
     if rc is None:
         # 命令压根没跑起来（超时/起不来）：如实说，不给 0。
-        print("FAIL: 命令未执行：%s" % (j.get("error") or "服务端未回 rc"),
-              file=sys.stderr)
+        print(
+            "FAIL: 命令未执行：%s" % (j.get("error") or "服务端未回 rc"),
+            file=sys.stderr,
+        )
         return 1
-    print("rc=%s · %ss · argv=%s" % (rc, j.get("dur"),
-                                     " ".join(j.get("argv") or argv)))
+    print("rc=%s · %ss · argv=%s" % (rc, j.get("dur"), " ".join(j.get("argv") or argv)))
     return 0 if rc == 0 else 1
 
 
@@ -918,9 +1045,10 @@ def _act_tmo(base, action, budget):
     客户端比服务端先撤，服务端的进度还在流，客户端已经报「执行失败」退出。
     """
     try:
-        st, j = http_json(base + "/__act", {"action": "__list"},
-                          timeout=min(budget, 15.0))
-    except Exception:                                 # noqa: BLE001
+        st, j = http_json(
+            base + "/__act", {"action": "__list"}, timeout=min(budget, 15.0)
+        )
+    except Exception:  # noqa: BLE001
         return None
     if st != 200 or j.get("ok") is not True:
         return None
@@ -964,9 +1092,15 @@ class _PrintSink(object):
             if rec.get("action"):
                 sys.stdout.write(
                     "rc=%s · exit=%s · %.1fs · action=%s · how=%s · run=%s\n"
-                    % (rec.get("action_rc"), rec.get("exit_code"),
-                       rec.get("dur", 0.0), rec.get("action"),
-                       rec.get("how") or "-", rec.get("run") or "-"))
+                    % (
+                        rec.get("action_rc"),
+                        rec.get("exit_code"),
+                        rec.get("dur", 0.0),
+                        rec.get("action"),
+                        rec.get("how") or "-",
+                        rec.get("run") or "-",
+                    )
+                )
         sys.stdout.flush()
         return int(rec.get("exit_code", 3))
 
@@ -979,8 +1113,11 @@ def _session_files():
     """只认 cli-*.jsonl —— 本 CLI 写的历史，不接管别人的命名空间。"""
     if not os.path.isdir(SESSION_DIR):
         return []
-    return [os.path.join(SESSION_DIR, n) for n in sorted(os.listdir(SESSION_DIR))
-            if n.startswith("cli-") and n.endswith(".jsonl")]
+    return [
+        os.path.join(SESSION_DIR, n)
+        for n in sorted(os.listdir(SESSION_DIR))
+        if n.startswith("cli-") and n.endswith(".jsonl")
+    ]
 
 
 def _session_load(path):
@@ -1002,7 +1139,7 @@ def _session_write(rec):
         with open(path, "w", encoding="utf-8") as f:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
         return path
-    except Exception as e:                     # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         sys.stderr.write("warn: 会话历史没写下（%s）\n" % str(e)[:120])
         return None
 
@@ -1016,28 +1153,49 @@ def _session_write(rec):
 # 数据；命不中就退回执行面，绝不猜一个面凑答案。
 _Q_ROUTES = (
     ("projects", "项目列表", ("project", "proj", "项目", "空间")),
-    ("goal",     "目标台账", ("goal", "目标", "台账")),
-    ("capmap",   "能力地图", ("capmap", "capability", "能力")),
-    ("rounds",   "轮次",     ("round", "轮次", "回合", "历史")),
-    ("matrix",   "阶段矩阵", ("matrix", "阶段", "矩阵", "进度")),
-    ("ledger",   "证据账本", ("ledger", "证据", "账本")),
-    ("engine",   "引擎",     ("engine", "引擎", "门链")),
-    ("agent",    "Agent 台", ("agent", "智能体")),
-    ("retro",    "复盘台",   ("retro", "复盘", "回顾")),
-    ("ws",       "工作区",   ("ws", "工作区", "目录树", "文件树")),
-    ("file",     "文件",     ("file", "文件", "代码")),
-    ("term",     "终端命令", ("term", "terminal", "shell", "终端", "命令",
-                            "跑一下", "运行", "执行")),
+    ("goal", "目标台账", ("goal", "目标", "台账")),
+    ("capmap", "能力地图", ("capmap", "capability", "能力")),
+    ("rounds", "轮次", ("round", "轮次", "回合", "历史")),
+    ("matrix", "阶段矩阵", ("matrix", "阶段", "矩阵", "进度")),
+    ("ledger", "证据账本", ("ledger", "证据", "账本")),
+    ("engine", "引擎", ("engine", "引擎", "门链")),
+    ("agent", "Agent 台", ("agent", "智能体")),
+    ("retro", "复盘台", ("retro", "复盘", "回顾")),
+    ("ws", "工作区", ("ws", "工作区", "目录树", "文件树")),
+    ("file", "文件", ("file", "文件", "代码")),
+    (
+        "term",
+        "终端命令",
+        ("term", "terminal", "shell", "终端", "命令", "跑一下", "运行", "执行"),
+    ),
     # gh 必须排在 status 之前：status 的兜底词里有「总览/概览」，而
     # 「看一下 github 仓库」不是要总览。gh 放这里还因为它只读、零参数依赖，
     # 命不中时不参加兜底竞争。
-    ("gh",       "GitHub", ("gh", "github", "仓库", "repo", "issue", "pr",
-                            "pull request", "star")),
+    (
+        "gh",
+        "GitHub",
+        ("gh", "github", "仓库", "repo", "issue", "pr", "pull request", "star"),
+    ),
     # status 放最后：它带 总览/概览/怎么样 这类兜底词，排前面会把
     # 「看一眼能力地图」也抢走。兜底面只该在更具体的一个都没命中时接。
-    ("status",   "状态/健康", ("status", "health", "健康", "状态", "怎么样",
-                            "咋样", "正常", "在线", "alive", "总览", "概览",
-                            "驾驶舱")),
+    (
+        "status",
+        "状态/健康",
+        (
+            "status",
+            "health",
+            "健康",
+            "状态",
+            "怎么样",
+            "咋样",
+            "正常",
+            "在线",
+            "alive",
+            "总览",
+            "概览",
+            "驾驶舱",
+        ),
+    ),
 )
 
 
@@ -1063,13 +1221,13 @@ def _q_route(q):
 def _q_quoted(q):
     """抽出引号/反引号里的片段。不引 re：这点活儿手写更快也更可控。"""
     out = []
-    for a, b in (("`", "`"), ("\"", "\""), ("'", "'")):
+    for a, b in (("`", "`"), ('"', '"'), ("'", "'")):
         i = q.find(a)
         while i >= 0:
             j = q.find(b, i + 1)
             if j < 0:
                 break
-            out.append(q[i + 1:j].strip())
+            out.append(q[i + 1 : j].strip())
             i = q.find(a, j + 1)
     return out
 
@@ -1114,25 +1272,42 @@ def _q_projects(base, timeout):
     st, j = http_json(base + "/__projects", timeout=min(timeout, 20.0))
     if st != 200 or j.get("ok") is not True:
         raise RuntimeError("/__projects 不健康（HTTP=%s）" % st)
-    rows = [("项目数", str(j.get("n_projects")), {"sec": 1}),
-            ("当前", "%s / 默认 %s" % (j.get("active"), j.get("default")))]
+    rows = [
+        ("项目数", str(j.get("n_projects")), {"sec": 1}),
+        ("当前", "%s / 默认 %s" % (j.get("active"), j.get("default"))),
+    ]
     for p in j.get("projects") or []:
         f = p.get("facts") or {}
-        rows.append((p.get("key") or "?",
-                     "%s · %s · 顶层 %s 项 · 文件 %s 项%s"
-                     % (p.get("label") or "-", p.get("root") or "-",
-                        f.get("n_top"), f.get("n_files"),
-                        "（已截断）" if f.get("truncated") else ""),
-                     {"kind": "no"} if p.get("ok") is not True else None))
+        rows.append(
+            (
+                p.get("key") or "?",
+                "%s · %s · 顶层 %s 项 · 文件 %s 项%s"
+                % (
+                    p.get("label") or "-",
+                    p.get("root") or "-",
+                    f.get("n_top"),
+                    f.get("n_files"),
+                    "（已截断）" if f.get("truncated") else "",
+                ),
+                {"kind": "no"} if p.get("ok") is not True else None,
+            )
+        )
     return rows, "GET /__projects（只读）", {}
 
 
 # 只读路由 id → 取数函数。除 projects 外全部复用 TUI 的 loader。
 _Q_VIEW_ROUTE = {
-    "status": "总览", "rounds": "轮次", "matrix": "阶段矩阵",
-    "ledger": "证据账本", "engine": "引擎", "agent": "Agent 台",
-    "goal": "目标台", "retro": "复盘台", "capmap": "能力地图",
-    "ws": "工作区", "file": "文件",
+    "status": "总览",
+    "rounds": "轮次",
+    "matrix": "阶段矩阵",
+    "ledger": "证据账本",
+    "engine": "引擎",
+    "agent": "Agent 台",
+    "goal": "目标台",
+    "retro": "复盘台",
+    "capmap": "能力地图",
+    "ws": "工作区",
+    "file": "文件",
 }
 
 
@@ -1154,12 +1329,11 @@ def _q_gh():
     src = " + ".join(srcs)
     try:
         rrows, rsrc = gc.repos(limit=15)
-    except Exception as e:                     # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         # 账号能认证而仓库列不出来（token Scope 不够）≠ 整个 gh 面不可用：
         # 这一条如实做成一行红，而不是让整句问话 rc=3。
         return (list(rows) + [("仓库列表", "取不到：%s" % e)], src, {})
-    return (list(rows) + list(rrows),
-            " + ".join(list(srcs) + list(rsrc)), {})
+    return (list(rows) + list(rrows), " + ".join(list(srcs) + list(rsrc)), {})
 
 
 def cmd_agent(args):
@@ -1178,7 +1352,7 @@ def cmd_agent(args):
         sys.path.insert(0, tools)
     try:
         import agent_core
-    except Exception as e:                    # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         sys.stderr.write("FAIL: 载入 agent 内核失败：%s\n" % e)
         return 3
     argv = list(args.argv or [])
@@ -1206,7 +1380,7 @@ def cmd_config(args):
         sys.path.insert(0, tools)
     try:
         import agent_core
-    except Exception as e:                    # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         sys.stderr.write("FAIL: 载入 agent 内核失败：%s\n" % e)
         return 3
 
@@ -1215,8 +1389,10 @@ def cmd_config(args):
         key = getattr(args, "key", "")
         val = getattr(args, "value", "")
         if not key or not val:
-            sys.stderr.write("FAIL: config set 需要 key 和 value\n"
-                             "  用法: agentos config set llm.api_key <key>\n")
+            sys.stderr.write(
+                "FAIL: config set 需要 key 和 value\n"
+                "  用法: agentos config set llm.api_key <key>\n"
+            )
             return 2
         parts = key.split(".")
         if len(parts) != 2:
@@ -1227,13 +1403,22 @@ def cmd_config(args):
         # —— "yes"/"1"/"True" 一律拒，一次手滑不许悄悄提权（SEC E1）；
         # ②表只放行已知集合，任意键会把用户配置当垃圾场。
         if table not in ("llm", "gh", "agent"):
-            sys.stderr.write("FAIL: config set 只放行 llm.* / gh.* / agent.* 表"
-                             "（收到 %s.*）；新表请先进代码白名单\n" % table)
+            sys.stderr.write(
+                "FAIL: config set 只放行 llm.* / gh.* / agent.* 表"
+                "（收到 %s.*）；新表请先进代码白名单\n" % table
+            )
             return 2
-        if table == "gh" and field == "write_enabled" \
-                and val not in ("true", "false"):
-            sys.stderr.write("FAIL: gh.write_enabled 只认字面 true / false"
-                             "（收到 %r）——写面开关不接受模糊值\n" % val)
+        if table == "gh" and field == "write_enabled" and val not in ("true", "false"):
+            sys.stderr.write(
+                "FAIL: gh.write_enabled 只认字面 true / false"
+                "（收到 %r）——写面开关不接受模糊值\n" % val
+            )
+            return 2
+        if table == "llm" and field == "no_fallback" and val not in ("true", "false"):
+            sys.stderr.write(
+                "FAIL: llm.no_fallback 只认字面 true / false"
+                "（收到 %r）——回退开关不接受模糊值\n" % val
+            )
             return 2
         if table == "agent":
             # 安全闸开关（W10 自由面）：只放行 plan_lock / mode_gate / cmd_gate
@@ -1241,18 +1426,21 @@ def cmd_config(args):
             # true/false 真值，读侧只认字面布尔 True 才上锁（字符串 "true"
             # 不上锁、缺键=自由）。默认自由面，显式 true 才把闸摆回去。
             if field not in ("plan_lock", "mode_gate", "cmd_gate"):
-                sys.stderr.write("FAIL: agent 表只放行 plan_lock / mode_gate "
-                                 "/ cmd_gate（收到 agent.%s）\n" % field)
+                sys.stderr.write(
+                    "FAIL: agent 表只放行 plan_lock / mode_gate "
+                    "/ cmd_gate（收到 agent.%s）\n" % field
+                )
                 return 2
             if val not in ("true", "false"):
-                sys.stderr.write("FAIL: agent.%s 只认字面 true / false"
-                                 "（收到 %r）\n" % (field, val))
+                sys.stderr.write(
+                    "FAIL: agent.%s 只认字面 true / false（收到 %r）\n" % (field, val)
+                )
                 return 2
         cfg = agent_core._read_agentos_config()
         if table not in cfg or not isinstance(cfg[table], dict):
             cfg[table] = {}
         if table == "agent":
-            cfg[table][field] = (val == "true")     # 存布尔，不存字符串
+            cfg[table][field] = val == "true"  # 存布尔，不存字符串
         else:
             cfg[table][field] = val
         # 用户说「你直接把 opencode 给我接入」—— 设 api_key 时如果 provider
@@ -1266,14 +1454,16 @@ def cmd_config(args):
         if not ok:
             sys.stderr.write("FAIL: 写配置失败：%s\n" % err)
             return 3
-        sys.stderr.write("OK: %s.%s 已写入 %s\n"
-                         % (table, field, agent_core._agentos_config_path()))
+        sys.stderr.write(
+            "OK: %s.%s 已写入 %s\n" % (table, field, agent_core._agentos_config_path())
+        )
         return 0
     if sub == "get":
         key = getattr(args, "key", "")
         if not key:
-            sys.stderr.write("FAIL: config get 需要 key\n"
-                             "  用法: agentos config get llm.api_key\n")
+            sys.stderr.write(
+                "FAIL: config get 需要 key\n  用法: agentos config get llm.api_key\n"
+            )
             return 2
         parts = key.split(".")
         if len(parts) != 2:
@@ -1290,8 +1480,9 @@ def cmd_config(args):
     if sub == "show":
         cfg = agent_core._read_agentos_config()
         if not cfg:
-            sys.stderr.write("(空) %s 下还没有配置\n"
-                             % agent_core._agentos_config_path())
+            sys.stderr.write(
+                "(空) %s 下还没有配置\n" % agent_core._agentos_config_path()
+            )
             return 0
         for table, fields in sorted(cfg.items()):
             if not isinstance(fields, dict):
@@ -1304,10 +1495,12 @@ def cmd_config(args):
                     sys.stdout.write("%s = %s\n" % (k, v))
             sys.stdout.write("\n")
         return 0
-    sys.stderr.write("FAIL: config 需要子命令 set/get/show\n"
-                     "  用法: agentos config set llm.api_key <key>\n"
-                     "        agentos config get llm.api_key\n"
-                     "        agentos config show\n")
+    sys.stderr.write(
+        "FAIL: config 需要子命令 set/get/show\n"
+        "  用法: agentos config set llm.api_key <key>\n"
+        "        agentos config get llm.api_key\n"
+        "        agentos config show\n"
+    )
     return 2
 
 
@@ -1323,7 +1516,8 @@ def cmd_print(args):
     if not q:
         sys.stderr.write(
             "FAIL: -p/--print 需要一句需求。空需求 = 什么都没干，不许当成成功。\n"
-            "  用法: agentos -p \"跑一下 livecheck\" [--output-format json]\n")
+            '  用法: agentos -p "跑一下 livecheck" [--output-format json]\n'
+        )
         return 2
     base = base_url(args)
     # argparse 用 SUPPRESS 当 --timeout 的默认值：没显式给时 args 上根本没有这个
@@ -1335,13 +1529,31 @@ def cmd_print(args):
     sink = _PrintSink(getattr(args, "output_format", "text"), t0)
     sid = _new_session_id()
 
-    def emit(code, msg, action=None, how=None, run=None, action_rc=None,
-             ok=None, route=None, answer=None, sources=None):
-        rec = {"id": sid, "started": time.strftime("%Y-%m-%d %H:%M:%S"),
-               "request": q, "action": action, "how": how, "run": run,
-               "action_rc": action_rc, "exit_code": int(code),
-               "dur": round(time.time() - t0, 2), "lines": sink.lines,
-               "error": msg}
+    def emit(
+        code,
+        msg,
+        action=None,
+        how=None,
+        run=None,
+        action_rc=None,
+        ok=None,
+        route=None,
+        answer=None,
+        sources=None,
+    ):
+        rec = {
+            "id": sid,
+            "started": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "request": q,
+            "action": action,
+            "how": how,
+            "run": run,
+            "action_rc": action_rc,
+            "exit_code": int(code),
+            "dur": round(time.time() - t0, 2),
+            "lines": sink.lines,
+            "error": msg,
+        }
         # query 是 request 的契约别名：json 消费者（CI / 脚本）按契约 4 找
         # query，老会话记录找 request。两个键写同一份值，比改键名安全。
         rec["query"] = q
@@ -1352,8 +1564,7 @@ def cmd_print(args):
             ok = int(code) == 0
         rec["ok"] = bool(ok)
         rec["route"] = route
-        rec["answer"] = answer if answer is not None else (
-            " ".join(sink.lines)[:600])
+        rec["answer"] = answer if answer is not None else (" ".join(sink.lines)[:600])
         rec["sources"] = list(sources or [])
         _session_write(rec)
         return sink.finish(rec)
@@ -1361,15 +1572,19 @@ def cmd_print(args):
     # 1) 服务健康：不健康就没有"真机"可言，直接基础设施错
     try:
         st, h = http_json(base + "/__health", timeout=min(timeout, 20.0))
-    except Exception as e:                     # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         # 这一条也在执行面：不标 route 的话，事后翻会话记录时分不清
         # 「执行面在健康检查就倒了」和「只读面在健康检查就倒了」。
-        return emit(3, "%s 不可达：%s" % (base, e), route="action",
-                    sources=["GET /__health"])
+        return emit(
+            3, "%s 不可达：%s" % (base, e), route="action", sources=["GET /__health"]
+        )
     if st != 200 or h.get("ok") is not True:
-        return emit(3, "%s/__health 不健康（HTTP=%s ok=%s）"
-                    % (base, st, h.get("ok")), route="action",
-                    sources=["GET /__health"])
+        return emit(
+            3,
+            "%s/__health 不健康（HTTP=%s ok=%s）" % (base, st, h.get("ok")),
+            route="action",
+            sources=["GET /__health"],
+        )
 
     # 1.5) 只读路由面：先问「这句是不是在要一份现成的读结果」。
     # /__act/resolve 只认 8 个**执行面**动作，用户问「现在什么状态」「看一眼
@@ -1394,8 +1609,12 @@ def cmd_print(args):
         pnl.run_cmd(" ".join(argv))
         last = pnl.hist[-1] if pnl.hist else None
         if not last or last[2] is None:
-            return emit(3, "命令未执行（服务端未回 rc，不给 0）", route="term",
-                        sources=["POST /__term"])
+            return emit(
+                3,
+                "命令未执行（服务端未回 rc，不给 0）",
+                route="term",
+                sources=["POST /__term"],
+            )
         _t, _cmd, rc, dur, out, note = last
         body = [ln for ln in (out or "").splitlines() if ln.strip()]
         shown = body[-40:]
@@ -1405,27 +1624,40 @@ def cmd_print(args):
             sink.line("…（共 %d 行，只显示最后 %d 行）" % (len(body), len(shown)))
         if note:
             sink.warn(note)
-        return emit(0 if rc == 0 else 1, None, route="term",
-                    action_rc=rc, sources=["POST /__term"],
-                    answer="rc=%s · %ss · %s" % (rc, dur, " ".join(argv)))
+        return emit(
+            0 if rc == 0 else 1,
+            None,
+            route="term",
+            action_rc=rc,
+            sources=["POST /__term"],
+            answer="rc=%s · %ss · %s" % (rc, dur, " ".join(argv)),
+        )
     if rid:
         try:
             rows, src, _extra = _q_fetch(rid, base, timeout)
-        except Exception as e:             # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
             return emit(3, "只读路由 %s 取数失败：%s" % (rid, e), route=rid)
         if not rows:
-            return emit(3, "只读路由 %s 一行数据都没取到（不拿空屏当答案）"
-                        % rid, route=rid)
+            return emit(
+                3, "只读路由 %s 一行数据都没取到（不拿空屏当答案）" % rid, route=rid
+            )
         norm = [_q_row(r) for r in rows]
         for label, val, _meta in norm:
             sink.line("%s: %s" % (label, val))
-        return emit(0, None, route=rid, sources=[src],
-                    answer=" ".join("%s=%s" % (l, v) for l, v, _ in norm)[:600])
+        return emit(
+            0,
+            None,
+            route=rid,
+            sources=[src],
+            answer=" ".join("%s=%s" % (l, v) for l, v, _ in norm)[:600],
+        )
     # 2) 路由：人话 → allowlist 动作名。路由不成要把候选摊开，不许静默猜
     try:
-        st, rj = http_json(base + "/__act/resolve?q=" + urllib.parse.quote(q),
-                           timeout=min(timeout, 20.0))
-    except Exception as e:                     # noqa: BLE001
+        st, rj = http_json(
+            base + "/__act/resolve?q=" + urllib.parse.quote(q),
+            timeout=min(timeout, 20.0),
+        )
+    except Exception as e:  # noqa: BLE001
         return emit(3, "路由面不可达：%s" % e)
     if st != 200 or rj.get("ok") is not True:
         cands = " ".join(rj.get("candidates") or []) or "(无)"
@@ -1433,10 +1665,12 @@ def cmd_print(args):
         # 两侧候选都摊开：只读面有哪些、执行面有哪些。以前只报执行面，
         # 用户看着「我明明问了状态」却被告知没有这个动作。
         rc_ids = [r[0] for r in _Q_ROUTES]
-        return emit(3, "「%s」路由不成（%s）\n  candidates: %s\n  allowlist : %s"
-                     "\n  只读面可问：%s"
-                     % (q, rj.get("reason") or "no-match", cands, allow,
-                        " ".join(rc_ids)))
+        return emit(
+            3,
+            "「%s」路由不成（%s）\n  candidates: %s\n  allowlist : %s"
+            "\n  只读面可问：%s"
+            % (q, rj.get("reason") or "no-match", cands, allow, " ".join(rc_ids)),
+        )
     action = rj.get("action")
     how = rj.get("how")
     sink.line("路由 → %s（%s）" % (action, how))
@@ -1471,7 +1705,7 @@ def cmd_print(args):
                         body = line[6:].strip()
                         if body and not body.startswith("__RUN__"):
                             evq.put(("line", body))
-        except Exception as e:                 # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
             evq.put(("warn", "SSE 中断：%s" % str(e)[:120]))
         finally:
             evq.put(("eof", None))
@@ -1484,19 +1718,21 @@ def cmd_print(args):
         # 压根没被跑过。等锁期间持续打进度行，不让人以为卡死了。
         while True:
             try:
-                st, j = http_json(base + "/__act", {"action": action},
-                                  timeout=eff)
-            except Exception as e:             # noqa: BLE001
+                st, j = http_json(base + "/__act", {"action": action}, timeout=eff)
+            except Exception as e:  # noqa: BLE001
                 box["err"] = str(e)[:160]
                 return
-            if (st == 409 and j.get("error") == "busy"
-                    and time.time() < deadline):
+            if st == 409 and j.get("error") == "busy" and time.time() < deadline:
                 el = j.get("elapsed")
-                sink.line("[等锁] 执行面正忙：%s 已跑 %s（预算 %ss）· 本端再等 %ds"
-                          % (j.get("running") or "-",
-                             ("%.0fs" % el) if isinstance(el, (int, float))
-                             else "?", j.get("tmo") or "?",
-                             max(1, int(deadline - time.time()))))
+                sink.line(
+                    "[等锁] 执行面正忙：%s 已跑 %s（预算 %ss）· 本端再等 %ds"
+                    % (
+                        j.get("running") or "-",
+                        ("%.0fs" % el) if isinstance(el, (int, float)) else "?",
+                        j.get("tmo") or "?",
+                        max(1, int(deadline - time.time())),
+                    )
+                )
                 time.sleep(3.0)
                 continue
             box["st"], box["j"] = st, j
@@ -1514,7 +1750,7 @@ def cmd_print(args):
         elif kind == "warn":
             sink.warn(val)
     stop.set()
-    while True:                          # 排空残余进度行，不丢尾帧
+    while True:  # 排空残余进度行，不丢尾帧
         try:
             kind, val = evq.get_nowait()
         except queue.Empty:
@@ -1529,20 +1765,35 @@ def cmd_print(args):
         # route/sources 必须贯穿执行面的每一条出口：json 记录里
         # route:null 的失败行看不出它是走执行面还是走只读面，事后复盘
         # 就没法把「路由不成」和「跑成了但 rc≠0」分开。
-        return emit(3, "POST /__act 失败：%s" % box["err"], action=action,
-                    how=how, route="action", sources=["POST /__act"])
+        return emit(
+            3,
+            "POST /__act 失败：%s" % box["err"],
+            action=action,
+            how=how,
+            route="action",
+            sources=["POST /__act"],
+        )
     if "st" not in box:
         # 124 = 超时，与 GNU timeout 同口径（契约第 5 条）。原来这里和
         # "POST 失败"共用 3：CI 拿不到「该重试」与「该报错」的区分，
         # 而且 --timeout 这条参数在生产上等于没生效。
         if rt.is_alive():
-            return emit(124, "执行超时（--timeout %.0fs）未回执，CLI 已撤离"
-                        "（服务端可能仍在跑，用 agentos sessions 查状态）"
-                            % timeout, action=action, how=how)
+            return emit(
+                124,
+                "执行超时（--timeout %.0fs）未回执，CLI 已撤离"
+                "（服务端可能仍在跑，用 agentos sessions 查状态）" % timeout,
+                action=action,
+                how=how,
+            )
         # 124 与 3 分开：CI 要靠退出码判断该不该重试。
-        return emit(3, "执行未回执（既没超时也没结果，不许猜 0）",
-                    action=action, how=how, route="action",
-                    sources=["POST /__act", "GET /__act/stream"])
+        return emit(
+            3,
+            "执行未回执（既没超时也没结果，不许猜 0）",
+            action=action,
+            how=how,
+            route="action",
+            sources=["POST /__act", "GET /__act/stream"],
+        )
     st, j = box["st"], box["j"]
     # tail 在服务端一直是**行表**（serve.py:_run_argv 返回 tail_lines，
     # /__act 原样回传，keep=12），从来不是字符串。这里当成字符串的第一个
@@ -1563,42 +1814,76 @@ def cmd_print(args):
         # 用 124 出去：CI 与人都要靠这一个数字区分「该重试/该加预算」和
         # 「这个动作本身判红」。混在 3 里，超时会被当成永久失败。
         if j.get("rc") == 124:
-            return emit(124, "%s 在服务端超时被杀（预算 %ss）：%s"
-                        % (action, j.get("tmo") or "?",
-                           (tail[-1] if tail else "no tail")),
-                        action=action, how=how, run=j.get("run"),
-                        route="action", sources=["POST /__act"])
-        return emit(3, "%s 没跑成：%s" % (action, j.get("error") or ("HTTP=%s" % st)),
-                    action=action, how=how, run=j.get("run"), route="action",
-                    sources=["POST /__act"])
+            return emit(
+                124,
+                "%s 在服务端超时被杀（预算 %ss）：%s"
+                % (action, j.get("tmo") or "?", (tail[-1] if tail else "no tail")),
+                action=action,
+                how=how,
+                run=j.get("run"),
+                route="action",
+                sources=["POST /__act"],
+            )
+        return emit(
+            3,
+            "%s 没跑成：%s" % (action, j.get("error") or ("HTTP=%s" % st)),
+            action=action,
+            how=how,
+            run=j.get("run"),
+            route="action",
+            sources=["POST /__act"],
+        )
     arc = j.get("rc")
     if arc is None:
         # 服务端没给 rc：按"没跑成"算。猜 0 就是拿未验证当通过。
         for ln in tail:
             sink.line(ln)
-        return emit(3, "服务端没回 rc，不许猜 0", action=action, how=how,
-                    run=j.get("run"), route="action", sources=["POST /__act"])
+        return emit(
+            3,
+            "服务端没回 rc，不许猜 0",
+            action=action,
+            how=how,
+            run=j.get("run"),
+            route="action",
+            sources=["POST /__act"],
+        )
     for ln in tail:
         sink.line(ln)
     if arc == 124:
-        return emit(124, "%s 在服务端超时被杀（预算 %ss）"
-                    % (action, j.get("tmo") or "?"),
-                    action=action, how=how, run=j.get("run"), action_rc=arc,
-                    route="action", sources=["POST /__act"])
-    return emit(0 if arc == 0 else 1, None, action=action, how=how,
-                run=j.get("run"), action_rc=arc, route="action",
-                sources=["POST /__act", "GET /__act/resolve", "GET /__act/stream"])
+        return emit(
+            124,
+            "%s 在服务端超时被杀（预算 %ss）" % (action, j.get("tmo") or "?"),
+            action=action,
+            how=how,
+            run=j.get("run"),
+            action_rc=arc,
+            route="action",
+            sources=["POST /__act"],
+        )
+    return emit(
+        0 if arc == 0 else 1,
+        None,
+        action=action,
+        how=how,
+        run=j.get("run"),
+        action_rc=arc,
+        route="action",
+        sources=["POST /__act", "GET /__act/resolve", "GET /__act/stream"],
+    )
 
 
 def _latest_agent_sid(root):
     """最近一个 agent-* 会话 id（无则空串）。"""
     sess = os.path.join(root, "work", "agent_sessions")
     try:
-        cands = sorted(n for n in os.listdir(sess)
-                       if n.startswith("agent-") and n.endswith(".jsonl"))
+        cands = sorted(
+            n
+            for n in os.listdir(sess)
+            if n.startswith("agent-") and n.endswith(".jsonl")
+        )
     except OSError:
         return ""
-    return cands[-1][:-len(".jsonl")] if cands else ""
+    return cands[-1][: -len(".jsonl")] if cands else ""
 
 
 def cmd_steer(args):
@@ -1623,6 +1908,7 @@ def cmd_steer(args):
         return 2
     sys.path.insert(0, os.path.join(ROOT, "tools"))
     import steer as _steer
+
     ok, err = _steer.push(os.path.join(ROOT, "work", "steer"), sid, text)
     if not ok:
         sys.stderr.write("投递失败：%s\n" % err)
@@ -1643,7 +1929,7 @@ def cmd_leader(args):
         sys.path.insert(0, tools)
     try:
         import leader
-    except Exception as e:                    # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         sys.stderr.write("FAIL: 载入 leader 失败：%s\n" % e)
         return 3
     try:
@@ -1657,6 +1943,7 @@ def cmd_watch(args):
     """老板监督面：一屏看清计划/指令/会话尾（TTY 循环刷新，管道打一份）。"""
     sys.path.insert(0, os.path.join(ROOT, "tools"))
     import watch as _watch
+
     sid = getattr(args, "sid", "") or _latest_agent_sid(ROOT)
     if not sid:
         sys.stderr.write("没有 agent-* 会话；也可 --sid 显式指定\n")
@@ -1666,9 +1953,9 @@ def cmd_watch(args):
         return 0
     try:
         while True:
-            sys.stdout.write("\x1b[H\x1b[2J"
-                             + _watch.render(_watch.snapshot(ROOT, sid))
-                             + "\n")
+            sys.stdout.write(
+                "\x1b[H\x1b[2J" + _watch.render(_watch.snapshot(ROOT, sid)) + "\n"
+            )
             sys.stdout.flush()
             time.sleep(1.0)
     except KeyboardInterrupt:
@@ -1680,53 +1967,59 @@ def cmd_sessions(args):
     if not files:
         print("(空) %s 下还没有 cli-*.jsonl 会话历史" % SESSION_DIR)
         return 0
-    print("%-28s %-8s %-16s %4s %5s %4s  %s"
-          % ("id", "时刻", "动作", "rc", "exit", "行", "首条请求"))
+    print(
+        "%-28s %-8s %-16s %4s %5s %4s  %s"
+        % ("id", "时刻", "动作", "rc", "exit", "行", "首条请求")
+    )
     for path in files:
-        stem = os.path.basename(path)[:-len(".jsonl")]
+        stem = os.path.basename(path)[: -len(".jsonl")]
         try:
             recs = _session_load(path)
-        except Exception as e:                 # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
             print("%-28s (读不动: %s)" % (stem[:28], str(e)[:60]))
             continue
         rec = recs[-1] if recs else {}
         # 首条用户请求预览（蒸馏自 opencode /sessions 的可读列表）：
         # 让「挑会话恢复」不用逐个 open。只取 40 列，纯读。
         prev = ""
-        for ln in (rec.get("lines") or []):
+        for ln in rec.get("lines") or []:
             if not isinstance(ln, dict):
-                continue          # 历史账里混有非 dict 行（事故会话实证）
+                continue  # 历史账里混有非 dict 行（事故会话实证）
             txt = str(ln.get("text") or ln.get("out") or "").strip()
             if txt:
                 prev = " ".join(txt.split())[:40]
                 break
-        print("%-28s %-8s %-16s %4s %5s %4s  %s"
-              % (str(rec.get("id") or stem)[:28],
-                 str(rec.get("started") or "-")[-8:],
-                 str(rec.get("action") or "-")[:16],
-                 rec.get("action_rc"), rec.get("exit_code"),
-                 len(rec.get("lines") or []), prev))
+        print(
+            "%-28s %-8s %-16s %4s %5s %4s  %s"
+            % (
+                str(rec.get("id") or stem)[:28],
+                str(rec.get("started") or "-")[-8:],
+                str(rec.get("action") or "-")[:16],
+                rec.get("action_rc"),
+                rec.get("exit_code"),
+                len(rec.get("lines") or []),
+                prev,
+            )
+        )
     return 0
 
 
 def cmd_resume(args):
     sid = (getattr(args, "session", "") or "").strip()
     if not sid:
-        sys.stderr.write("FAIL: resume 需要会话 id"
-                         "（agentos sessions 列全部历史）\n")
+        sys.stderr.write("FAIL: resume 需要会话 id（agentos sessions 列全部历史）\n")
         return 2
     hit = None
     for p in _session_files():
-        if os.path.basename(p)[:-len(".jsonl")] == sid:
+        if os.path.basename(p)[: -len(".jsonl")] == sid:
             hit = p
             break
     if hit is None:
-        sys.stderr.write("FAIL: 找不到会话 %s"
-                         "（agentos sessions 看可用 id）\n" % sid)
+        sys.stderr.write("FAIL: 找不到会话 %s（agentos sessions 看可用 id）\n" % sid)
         return 2
     try:
         recs = _session_load(hit)
-    except Exception as e:                     # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         sys.stderr.write("FAIL: 会话 %s 读不动：%s\n" % (sid, e))
         return 1
     rec = recs[-1] if recs else {}
@@ -1735,23 +2028,27 @@ def cmd_resume(args):
         # 非终端：可核对的回放，退出码沿用当时那次执行，不重新判一次
         for ln in lines:
             sys.stdout.write("%s\n" % ln)
-        sys.stdout.write("resume %s · action=%s · action_rc=%s · exit=%s\n"
-                         % (sid, rec.get("action"), rec.get("action_rc"),
-                            rec.get("exit_code")))
+        sys.stdout.write(
+            "resume %s · action=%s · action_rc=%s · exit=%s\n"
+            % (sid, rec.get("action"), rec.get("action_rc"), rec.get("exit_code"))
+        )
         return int(rec.get("exit_code") or 0)
     base = base_url(args)
     try:
         face = load_agent(base)[2]["face"]
-    except Exception as e:                     # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         # 取不到 Agent 台就照常进 TUI，只如实说明没回灌成功
-        sys.stderr.write("warn: Agent 台取不到，没回灌历史（%s）\n"
-                         % str(e)[:120])
+        sys.stderr.write("warn: Agent 台取不到，没回灌历史（%s）\n" % str(e)[:120])
         return cmd_tui(args)
-    seed = [(str(rec.get("started") or "")[-8:] or "--:--:--", "< %s" % ln)
-            for ln in lines[-40:]]
+    seed = [
+        (str(rec.get("started") or "")[-8:] or "--:--:--", "< %s" % ln)
+        for ln in lines[-40:]
+    ]
     face.transcript = seed + list(face.transcript)
-    face.hint = ("已回灌会话 %s（%d 行）；重跑仍走授权闸，"
-                 "不会因为回放就自动执行" % (sid, len(seed)))
+    face.hint = "已回灌会话 %s（%d 行）；重跑仍走授权闸，不会因为回放就自动执行" % (
+        sid,
+        len(seed),
+    )
     return cmd_tui(args)
 
 
@@ -1796,8 +2093,9 @@ def _gate_names():
                 if "正确链" not in ln or "gates.sh" not in ln:
                     continue
                 rest = ln.split("gates.sh", 1)[1]
-                names = [w for w in rest.split()
-                         if w and (w[0].isalpha() or w[0] == "_")]
+                names = [
+                    w for w in rest.split() if w and (w[0].isalpha() or w[0] == "_")
+                ]
                 if names:
                     return tuple(names)
     except OSError:
@@ -1940,11 +2238,14 @@ complete -F _agentos agentos
 def cmd_completion(args):
     """打印自包含补全脚本：脚本文本内嵌在本文件里，没装过机的人也拿得到。"""
     tpl = _ZSH_COMPLETION if args.shell == "zsh" else _BASH_COMPLETION
-    sys.stdout.write(tpl % {
-        "subs": "\n".join("    '%s:%s'" % (n, d) for n, d in _AGENTOS_SUBS),
-        "gates": " ".join(_gate_names()),
-        "terms": " ".join(_term_cmd_names()),
-    })
+    sys.stdout.write(
+        tpl
+        % {
+            "subs": "\n".join("    '%s:%s'" % (n, d) for n, d in _AGENTOS_SUBS),
+            "gates": " ".join(_gate_names()),
+            "terms": " ".join(_term_cmd_names()),
+        }
+    )
     return 0
 
 
@@ -1952,8 +2253,9 @@ def cmd_completion(args):
 def load_overview(base):
     st, h = http_json(base + "/__health")
     if st != 200 or h.get("ok") is not True:
-        raise RuntimeError("/__health 未返回 ok:true（HTTP=%s ok=%s）"
-                           % (st, h.get("ok")))
+        raise RuntimeError(
+            "/__health 未返回 ok:true（HTTP=%s ok=%s）" % (st, h.get("ok"))
+        )
     s = h.get("stats") or {}
     rows = [
         ("健康", "ok"),
@@ -1978,20 +2280,19 @@ def fetch_goal_json(base):
     两条路读的是同一个文件，不存在第二份真相。"""
     first_err = None
     try:
-        st, o = http_json(base + "/__goal/chain", {"op": "status"},
-                          timeout=45)
+        st, o = http_json(base + "/__goal/chain", {"op": "status"}, timeout=45)
         if st == 200 and isinstance(o.get("ledger"), dict):
             return o["ledger"], "POST /__goal/chain op=status（引擎只读入口）"
         first_err = "HTTP=%s" % st
-    except Exception as e:                     # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         first_err = _short(e, 80)
-    qs = urllib.parse.urlencode({"op": "read", "path": "work/GOAL.json",
-                                 "proj": "console"})
+    qs = urllib.parse.urlencode(
+        {"op": "read", "path": "work/GOAL.json", "proj": "console"}
+    )
     st, o = http_json(base + "/__fs?" + qs, timeout=20)
     if st == 200 and o.get("ok") and o.get("text"):
         return json.loads(o["text"]), "GET /__fs work/GOAL.json（只读面降级）"
-    raise RuntimeError("轮次账双路皆败（chain: %s；fs: HTTP=%s）"
-                       % (first_err, st))
+    raise RuntimeError("轮次账双路皆败（chain: %s；fs: HTTP=%s）" % (first_err, st))
 
 
 def load_rounds(base):
@@ -2003,10 +2304,13 @@ def load_rounds(base):
         ("已收轮次", "%d" % len(g.get("rounds") or [])),
     ]
     for r in g.get("rounds") or []:
-        rows.append(("R%s %s" % (r.get("n"), r.get("state") or "?"),
-                     "verdict=%s · delta=%s"
-                     % (r.get("verdict") or "—",
-                        str(r.get("delta") or "—")[:56])))
+        rows.append(
+            (
+                "R%s %s" % (r.get("n"), r.get("state") or "?"),
+                "verdict=%s · delta=%s"
+                % (r.get("verdict") or "—", str(r.get("delta") or "—")[:56]),
+            )
+        )
     if not g.get("rounds"):
         rows.append(("(空)", "还没有轮次记录（没跑过 set-goal）"))
     return rows, src, g
@@ -2019,11 +2323,17 @@ def load_matrix(base):
     tbl = g.get("goal_table") or g.get("table") or []
     rows = [("矩阵规模", "%d 行 × 轮次目标" % len(tbl))]
     for t in tbl:
-        rows.append(("R%s %s" % (t.get("n"), _short(t.get("state") or "?", 8)),
-                     "%s · AC%s · %s"
-                     % (_short(t.get("goal") or "—", 44),
-                        _short(t.get("ac") or "—", 18),
-                        _short(t.get("delta") or "—", 38))))
+        rows.append(
+            (
+                "R%s %s" % (t.get("n"), _short(t.get("state") or "?", 8)),
+                "%s · AC%s · %s"
+                % (
+                    _short(t.get("goal") or "—", 44),
+                    _short(t.get("ac") or "—", 18),
+                    _short(t.get("delta") or "—", 38),
+                ),
+            )
+        )
     if not tbl:
         rows.append(("(空)", "目标表还没有行"))
     return rows, src, g
@@ -2040,8 +2350,9 @@ def load_ledger(base):
     qs = urllib.parse.urlencode({"op": "read", "path": "data.json"})
     st, o = http_json(base + "/__fs?" + qs, timeout=25)
     if st != 200 or o.get("ok") is not True or not o.get("text"):
-        raise RuntimeError("data.json 读不出来（HTTP=%s %s）"
-                           % (st, _short(o.get("error") or "", 70)))
+        raise RuntimeError(
+            "data.json 读不出来（HTTP=%s %s）" % (st, _short(o.get("error") or "", 70))
+        )
     try:
         d = json.loads(o["text"])
     except ValueError as e:
@@ -2054,47 +2365,91 @@ def load_ledger(base):
         ("口径分歧", "%d 行（◆ 自报与实测不一致）" % len(div)),
         ("证据来源", _short(d.get("evidence_source") or "?", 60)),
     ]
-    rows.append(("逐行对照", "%d 行 · 阶段 | 实测 | 自报 | exit | 失败条目"
-                 % len(dirs), {"sec": 1}))
+    rows.append(
+        (
+            "逐行对照",
+            "%d 行 · 阶段 | 实测 | 自报 | exit | 失败条目" % len(dirs),
+            {"sec": 1},
+        )
+    )
     for r in dirs[:24]:
         flag = " ◆" if r.get("dir") in div else ""
-        rows.append((str(r.get("dir") or "?"),
-                     "实测 %s · 自报 %s%s · exit %s · 失败 %s"
-                     "（负 %s 红 %s）"
-                     % (r.get("gate") or "—", r.get("declared") or "—", flag,
-                        "null" if r.get("exit") is None else r.get("exit"),
-                        r.get("fail_total"),
-                        r.get("fail_negctrl"), r.get("fail_real")),
-                     {"kind": "no"} if r.get("dir") in div else None))
+        rows.append(
+            (
+                str(r.get("dir") or "?"),
+                "实测 %s · 自报 %s%s · exit %s · 失败 %s"
+                "（负 %s 红 %s）"
+                % (
+                    r.get("gate") or "—",
+                    r.get("declared") or "—",
+                    flag,
+                    "null" if r.get("exit") is None else r.get("exit"),
+                    r.get("fail_total"),
+                    r.get("fail_negctrl"),
+                    r.get("fail_real"),
+                ),
+                {"kind": "no"} if r.get("dir") in div else None,
+            )
+        )
     if len(dirs) > 24:
         rows.append(("…", "共 %d 行，只显示前 24 行" % len(dirs), None))
     if not dirs:
-        rows.append(("(空)", "data.json 里没有 dirs —— "
-                     "空表不等于没有分歧，只说明还没抽过", None))
+        rows.append(
+            (
+                "(空)",
+                "data.json 里没有 dirs —— 空表不等于没有分歧，只说明还没抽过",
+                None,
+            )
+        )
     return rows, "GET /__fs?op=read&path=data.json（dirs + divergence）", d
     rows = [
-        ("复发簇", "%d 个 · 阈值 %d run · 已复发 %d"
-         % (o.get("n_clusters") or 0, o.get("threshold") or 0,
-            o.get("n_recurring") or 0)),
+        (
+            "复发簇",
+            "%d 个 · 阈值 %d run · 已复发 %d"
+            % (
+                o.get("n_clusters") or 0,
+                o.get("threshold") or 0,
+                o.get("n_recurring") or 0,
+            ),
+        ),
         ("事件总数", str(o.get("n_events"))),
-        ("自我计数", "验证 %d · 修复 %d · 恢复 %d · 人工介入 %d"
-         % (self_.get("agent_self_verifications") or 0,
-            self_.get("agent_self_repairs") or 0,
-            self_.get("agent_self_recoveries") or 0,
-            self_.get("human_interventions") or 0)),
+        (
+            "自我计数",
+            "验证 %d · 修复 %d · 恢复 %d · 人工介入 %d"
+            % (
+                self_.get("agent_self_verifications") or 0,
+                self_.get("agent_self_repairs") or 0,
+                self_.get("agent_self_recoveries") or 0,
+                self_.get("human_interventions") or 0,
+            ),
+        ),
         ("账本路径", o.get("memory") or "?"),
     ]
     for c in (o.get("clusters") or [])[:8]:
-        rows.append(("簇 %d run" % (c.get("runs") or 0),
-                     "%s · %s · 事件 %d"
-                     % (_short(c.get("cluster"), 38),
-                        _short(c.get("family"), 22), c.get("events") or 0)))
+        rows.append(
+            (
+                "簇 %d run" % (c.get("runs") or 0),
+                "%s · %s · 事件 %d"
+                % (
+                    _short(c.get("cluster"), 38),
+                    _short(c.get("family"), 22),
+                    c.get("events") or 0,
+                ),
+            )
+        )
     led = (o.get("ledger") or [])[:10]
     rows.append(("复盘账本", "最近 %d 条" % len(led)))
     for e in led:
-        rows.append((e.get("verdict") or "?",
-                     "%s · %s" % (_short(e.get("root_cause") or "—", 50),
-                                  _short(e.get("plan") or "—", 38))))
+        rows.append(
+            (
+                e.get("verdict") or "?",
+                "%s · %s"
+                % (
+                    _short(e.get("root_cause") or "—", 50),
+                    _short(e.get("plan") or "—", 38),
+                ),
+            )
+        )
     return rows, "GET /__recurrence", o
 
 
@@ -2109,18 +2464,19 @@ def load_engine(base):
     recs = r.get("recommend") or []
     rows = [
         ("全局裁决", r.get("verdict") or "?"),
-        ("可执行推荐", "%d 条" % (r.get("n") if r.get("n") is not None
-                               else len(recs))),
+        ("可执行推荐", "%d 条" % (r.get("n") if r.get("n") is not None else len(recs))),
     ]
     for rec in recs:
-        rows.append(("[%s] %s" % (rec.get("severity") or "?",
-                                  rec.get("action") or "?"),
-                     _short(rec.get("why") or "", 62)))
+        rows.append(
+            (
+                "[%s] %s" % (rec.get("severity") or "?", rec.get("action") or "?"),
+                _short(rec.get("why") or "", 62),
+            )
+        )
     if not recs:
         rows.append(("(无事)", "一切皆绿，没有可执行推荐"))
     rows.append(("动作 allowlist", " ".join(actions)))
-    return rows, "GET /__act/recommend + /__health", {"health": h,
-                                                      "recommend": r}
+    return rows, "GET /__act/recommend + /__health", {"health": h, "recommend": r}
 
 
 # ── 目标台 / 复盘台 / 能力地图 / 工作区 / 终端 / 文件 / 设置 ──────────
@@ -2138,12 +2494,14 @@ def load_goal(base):
         ("目标", str(g.get("goal") or "?")[:78]),
         ("需求原文", str(g.get("demand") or "—")[:78]),
         ("状态", g.get("state") or "?"),
-        ("轮次计划", "R1..R%s · 已收 %d 轮"
-         % (g.get("rounds_plan") or "?", len(g.get("rounds") or []))),
+        (
+            "轮次计划",
+            "R1..R%s · 已收 %d 轮"
+            % (g.get("rounds_plan") or "?", len(g.get("rounds") or [])),
+        ),
     ]
     acs = g.get("acs") or []
-    rows.append(("验收判据 AC", "%d 条（单条不足以判交付）" % len(acs),
-                 {"sec": 1}))
+    rows.append(("验收判据 AC", "%d 条（单条不足以判交付）" % len(acs), {"sec": 1}))
     # acs 的形态引擎改过：早期是 {"id","text"} 字典，现在 work/GOAL.json 里是
     # 字符串列表（["AC1","AC2",…]）。只认字典的那种写法当场
     # 'str' object has no attribute 'get' 崩掉整个目标台（2026-10-10 实测 rc=1）。
@@ -2156,29 +2514,34 @@ def load_goal(base):
     if not acs:
         rows.append(("(空)", "引擎没编译出 AC —— 这一条本身就是拒收理由", None))
     ng = g.get("non_goals") or []
-    rows.append(("非目标", "%d 条（空非目标 = 范围不可判定 → 引擎判红）"
-                 % len(ng), {"sec": 1}))
+    rows.append(
+        ("非目标", "%d 条（空非目标 = 范围不可判定 → 引擎判红）" % len(ng), {"sec": 1})
+    )
     for x in ng[:8]:
-        rows.append(("·", _short(x.get("text") or x if isinstance(x, dict)
-                                else x, 68)))
+        rows.append(("·", _short(x.get("text") or x if isinstance(x, dict) else x, 68)))
     tbl = g.get("table") or g.get("goal_table") or []
-    rows.append(("目标表", "%d 行 × 每轮一个专属目标与 AC" % len(tbl),
-                 {"sec": 1}))
+    rows.append(("目标表", "%d 行 × 每轮一个专属目标与 AC" % len(tbl), {"sec": 1}))
     for t in tbl:
         if isinstance(t, dict):
-            rows.append(("R%s %s" % (t.get("n"),
-                                     _short(t.get("state") or "?", 8)),
-                         _short(t.get("goal") or "—", 58)))
+            rows.append(
+                (
+                    "R%s %s" % (t.get("n"), _short(t.get("state") or "?", 8)),
+                    _short(t.get("goal") or "—", 58),
+                )
+            )
         else:
             rows.append(("·", _short(str(t), 66)))
     ch = g.get("chain") or g.get("goal_chain") or []
     if ch:
-        rows.append(("轮次链", "%d 环（闭环第二环的引擎回执）" % len(ch),
-                     {"sec": 1}))
+        rows.append(("轮次链", "%d 环（闭环第二环的引擎回执）" % len(ch), {"sec": 1}))
         for c in ch[:8]:
             if isinstance(c, dict):
-                rows.append((str(c.get("round") or c.get("n") or "?"),
-                             _short(c.get("next") or c.get("summary") or "—", 62)))
+                rows.append(
+                    (
+                        str(c.get("round") or c.get("n") or "?"),
+                        _short(c.get("next") or c.get("summary") or "—", 62),
+                    )
+                )
             else:
                 rows.append(("·", _short(str(c), 66)))
     return rows, src, g
@@ -2193,40 +2556,72 @@ def load_retro(base):
     """
     st, o = http_json(base + "/__recurrence")
     if st != 200 or o.get("ok") is not True:
-        raise RuntimeError("/__recurrence 未返回 ok:true（HTTP=%s %s）"
-                           % (st, _short(o.get("error") or "", 60)))
+        raise RuntimeError(
+            "/__recurrence 未返回 ok:true（HTTP=%s %s）"
+            % (st, _short(o.get("error") or "", 60))
+        )
     self_ = o.get("self") or {}
     rows = [
-        ("复发簇", "%d 个 · 阈值 %d run · 已达阈值复发 %d"
-         % (o.get("n_clusters") or 0, o.get("threshold") or 0,
-            o.get("n_recurring") or 0)),
+        (
+            "复发簇",
+            "%d 个 · 阈值 %d run · 已达阈值复发 %d"
+            % (
+                o.get("n_clusters") or 0,
+                o.get("threshold") or 0,
+                o.get("n_recurring") or 0,
+            ),
+        ),
         ("事件总数", str(o.get("n_events"))),
-        ("自我计数", "验证 %d · 修复 %d · 恢复 %d · 人工介入 %d"
-         % (self_.get("agent_self_verifications") or 0,
-            self_.get("agent_self_repairs") or 0,
-            self_.get("agent_self_recoveries") or 0,
-            self_.get("human_interventions") or 0)),
+        (
+            "自我计数",
+            "验证 %d · 修复 %d · 恢复 %d · 人工介入 %d"
+            % (
+                self_.get("agent_self_verifications") or 0,
+                self_.get("agent_self_repairs") or 0,
+                self_.get("agent_self_recoveries") or 0,
+                self_.get("human_interventions") or 0,
+            ),
+        ),
     ]
     trend = o.get("trend") or []
     if trend:
-        rows.append(("趋势", " → ".join("%s:%s" % (t.get("day") or t.get("d"),
-                                                 t.get("n") if t.get("n")
-                                                 is not None else t.get("v"))
-                                      for t in trend[-10:])))
-    rows.append(("复发簇明细", "%d 簇" % len(o.get("clusters") or []),
-                 {"sec": 1}))
+        rows.append(
+            (
+                "趋势",
+                " → ".join(
+                    "%s:%s"
+                    % (
+                        t.get("day") or t.get("d"),
+                        t.get("n") if t.get("n") is not None else t.get("v"),
+                    )
+                    for t in trend[-10:]
+                ),
+            )
+        )
+    rows.append(("复发簇明细", "%d 簇" % len(o.get("clusters") or []), {"sec": 1}))
     for c in (o.get("clusters") or [])[:10]:
-        rows.append(("%d run · %s" % (c.get("runs") or 0,
-                                      _short(c.get("family") or "?", 16)),
-                     _short(c.get("cluster"), 60)))
+        rows.append(
+            (
+                "%d run · %s"
+                % (c.get("runs") or 0, _short(c.get("family") or "?", 16)),
+                _short(c.get("cluster"), 60),
+            )
+        )
     led = (o.get("ledger") or [])[:12]
-    rows.append(("复盘账本", "最近 %d 条 · %s"
-                 % (len(led), o.get("memory") or "?"), {"sec": 1}))
+    rows.append(
+        ("复盘账本", "最近 %d 条 · %s" % (len(led), o.get("memory") or "?"), {"sec": 1})
+    )
     for e in led:
-        rows.append((str(e.get("verdict") or "?"),
-                     "%s · 下次改：%s"
-                     % (_short(e.get("root_cause") or "—", 44),
-                        _short(e.get("plan") or "—", 34))))
+        rows.append(
+            (
+                str(e.get("verdict") or "?"),
+                "%s · 下次改：%s"
+                % (
+                    _short(e.get("root_cause") or "—", 44),
+                    _short(e.get("plan") or "—", 34),
+                ),
+            )
+        )
     if not led:
         rows.append(("(空)", "复盘账本还没有条目 —— 空账不等于没有复发"))
     return rows, "GET /__recurrence", o
@@ -2236,43 +2631,76 @@ def load_cap(base):
     """能力地图：自报与「被独立证据验过」永远并排，不合成单一数字。"""
     st, o = http_json(base + "/__capmap")
     if st != 200 or o.get("ok") is not True:
-        raise RuntimeError("/__capmap 未返回 ok:true（HTTP=%s %s）"
-                           % (st, _short(o.get("error") or "", 60)))
+        raise RuntimeError(
+            "/__capmap 未返回 ok:true（HTTP=%s %s）"
+            % (st, _short(o.get("error") or "", 60))
+        )
     sc = o.get("status_counts") or {}
     vc = o.get("verdict_counts") or {}
     rows = [
         ("能力总数", str(o.get("total") or len(o.get("rows") or []))),
-        ("状态分布", " · ".join("%s=%s" % (k, v)
-                               for k, v in sorted(sc.items())) or "—"),
-        ("独立裁决", " · ".join("%s=%s" % (k, v)
-                             for k, v in sorted(vc.items())) or "—"),
-        ("已验过", "%d · 验不了 %d · 无裁决 %d · 未署名 %d"
-         % (o.get("n_verified") or 0, o.get("n_unverifiable") or 0,
-            o.get("n_no_verdict") or 0, o.get("n_anonymous") or 0)),
-        ("账本一致性", "记录 %d · 裁决 id %d · 悬空裁决 %d · 坏行 %d"
-         % (o.get("n_ledger") or 0, o.get("n_verdict_ids") or 0,
-            o.get("n_verdict_dangling") or 0, o.get("n_bad_lines") or 0)),
+        (
+            "状态分布",
+            " · ".join("%s=%s" % (k, v) for k, v in sorted(sc.items())) or "—",
+        ),
+        (
+            "独立裁决",
+            " · ".join("%s=%s" % (k, v) for k, v in sorted(vc.items())) or "—",
+        ),
+        (
+            "已验过",
+            "%d · 验不了 %d · 无裁决 %d · 未署名 %d"
+            % (
+                o.get("n_verified") or 0,
+                o.get("n_unverifiable") or 0,
+                o.get("n_no_verdict") or 0,
+                o.get("n_anonymous") or 0,
+            ),
+        ),
+        (
+            "账本一致性",
+            "记录 %d · 裁决 id %d · 悬空裁决 %d · 坏行 %d"
+            % (
+                o.get("n_ledger") or 0,
+                o.get("n_verdict_ids") or 0,
+                o.get("n_verdict_dangling") or 0,
+                o.get("n_bad_lines") or 0,
+            ),
+        ),
         ("降级项", str(o.get("n_degraded") or 0)),
         ("账本路径", o.get("ledger_path") or "?"),
     ]
-    rows.append(("逐条能力", "%d 条（自报 status ≠ 独立证据）"
-                 % len(o.get("rows") or []), {"sec": 1}))
+    rows.append(
+        (
+            "逐条能力",
+            "%d 条（自报 status ≠ 独立证据）" % len(o.get("rows") or []),
+            {"sec": 1},
+        )
+    )
     for r in (o.get("rows") or [])[:14]:
         cur = r.get("current_status") or ""
         tail = " ⇒ %s" % cur if cur and cur != r.get("status") else ""
-        rows.append((_short(r.get("id"), 26),
-                     "%s%s · %s"
-                     % (_short(r.get("status") or "?", 12), tail,
-                        _short(r.get("problem") or r.get("source")
-                               or "—", 34))))
+        rows.append(
+            (
+                _short(r.get("id"), 26),
+                "%s%s · %s"
+                % (
+                    _short(r.get("status") or "?", 12),
+                    tail,
+                    _short(r.get("problem") or r.get("source") or "—", 34),
+                ),
+            )
+        )
     return rows, "GET /__capmap", o
 
 
 def _ws_dirs(base):
     st, o = http_json(base + "/__fs?op=list&depth=1")
     if st != 200 or o.get("ok") is not True:
-        raise RuntimeError("/__fs?op=list 未返回 ok:true（HTTP=%s %s）"
-                           % (st, _short(o.get("error") or "", 60)))
+        raise RuntimeError(
+            "/__fs?op=list 未返回 ok:true（HTTP=%s %s）"
+            % (st, _short(o.get("error") or "", 60))
+        )
     return o.get("entries") or []
 
 
@@ -2280,32 +2708,49 @@ def load_ws(base):
     """工作区：真目录条目 + 项目空间（切换项目 = 真换根，不是换文案）。"""
     st, p = http_json(base + "/__projects")
     if st != 200 or p.get("ok") is not True:
-        raise RuntimeError("/__projects 未返回 ok:true（HTTP=%s %s）"
-                           % (st, _short(p.get("error") or "", 60)))
+        raise RuntimeError(
+            "/__projects 未返回 ok:true（HTTP=%s %s）"
+            % (st, _short(p.get("error") or "", 60))
+        )
     rows = [
         ("当前项目", "%s（%s）" % (p.get("active"), p.get("default"))),
         ("项目数", str(p.get("n_projects") or len(p.get("projects") or []))),
     ]
-    rows.append(("项目空间", "换根 = /__fs?proj= 真换，不是换一段文案",
-                 {"sec": 1}))
+    rows.append(("项目空间", "换根 = /__fs?proj= 真换，不是换一段文案", {"sec": 1}))
     for pr in p.get("projects") or []:
         f = pr.get("facts") or {}
-        rows.append(("%s%s" % ("▸ " if pr.get("key") == p.get("active")
-                              else "  ", pr.get("label") or pr.get("key")),
-                     "%s · 顶层 %s 项 / %s 文件 · 最新 %s"
-                     % (_short(pr.get("root") or "?", 46), f.get("n_top"),
-                        f.get("n_files"), _short(f.get("newest_mtime")
-                                                or "?", 16))))
+        rows.append(
+            (
+                "%s%s"
+                % (
+                    "▸ " if pr.get("key") == p.get("active") else "  ",
+                    pr.get("label") or pr.get("key"),
+                ),
+                "%s · 顶层 %s 项 / %s 文件 · 最新 %s"
+                % (
+                    _short(pr.get("root") or "?", 46),
+                    f.get("n_top"),
+                    f.get("n_files"),
+                    _short(f.get("newest_mtime") or "?", 16),
+                ),
+            )
+        )
     entries = _ws_dirs(base)
-    rows.append(("当前根条目", "%d 条（/__fs?op=list，只读）" % len(entries),
-                 {"sec": 1}))
+    rows.append(
+        ("当前根条目", "%d 条（/__fs?op=list，只读）" % len(entries), {"sec": 1})
+    )
     for e in entries[:20]:
-        rows.append(("D" if e.get("dir") else "F",
-                     "%-28s %8s" % (_short(e.get("name"), 28),
-                                    (str(e.get("size")) + "B")
-                                    if not e.get("dir") else "<dir>"),
-                     {"kind": "fsdir" if e.get("dir") else "fsfile",
-                      "path": e.get("path")}))
+        rows.append(
+            (
+                "D" if e.get("dir") else "F",
+                "%-28s %8s"
+                % (
+                    _short(e.get("name"), 28),
+                    (str(e.get("size")) + "B") if not e.get("dir") else "<dir>",
+                ),
+                {"kind": "fsdir" if e.get("dir") else "fsfile", "path": e.get("path")},
+            )
+        )
     return rows, "GET /__projects + GET /__fs?op=list&depth=1", {"p": p}
 
 
@@ -2314,7 +2759,7 @@ def load_ws(base):
 _PANELS = {}
 
 
-TERM_TAIL = 6      # 终端面每条历史只回显输出的最后这么多行
+TERM_TAIL = 6  # 终端面每条历史只回显输出的最后这么多行
 
 
 class Panel(object):
@@ -2329,14 +2774,14 @@ class Panel(object):
 
     def __init__(self, base):
         self.base = base
-        self.buf = ""            # 输入行
+        self.buf = ""  # 输入行
         self.typing = False
-        self.dir = "."           # 文件面当前目录
-        self.file = None         # 正在看的文件相对路径
-        self.code = []           # 文件面代码行
-        self.hist = []           # 终端面 [(时刻, argv, rc, dur, out, note)]
+        self.dir = "."  # 文件面当前目录
+        self.file = None  # 正在看的文件相对路径
+        self.code = []  # 文件面代码行
+        self.hist = []  # 终端面 [(时刻, argv, rc, dur, out, note)]
         self.hint = ""
-        self.hint_kind = ""      # "no" = 红字
+        self.hint_kind = ""  # "no" = 红字
         self.busy = False
 
     # ── 终端面 ────────────────────────────────────────
@@ -2353,16 +2798,16 @@ class Panel(object):
         解析不到就明说取不到，绝不用执行面的表顶替。
         """
         try:
-            st, j = http_json(self.base + "/__term",
-                              {"argv": ["__agentos_list_probe__"]},
-                              timeout=20)
-        except Exception:                     # noqa: BLE001
+            st, j = http_json(
+                self.base + "/__term", {"argv": ["__agentos_list_probe__"]}, timeout=20
+            )
+        except Exception:  # noqa: BLE001
             return None
         msg = str(j.get("error") or "")
         i = msg.find("可跑：")
         if i < 0:
             return None
-        tail = msg[i + len("可跑："):].strip().strip("（）()")
+        tail = msg[i + len("可跑：") :].strip().strip("（）()")
         got = [x for x in tail.split() if x]
         return sorted(got) if got else None
 
@@ -2373,11 +2818,9 @@ class Panel(object):
         t = time.strftime("%H:%M:%S")
         argv = line.split()
         try:
-            st, j = http_json(self.base + "/__term", {"argv": argv},
-                             timeout=45)
-        except Exception as e:                 # noqa: BLE001
-            self.hist.append((t, line, None, None, "",
-                              "NETWORK %s" % _short(e, 80)))
+            st, j = http_json(self.base + "/__term", {"argv": argv}, timeout=45)
+        except Exception as e:  # noqa: BLE001
+            self.hist.append((t, line, None, None, "", "NETWORK %s" % _short(e, 80)))
             self.hint = "网络失败，命令没有跑"
             self.hint_kind = "no"
             return
@@ -2393,8 +2836,9 @@ class Panel(object):
             note.append("未执行：%s" % (j.get("error") or "服务端未回 rc"))
         if j.get("truncated"):
             note.append("输出被服务端截断（32 KiB 上限），不是全量")
-        self.hist.append((t, line, rc, j.get("dur"), j.get("out") or "",
-                          " · ".join(note)))
+        self.hist.append(
+            (t, line, rc, j.get("dur"), j.get("out") or "", " · ".join(note))
+        )
         if rc is None:
             self.hint = "命令未执行 —— 不给 0"
             self.hint_kind = "no"
@@ -2408,25 +2852,27 @@ class Panel(object):
 
     # ── 文件面 ────────────────────────────────────────
     def ls(self, rel):
-        qs = urllib.parse.urlencode({"op": "list", "depth": "1",
-                                     "path": rel or "."})
+        qs = urllib.parse.urlencode({"op": "list", "depth": "1", "path": rel or "."})
         st, o = http_json(self.base + "/__fs?" + qs)
         if st != 200 or o.get("ok") is not True:
-            raise RuntimeError("/__fs 列目录失败（HTTP=%s %s）"
-                               % (st, _short(o.get("error") or "", 70)))
+            raise RuntimeError(
+                "/__fs 列目录失败（HTTP=%s %s）"
+                % (st, _short(o.get("error") or "", 70))
+            )
         return o
 
     def open_file(self, rel):
         qs = urllib.parse.urlencode({"op": "read", "path": rel})
         st, o = http_json(self.base + "/__fs?" + qs)
         if st != 200 or o.get("ok") is not True:
-            raise RuntimeError("/__fs 读文件失败（HTTP=%s %s）"
-                               % (st, _short(o.get("error") or "", 70)))
+            raise RuntimeError(
+                "/__fs 读文件失败（HTTP=%s %s）"
+                % (st, _short(o.get("error") or "", 70))
+            )
         self.file = rel
         self.code = (o.get("text") or "").splitlines()
         if o.get("truncated"):
-            self.code.append("… 服务端只回了前 %d 字节，不是全量"
-                             % FS_PEEK)
+            self.code.append("… 服务端只回了前 %d 字节，不是全量" % FS_PEEK)
         return o
 
     def goto(self, rel):
@@ -2440,7 +2886,7 @@ class Panel(object):
             return
         try:
             self.ls(rel)
-        except Exception:                     # noqa: BLE001
+        except Exception:  # noqa: BLE001
             # 列不出来，就按文件试；再不行把服务端原话抛给调用方。
             self.open_file(rel)
             self.hint = "已读入 %s" % rel
@@ -2451,7 +2897,6 @@ class Panel(object):
         self.code = []
         self.hint = "已进入 %s" % rel
         self.hint_kind = ""
-
 
     def up_dir(self):
         """文件面回上一层。
@@ -2473,7 +2918,7 @@ class Panel(object):
             head = "."
         try:
             self.ls(head)
-        except Exception as e:             # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
             self.hint = _short(e, 90)
             self.hint_kind = "no"
             return False
@@ -2502,20 +2947,22 @@ def load_term(base):
     else:
         # 取不到就说取不到。这里最危险的捷径是把 /__health 的 actions
         # （执行面 allowlist）贴上来充数 —— 屏上立刻像模像样，但那是另一张表。
-        rows = [("只读白名单", "服务端未回（不拿执行面 actions 顶替）",
-                 None)]
+        rows = [("只读白名单", "服务端未回（不拿执行面 actions 顶替）", None)]
     if p.hint:
-        rows.append(("上一条", p.hint,
-                     {"kind": "no"} if p.hint_kind == "no" else None))
-    rows.append(("历史", "%d 条（rc 全部取自服务端回执）" % len(p.hist),
-                 {"sec": 1}))
+        rows.append(("上一条", p.hint, {"kind": "no"} if p.hint_kind == "no" else None))
+    rows.append(("历史", "%d 条（rc 全部取自服务端回执）" % len(p.hist), {"sec": 1}))
     for t, cmd, rc, dur, out, note in reversed(p.hist):
         if rc is None:
             tag = "未执行"
         else:
             tag = "rc=%s · %ss" % (rc, dur)
-        rows.append(("$ %s" % _short(cmd, 46), tag,
-                     {"kind": "no"} if (rc is None or rc != 0) else None))
+        rows.append(
+            (
+                "$ %s" % _short(cmd, 46),
+                tag,
+                {"kind": "no"} if (rc is None or rc != 0) else None,
+            )
+        )
         if note:
             rows.append(("  !", _short(note, 66), {"kind": "no"}))
         ol = (out or "").splitlines()
@@ -2523,16 +2970,27 @@ def load_term(base):
             # 只回显尾巴，就必须说清「前面还有 N 行没显示」。不说，用户会把
             # 这 6 行当成命令的全部输出 —— 本项目把「看着像全量、其实是尾巴」
             # 列为最贵的假象的一种，这里按同一条纪律办。
-            rows.append(("  !", "… 前 %d 行未显示，只回显最后 %d 行"
-                         % (len(ol) - TERM_TAIL, TERM_TAIL),
-                         {"kind": "no"}))
+            rows.append(
+                (
+                    "  !",
+                    "… 前 %d 行未显示，只回显最后 %d 行"
+                    % (len(ol) - TERM_TAIL, TERM_TAIL),
+                    {"kind": "no"},
+                )
+            )
         for ln in ol[-TERM_TAIL:]:
             rows.append(("  ", _short(ln, 74), None))
     if not p.hist:
-        rows.append(("·", "还没有跑过命令。按 i 或 / 进输入行，"
-                     "回车即跑（真 rc，不猜）", None))
-    rows.append(("输入", "i 或 / 进输入行 · Enter 跑 · Esc 取消 · "
-                 "cwd=产品根 · 超时 20s 硬杀", {"sec": 1}))
+        rows.append(
+            ("·", "还没有跑过命令。按 i 或 / 进输入行，回车即跑（真 rc，不猜）", None)
+        )
+    rows.append(
+        (
+            "输入",
+            "i 或 / 进输入行 · Enter 跑 · Esc 取消 · cwd=产品根 · 超时 20s 硬杀",
+            {"sec": 1},
+        )
+    )
     return rows, "POST /__term（只读白名单）", {"panel": p}
 
 
@@ -2541,31 +2999,35 @@ def load_file(base):
     p = _panel(base)
     try:
         o = p.ls(p.dir)
-    except Exception as e:                     # noqa: BLE001
-        return ([("取数失败", str(e)[:110])], "错误（/__fs 不可达）",
-                {"panel": p})
-    rows = [("目录", p.dir or ".", {"sec": 1}),
-            ("上级", "… 回车回到上一层（根目录下不可用）",
-             {"kind": "up"})]
+    except Exception as e:  # noqa: BLE001
+        return ([("取数失败", str(e)[:110])], "错误（/__fs 不可达）", {"panel": p})
+    rows = [
+        ("目录", p.dir or ".", {"sec": 1}),
+        ("上级", "… 回车回到上一层（根目录下不可用）", {"kind": "up"}),
+    ]
     for e in o.get("entries") or []:
         nm = e.get("name") or "?"
-        rows.append(("D " if e.get("dir") else "F ",
-                     "%-30s %s" % (_short(nm, 30),
-                                  "<dir>" if e.get("dir")
-                                  else "%dB" % (e.get("size") or 0)),
-                     {"kind": "dir" if e.get("dir") else "file",
-                      "path": e.get("path")}))
+        rows.append(
+            (
+                "D " if e.get("dir") else "F ",
+                "%-30s %s"
+                % (
+                    _short(nm, 30),
+                    "<dir>" if e.get("dir") else "%dB" % (e.get("size") or 0),
+                ),
+                {"kind": "dir" if e.get("dir") else "file", "path": e.get("path")},
+            )
+        )
     if p.file:
-        rows.append(("代码", "%s · %d 行（回车重新读取）"
-                     % (p.file, len(p.code)), {"sec": 1}))
+        rows.append(
+            ("代码", "%s · %d 行（回车重新读取）" % (p.file, len(p.code)), {"sec": 1})
+        )
         first = max(0, len(p.code) - 30)
         for i in range(first, len(p.code)):
             rows.append(("%4d" % (i + 1), _short(p.code[i], 76), None))
         if len(p.code) > 30:
-            rows.append(("…", "共 %d 行，只显示最后 30 行" % len(p.code),
-                         None))
-    return rows, "GET /__fs?op=list / op=read（只读，越界服务端拒）", \
-        {"panel": p}
+            rows.append(("…", "共 %d 行，只显示最后 30 行" % len(p.code), None))
+    return rows, "GET /__fs?op=list / op=read（只读，越界服务端拒）", {"panel": p}
 
 
 def load_set(base):
@@ -2579,25 +3041,38 @@ def load_set(base):
         except ValueError:
             bj = None
         if isinstance(bj, dict):
-            for k in ("html_sha256", "data_sha256", "file_sha256",
-                      "built_at"):
+            for k in ("html_sha256", "data_sha256", "file_sha256", "built_at"):
                 rows.append((k, str(bj.get(k) or "—")))
         else:
             rows.append(("构建指纹", "work/build.json 不是合法 JSON", None))
     else:
-        rows.append(("构建指纹", "读不到：%s"
-                     % _short(b.get("error") or "HTTP=%s" % st, 70), None))
+        rows.append(
+            (
+                "构建指纹",
+                "读不到：%s" % _short(b.get("error") or "HTTP=%s" % st, 70),
+                None,
+            )
+        )
     st, p = http_json(base + "/__projects")
     if st == 200 and p.get("ok"):
-        rows.append(("项目", "%s / %s（共 %s）"
-                     % (p.get("active"), p.get("default"),
-                        p.get("n_projects"))))
+        rows.append(
+            (
+                "项目",
+                "%s / %s（共 %s）"
+                % (p.get("active"), p.get("default"), p.get("n_projects")),
+            )
+        )
         for pr in p.get("projects") or []:
-            rows.append(("· %s" % _short(pr.get("label") or pr.get("key"), 20),
-                         _short(pr.get("root") or "?", 56)))
+            rows.append(
+                (
+                    "· %s" % _short(pr.get("label") or pr.get("key"), 20),
+                    _short(pr.get("root") or "?", 56),
+                )
+            )
     else:
-        rows.append(("项目", "读不到：%s"
-                     % _short(p.get("error") or "HTTP=%s" % st, 70), None))
+        rows.append(
+            ("项目", "读不到：%s" % _short(p.get("error") or "HTTP=%s" % st, 70), None)
+        )
     st, h = http_json(base + "/__health")
     if st == 200 and h.get("ok") is True:
         s = h.get("stats") or {}
@@ -2606,22 +3081,32 @@ def load_set(base):
             ("index 指纹", h.get("index") or "?"),
             ("data 指纹", h.get("data") or "?"),
             ("代码 sha", h.get("code_sha") or "?"),
-            ("热重载", "%s 次 · 真树重抽 %s 次"
-             % (s.get("rebuilds"), s.get("tree_rebuilds"))),
+            (
+                "热重载",
+                "%s 次 · 真树重抽 %s 次" % (s.get("rebuilds"), s.get("tree_rebuilds")),
+            ),
             ("SSE 客户端", str(h.get("clients"))),
         ]
     else:
         rows.append(("服务", "读不到：HTTP=%s" % st, None))
-    rows.append(("来源", "work/build.json ← /__fs · 项目 ← /__projects · "
-                 "服务 ← /__health · 全部只读", {"sec": 1}))
+    rows.append(
+        (
+            "来源",
+            "work/build.json ← /__fs · 项目 ← /__projects · "
+            "服务 ← /__health · 全部只读",
+            {"sec": 1},
+        )
+    )
     return rows, "GET /__fs + GET /__projects + GET /__health（三路只读）", {}
 
 
 # ── Agent 台：web 端 v-work 五面的终端复刻 ──────────────────
-AGENT_FPK = [("code_sha", "serve.py 代码指纹"),
-             ("index", "index.html 指纹"),
-             ("data", "data.json 指纹")]
-_FACES = {}                 # base -> AgentFace（切走再切回不丢状态）
+AGENT_FPK = [
+    ("code_sha", "serve.py 代码指纹"),
+    ("index", "index.html 指纹"),
+    ("data", "data.json 指纹"),
+]
+_FACES = {}  # base -> AgentFace（切走再切回不丢状态）
 
 
 class AgentFace(object):
@@ -2637,16 +3122,16 @@ class AgentFace(object):
 
     def __init__(self, base):
         self.base = base
-        self.acts = []            # [(name, desc)] 来自 POST /__act __list
-        self.act_last = None      # /__health 的 act_last（最近一次真回执）
-        self.recs = []            # /__act/recommend 的非绿推荐
-        self.pend = set()         # 显式授权集合（授权是显式状态）
-        self.transcript = []      # [(时刻, 行)] 来自 /__act/stream SSE
-        self.events = []          # [(时刻, 事件名)] 来自 /__watch SSE
+        self.acts = []  # [(name, desc)] 来自 POST /__act __list
+        self.act_last = None  # /__health 的 act_last（最近一次真回执）
+        self.recs = []  # /__act/recommend 的非绿推荐
+        self.pend = set()  # 显式授权集合（授权是显式状态）
+        self.transcript = []  # [(时刻, 行)] 来自 /__act/stream SSE
+        self.events = []  # [(时刻, 事件名)] 来自 /__watch SSE
         self.prev_fp = None
         self.cur_fp = None
         self.hint = ""
-        self.hint_kind = ""       # "no" = 红字
+        self.hint_kind = ""  # "no" = 红字
         self.run_state = None
         self._watch_started = False
 
@@ -2654,22 +3139,24 @@ class AgentFace(object):
     def refresh(self):
         st, h = http_json(self.base + "/__health")
         if st != 200 or h.get("ok") is not True:
-            raise RuntimeError("/__health 未返回 ok:true（HTTP=%s ok=%s）"
-                               % (st, h.get("ok")))
+            raise RuntimeError(
+                "/__health 未返回 ok:true（HTTP=%s ok=%s）" % (st, h.get("ok"))
+            )
         st, lj = http_json(self.base + "/__act", {"action": "__list"})
         if st != 200 or not isinstance(lj.get("actions"), list):
             raise RuntimeError("/__act __list 失败（HTTP=%s）" % st)
-        self.acts = [(a.get("name", "?"), a.get("desc", ""))
-                     for a in lj["actions"]]
+        self.acts = [(a.get("name", "?"), a.get("desc", "")) for a in lj["actions"]]
         self.act_last = h.get("act_last")
         st, rj = http_json(self.base + "/__act/recommend")
         if st != 200 or rj.get("ok") is not True:
-            raise RuntimeError("/__act/recommend 未返回 ok:true（HTTP=%s）"
-                               % st)
+            raise RuntimeError("/__act/recommend 未返回 ok:true（HTTP=%s）" % st)
         self.recs = rj.get("recommend") or []
         self.prev_fp = self.cur_fp
-        self.cur_fp = {"code_sha": h.get("code_sha"),
-                       "index": h.get("index"), "data": h.get("data")}
+        self.cur_fp = {
+            "code_sha": h.get("code_sha"),
+            "index": h.get("index"),
+            "data": h.get("data"),
+        }
         self._start_watch()
 
     def _start_watch(self):
@@ -2692,16 +3179,16 @@ class AgentFace(object):
                         self.events.append((time.strftime("%H:%M:%S"), pend))
                         del self.events[:-40]
                         pend = None
-        except Exception:                         # noqa: BLE001
+        except Exception:  # noqa: BLE001
             pass
 
     # ── 行（sec 小节标题 / head 表头 / tool 工具卡 /
     #       approval 审批卡 / 普通日志行）─────────────────
     def rows(self):
         rows = []
-        rows.append(("工具调用卡片",
-                     "动作只认服务端 allowlist · rc 为唯一裁决",
-                     {"sec": 1}))
+        rows.append(
+            ("工具调用卡片", "动作只认服务端 allowlist · rc 为唯一裁决", {"sec": 1})
+        )
         for name, desc in self.acts:
             tag = ""
             al = self.act_last
@@ -2709,85 +3196,98 @@ class AgentFace(object):
                 tag = "rc=%s · %ss" % (al.get("rc"), al.get("dur"))
             val = "%s   [%s]" % (desc, tag) if tag else desc
             rows.append((name, _short(val, 64), {"kind": "tool", "name": name}))
-        rows.append(("审批卡",
-                     "授权是显式状态，不是隐含默认值",
-                     {"sec": 1}))
+        rows.append(("审批卡", "授权是显式状态，不是隐含默认值", {"sec": 1}))
         if not self.recs:
-            rows.append(("(无事)",
-                         "当前无非绿项，无需授权任何动作"
-                         "（来自 /__act/recommend 真判定）", None))
+            rows.append(
+                (
+                    "(无事)",
+                    "当前无非绿项，无需授权任何动作（来自 /__act/recommend 真判定）",
+                    None,
+                )
+            )
         for r in self.recs:
             act = r.get("action")
             on = act in self.pend
-            rows.append((act,
-                         "%s · %s" % ("已授权" if on else "待授权",
-                                      str(r.get("why"))[:52]),
-                         {"kind": "approval", "action": act}))
-        rows.append(("流式 transcript",
-                     "接 /__act/stream SSE · 逐行推不是跑完才给",
-                     {"sec": 1}))
+            rows.append(
+                (
+                    act,
+                    "%s · %s" % ("已授权" if on else "待授权", str(r.get("why"))[:52]),
+                    {"kind": "approval", "action": act},
+                )
+            )
+        rows.append(
+            ("流式 transcript", "接 /__act/stream SSE · 逐行推不是跑完才给", {"sec": 1})
+        )
         if not self.transcript:
-            rows.append(("·",
-                         "未运行。执行只认 allowlist，rc 为唯一裁决；"
-                         "回车工具卡或用 composer 发起", None))
+            rows.append(
+                (
+                    "·",
+                    "未运行。执行只认 allowlist，rc 为唯一裁决；"
+                    "回车工具卡或用 composer 发起",
+                    None,
+                )
+            )
         for t, line in self.transcript[-8:]:
             rows.append((t, _short(line, 68), None))
-        rows.append(("指纹 diff",
-                     "/__health 三指纹逐次比对 · 静止的指纹不算 diff",
-                     {"sec": 1}))
-        rows.append(("指标", "当前值                较上一轮",
-                     {"head": 1}))
+        rows.append(
+            ("指纹 diff", "/__health 三指纹逐次比对 · 静止的指纹不算 diff", {"sec": 1})
+        )
+        rows.append(("指标", "当前值                较上一轮", {"head": 1}))
         for key, label in AGENT_FPK:
             cur = (self.cur_fp or {}).get(key)
             prev = (self.prev_fp or {}).get(key) if self.prev_fp else None
             chg = bool(self.prev_fp and cur and prev and cur != prev)
             tail = "变了（原 %s）" % prev if chg else "未变"
-            rows.append((label,
-                         "%-20s %s" % (str(cur or "不可判定")[:20], tail),
-                         None))
-        rows.append(("/__watch 事件",
-                     "最近 %d 条（本会话）" % len(self.events),
-                     {"sec": 1}))
+            rows.append((label, "%-20s %s" % (str(cur or "不可判定")[:20], tail), None))
+        rows.append(
+            ("/__watch 事件", "最近 %d 条（本会话）" % len(self.events), {"sec": 1})
+        )
         if not self.events:
-            rows.append(("·",
-                         "本会话内尚无 __watch 事件（静止不等于有问题）",
-                         None))
+            rows.append(("·", "本会话内尚无 __watch 事件（静止不等于有问题）", None))
         for t, nm in self.events[-4:]:
             rows.append((t, nm, None))
-        rows.append(("composer",
-                     "c 输入 · /动作名 或自然语言 · Enter 提交 · "
-                     "s 中止运行", {"sec": 1}))
+        rows.append(
+            (
+                "composer",
+                "c 输入 · /动作名 或自然语言 · Enter 提交 · s 中止运行",
+                {"sec": 1},
+            )
+        )
         # ── 计划面（DSP）：读本地 work/plans/*-plan.json 真数据 ──
         # 为什么读本地不走 8790：计划是 CLI 侧（agent_core）产物，服务端
         # 不存计划真相；走 /__fs 绕一圈反而多一层可坏。fail-closed：目录
         # 不可读如实报，不拿占位冒充。
-        rows.append(("决策监督计划",
-                     "work/plans 真数据 · 未审批写锁死",
-                     {"sec": 1}))
+        rows.append(("决策监督计划", "work/plans 真数据 · 未审批写锁死", {"sec": 1}))
         try:
             _pdir = os.path.join(ROOT, "work", "plans")
-            _pfiles = sorted(n for n in os.listdir(_pdir)
-                             if n.endswith("-plan.json"))
+            _pfiles = sorted(n for n in os.listdir(_pdir) if n.endswith("-plan.json"))
         except OSError as e:
             rows.append(("·", "计划目录不可读：%s" % str(e)[:60], None))
             return rows
         if not _pfiles:
-            rows.append(("·", "暂无计划（REPL 里 /plan <目标> 建一个）",
-                         None))
+            rows.append(("·", "暂无计划（REPL 里 /plan <目标> 建一个）", None))
             return rows
         for _pf in _pfiles[-3:]:
             try:
                 with open(os.path.join(_pdir, _pf), encoding="utf-8") as _f:
                     _pd = json.load(_f)
-                _done = sum(1 for _t in _pd.get("tasks", [])
-                            if _t.get("status") == "done")
+                _done = sum(
+                    1 for _t in _pd.get("tasks", []) if _t.get("status") == "done"
+                )
                 _tot = len(_pd.get("tasks", []))
-                rows.append((_pf[:-len("-plan.json")],
-                             "%s [%d/%d done] %s" % (
-                                 str(_pd.get("goal", "?"))[:40], _done, _tot,
-                                 "已审批" if _pd.get("approved")
-                                 else "未审批·写锁死"),
-                             None))
+                rows.append(
+                    (
+                        _pf[: -len("-plan.json")],
+                        "%s [%d/%d done] %s"
+                        % (
+                            str(_pd.get("goal", "?"))[:40],
+                            _done,
+                            _tot,
+                            "已审批" if _pd.get("approved") else "未审批·写锁死",
+                        ),
+                        None,
+                    )
+                )
             except (OSError, ValueError) as e:
                 rows.append((_pf, "读失败：%s" % str(e)[:60], None))
         return rows
@@ -2797,35 +3297,33 @@ class AgentFace(object):
         if self.run_state is not None:
             return
         if self.recs and name not in self.pend:
-            self.hint = ("%s 未授权 —— 授权是显式状态："
-                         "回车审批卡先授权，再执行" % name)
+            self.hint = "%s 未授权 —— 授权是显式状态：回车审批卡先授权，再执行" % name
             self.hint_kind = "no"
             return
         sink = {"lines": [], "run": None, "resp": None, "post_done": False}
-        st = threading.Thread(target=self._stream_loop, args=(sink,),
-                              daemon=True)
+        st = threading.Thread(target=self._stream_loop, args=(sink,), daemon=True)
         st.start()
         t0 = time.time()
         while sink["run"] is None and time.time() - t0 < 3 and st.is_alive():
             time.sleep(0.05)
         run_id = sink["run"]
-        self.transcript.append((time.strftime("%H:%M:%S"),
-                                "▶ %s%s" % (name, "（run=%s）" % run_id
-                                            if run_id else "")))
+        self.transcript.append(
+            (
+                time.strftime("%H:%M:%S"),
+                "▶ %s%s" % (name, "（run=%s）" % run_id if run_id else ""),
+            )
+        )
         self.hint = "%s 运行中…" % name
         self.hint_kind = ""
-        pt = threading.Thread(target=self._post_loop, args=(name, sink),
-                              daemon=True)
+        pt = threading.Thread(target=self._post_loop, args=(name, sink), daemon=True)
         pt.start()
-        self.run_state = {"name": name, "sink": sink,
-                          "stream": st, "post": pt}
+        self.run_state = {"name": name, "sink": sink, "stream": st, "post": pt}
 
     def _stream_loop(self, sink):
         """/__act/stream：先推 __RUN__ run id（中止靠它指名道姓），
         逐行推输出，__RC__ 后连接即关。"""
         try:
-            req = urllib.request.Request(
-                self.base + "/__act/stream?cursor=0")
+            req = urllib.request.Request(self.base + "/__act/stream?cursor=0")
             with _OPENER.open(req, timeout=None) as r:
                 for raw in r:
                     line = raw.decode("utf-8", "replace").rstrip("\n")
@@ -2840,16 +3338,14 @@ class AgentFace(object):
                         break
                     else:
                         sink["lines"].append((time.strftime("%H:%M:%S"), d))
-        except Exception:                         # noqa: BLE001
+        except Exception:  # noqa: BLE001
             pass
 
     def _post_loop(self, name, sink):
         try:
-            st, j = http_json(self.base + "/__act", {"action": name},
-                              timeout=900)
-        except Exception as e:                     # noqa: BLE001
-            st, j = 0, {"ok": False, "rc": -1,
-                        "tail": ["NETWORK %s" % _short(e, 80)]}
+            st, j = http_json(self.base + "/__act", {"action": name}, timeout=900)
+        except Exception as e:  # noqa: BLE001
+            st, j = 0, {"ok": False, "rc": -1, "tail": ["NETWORK %s" % _short(e, 80)]}
         sink["resp"] = j
         sink["post_done"] = True
 
@@ -2867,23 +3363,33 @@ class AgentFace(object):
         name = rs["name"]
         t = time.strftime("%H:%M:%S")
         if j.get("aborted"):
-            self.transcript.append((t,
-                                    "⏹ %s 被用户中止（run=%s）—— "
-                                    "不记成功" % (name, j.get("run") or "?")))
+            self.transcript.append(
+                (
+                    t,
+                    "⏹ %s 被用户中止（run=%s）—— "
+                    "不记成功" % (name, j.get("run") or "?"),
+                )
+            )
             self.hint = "%s 已中止 rc=%s（不算成功）" % (name, j.get("rc"))
             self.hint_kind = "no"
         else:
-            self.transcript.append((t,
-                                    "◀ %s rc=%s 用时 %ss（流式 %d 行）"
-                                    % (name, j.get("rc"), j.get("dur"),
-                                       len(sink["lines"]))))
-            self.hint = "%s rc=%s · %s" % (name, j.get("rc"),
-                                           "成功" if j.get("ok") else "失败")
+            self.transcript.append(
+                (
+                    t,
+                    "◀ %s rc=%s 用时 %ss（流式 %d 行）"
+                    % (name, j.get("rc"), j.get("dur"), len(sink["lines"])),
+                )
+            )
+            self.hint = "%s rc=%s · %s" % (
+                name,
+                j.get("rc"),
+                "成功" if j.get("ok") else "失败",
+            )
             self.hint_kind = "" if j.get("ok") else "no"
         self.run_state = None
         try:
             self.refresh()
-        except Exception as e:                     # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
             self.hint = "run 已落账，但刷新取数失败: %s" % str(e)[:60]
             self.hint_kind = "no"
 
@@ -2900,7 +3406,7 @@ class AgentFace(object):
             return
         try:
             st, j = http_json(self.base + "/__act/abort", {"run": run})
-        except Exception as e:                     # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
             st, j = 0, {"ok": False, "error": str(e)[:60]}
         self.hint = "中止 run=%s → HTTP=%s ok=%s" % (run, st, j.get("ok"))
         self.hint_kind = "" if j.get("ok") else "no"
@@ -2922,10 +3428,10 @@ class AgentFace(object):
             return
         t = time.strftime("%H:%M:%S")
         if q in ("/help", "?"):
-            self.transcript.append((t, "/help → 列出 %d 个 allowlist 动作"
-                                    % len(self.acts)))
-            self.hint = "可用动作 " + " · ".join("/" + n
-                                                 for n, _ in self.acts)
+            self.transcript.append(
+                (t, "/help → 列出 %d 个 allowlist 动作" % len(self.acts))
+            )
+            self.hint = "可用动作 " + " · ".join("/" + n for n, _ in self.acts)
             self.hint_kind = ""
             return
         names = dict(self.acts)
@@ -2935,8 +3441,7 @@ class AgentFace(object):
             if head in names:
                 act = head
             else:
-                self.transcript.append((t, "no-match（/%s 不在 allowlist）"
-                                        % head))
+                self.transcript.append((t, "no-match（/%s 不在 allowlist）" % head))
                 self.hint = "/%s 不在 allowlist —— /help 列全部动作" % head
                 self.hint_kind = "no"
                 return
@@ -2950,9 +3455,8 @@ class AgentFace(object):
         # 自然语言兜底：/__act/resolve 是纯函数只读面，不执行不授权。
         # 路由 ≠ 授权：命中后仍会被审批卡挡住。
         try:
-            st, j = http_json(
-                self.base + "/__act/resolve?q=" + urllib.parse.quote(q))
-        except Exception as e:                     # noqa: BLE001
+            st, j = http_json(self.base + "/__act/resolve?q=" + urllib.parse.quote(q))
+        except Exception as e:  # noqa: BLE001
             self.hint = "/__act/resolve 不可达：%s" % str(e)[:60]
             self.hint_kind = "no"
             return
@@ -2960,25 +3464,19 @@ class AgentFace(object):
             via = ""
             if j.get("how") == "intent":
                 via = "（按「%s」路由）" % "+".join(j.get("matched") or [])
-            self.transcript.append((t, "「%s」→ %s%s"
-                                    % (q, j["action"], via)))
-            self.hint = ("「%s」理解为 %s%s —— 仍需审批卡授权"
-                         % (q, j["action"], via))
+            self.transcript.append((t, "「%s」→ %s%s" % (q, j["action"], via)))
+            self.hint = "「%s」理解为 %s%s —— 仍需审批卡授权" % (q, j["action"], via)
             self.hint_kind = ""
             self.run_tool(j["action"])
         elif j.get("reason") == "ambiguous":
-            c = " · ".join("%s(%s)" % (a, s)
-                           for a, s in (j.get("candidates") or []))
+            c = " · ".join("%s(%s)" % (a, s) for a, s in (j.get("candidates") or []))
             self.transcript.append((t, "「%s」歧义 → %s" % (q, c)))
-            self.hint = ("「%s」有歧义，不替你猜：%s —— "
-                         "请用 /动作名 明确" % (q, c))
+            self.hint = "「%s」有歧义，不替你猜：%s —— 请用 /动作名 明确" % (q, c)
             self.hint_kind = "no"
         else:
-            why = "是空的" if j.get("reason") == "empty" \
-                else "不在任何动作词典里"
+            why = "是空的" if j.get("reason") == "empty" else "不在任何动作词典里"
             self.transcript.append((t, "「%s」no-match（%s）" % (q, why)))
-            self.hint = ("「%s」%s —— 听不懂，不乱猜；"
-                         "用 /动作名 或 /help" % (q, why))
+            self.hint = "「%s」%s —— 听不懂，不乱猜；用 /动作名 或 /help" % (q, why)
             self.hint_kind = "no"
 
 
@@ -2988,20 +3486,36 @@ def load_agent(base):
         face = AgentFace(base)
         _FACES[base] = face
     face.refresh()
-    return face.rows(), ("GET /__health + /__act(__list) + "
-                         "/__act/recommend"), {"face": face}
+    return (
+        face.rows(),
+        ("GET /__health + /__act(__list) + /__act/recommend"),
+        {"face": face},
+    )
 
 
-LOADERS = (load_overview, load_rounds, load_matrix, load_ledger,
-           load_engine, load_agent, load_goal, load_retro, load_cap,
-           load_ws, load_term, load_file, load_set)
+LOADERS = (
+    load_overview,
+    load_rounds,
+    load_matrix,
+    load_ledger,
+    load_engine,
+    load_agent,
+    load_goal,
+    load_retro,
+    load_cap,
+    load_ws,
+    load_term,
+    load_file,
+    load_set,
+)
 FILE_VI = VIEWS.index("文件")
 PANEL_VI = (TERM_VI, FILE_VI)
-INPUT_VI = (AGENT_VI, TERM_VI, FILE_VI)   # 有输入行的三面
+INPUT_VI = (AGENT_VI, TERM_VI, FILE_VI)  # 有输入行的三面
 VIEW_SRC = {TERM_VI: "POST /__term", FILE_VI: "GET /__fs"}
-assert len(LOADERS) == len(VIEWS), \
-    "LOADERS 与 VIEWS 必须逐面对应（现在 %d vs %d）" \
-    % (len(LOADERS), len(VIEWS))
+assert len(LOADERS) == len(VIEWS), "LOADERS 与 VIEWS 必须逐面对应（现在 %d vs %d）" % (
+    len(LOADERS),
+    len(VIEWS),
+)
 
 
 # ── tui：终端交互主界面 ───────────────────────────────────────────
@@ -3015,14 +3529,28 @@ def _map_csi(seq):
     """
     if not seq:
         return "esc"
-    letters = {"A": "up", "B": "down", "C": "right", "D": "left",
-               "Z": "shift-tab", "H": "home", "F": "end"}
+    letters = {
+        "A": "up",
+        "B": "down",
+        "C": "right",
+        "D": "left",
+        "Z": "shift-tab",
+        "H": "home",
+        "F": "end",
+    }
     if seq[-1] in letters:
         return letters[seq[-1]]
     if seq[-1] == "~":
         num = "".join(c for c in seq[:-1] if c.isdigit())
-        tilde = {"1": "home", "4": "end", "3": "del", "5": "pgup",
-                 "6": "pgdn", "7": "home", "8": "end"}
+        tilde = {
+            "1": "home",
+            "4": "end",
+            "3": "del",
+            "5": "pgup",
+            "6": "pgdn",
+            "7": "home",
+            "8": "end",
+        }
         return tilde.get(num, "esc")
     return "esc"
 
@@ -3042,24 +3570,24 @@ def _tab_digit(n):
 class AgentOS_TUI(object):
     """十三视图 TUI，与 web 端 13 个 tab 同名同序。
 
-     键盘
-       ↑↓ / PgUp PgDn   移动光标
-      Tab / →          下一面        Shift-Tab  上一面
-                       （文件面例外：← 是回上一层目录 —— 文件管理器三十年的
-                        肌肉记忆；那一面想切回上一屏用 Shift-Tab）
-      1..9、0          直达前 10 面（0 = 第 10 面，与 web 端 kbd 一致）
-                       第 11-13 面（终端/文件/设置）**没有数字键**，
-                       用 Tab/←→ 或下方的输入行切过去 —— 界面上不许
-                       标一个按了不动的键。
-     回车             当前行明细；Agent 台工具卡运行/审批卡授权；
-                      终端面跑输入行里的命令；文件面进目录/读代码
-     i 或 /           进输入行（Esc 取消，Enter 提交）
-                       —— 仅 Agent 台/终端/文件三面有输入行，别的面
-                       按 i 会明说「这一面没有输入行」
-      a                 Agent 台授权开关
-      s                 Agent 台中止运行
-      r                 刷新本面
-      q / Ctrl-C / Esc  退出（输入态下 q 与 Esc 都是普通字符）
+    键盘
+      ↑↓ / PgUp PgDn   移动光标
+     Tab / →          下一面        Shift-Tab  上一面
+                      （文件面例外：← 是回上一层目录 —— 文件管理器三十年的
+                       肌肉记忆；那一面想切回上一屏用 Shift-Tab）
+     1..9、0          直达前 10 面（0 = 第 10 面，与 web 端 kbd 一致）
+                      第 11-13 面（终端/文件/设置）**没有数字键**，
+                      用 Tab/←→ 或下方的输入行切过去 —— 界面上不许
+                      标一个按了不动的键。
+    回车             当前行明细；Agent 台工具卡运行/审批卡授权；
+                     终端面跑输入行里的命令；文件面进目录/读代码
+    i 或 /           进输入行（Esc 取消，Enter 提交）
+                      —— 仅 Agent 台/终端/文件三面有输入行，别的面
+                      按 i 会明说「这一面没有输入行」
+     a                 Agent 台授权开关
+     s                 Agent 台中止运行
+     r                 刷新本面
+     q / Ctrl-C / Esc  退出（输入态下 q 与 Esc 都是普通字符）
     """
 
     def __init__(self, base, color=None, start_vi=0):
@@ -3070,7 +3598,7 @@ class AgentOS_TUI(object):
             self.color = _skin_ok()
         else:
             self.color = bool(color) and _skin_ok()
-        self.welcomed = False       # 欢迎卡只画第一帧，任意键后退场
+        self.welcomed = False  # 欢迎卡只画第一帧，任意键后退场
         # start_vi：打开落在哪一面。裸 agentos / agentos tui / resume 都从
         # Agent 台起 —— 打开就能按 / 给 Agent 派活（Claude Code 的
         # 「打开→打字」手感），数据面板 Tab 一步可达。
@@ -3078,13 +3606,13 @@ class AgentOS_TUI(object):
         self.cursor = 0
         self.rows = []
         self.source = ""
-        self.detail = None          # (label, value) 或 None
+        self.detail = None  # (label, value) 或 None
         self.rc = 0
-        self.composing = False      # 输入行输入态（所有面共用）
+        self.composing = False  # 输入行输入态（所有面共用）
         self.cbuf = ""
-        self.cbuf_sel = False       # 回填内容处于「全选」态：首个可见键整体替换
+        self.cbuf_sel = False  # 回填内容处于「全选」态：首个可见键整体替换
         self.hint = ""
-        self.hint_kind = ""         # "no" = 红字
+        self.hint_kind = ""  # "no" = 红字
         # 取数函数的第三個返回值：终端/文件两面把自己的 Panel 挂在这里带
         # 回来。写 {} 而不是 None，是为了让「没有 extra」和「extra 是空」在
         # .get() 上同形，少一条会静默走错的分支。
@@ -3094,7 +3622,7 @@ class AgentOS_TUI(object):
         try:
             self.rows, self.source, extra = LOADERS[self.vi](self.base)
             self.extra = extra if isinstance(extra, dict) else {}
-        except Exception as e:     # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
             # fail-closed：取数失败如实报，不拿占位数据冒充面板
             self.rows = [("取数失败", str(e)[:110])]
             self.source = "错误（8790 数据不可达）"
@@ -3163,8 +3691,9 @@ class AgentOS_TUI(object):
                 return _map_csi(seq)
             if a == "O":
                 bb = os.read(fd, 1).decode("utf-8", "replace")
-                return {"A": "up", "B": "down", "C": "right",
-                        "D": "left"}.get(bb, "esc")
+                return {"A": "up", "B": "down", "C": "right", "D": "left"}.get(
+                    bb, "esc"
+                )
             return "esc"
         if ch == "\t":
             return "tab"
@@ -3198,28 +3727,39 @@ class AgentOS_TUI(object):
         blank = bar + " " * (W - 4) + end
         head_t = _clip("✻ Welcome to AgentOS!", W - 4)
         fill_t = " " * max(0, (W - 4) - _dw(head_t))
-        tip = _clip("/ 直接给 Agent 派活 · Tab 切数据面板 · 1-9/0 直达 · q 退出",
-                    W - 4)
+        tip = _clip("/ 直接给 Agent 派活 · Tab 切数据面板 · 1-9/0 直达 · q 退出", W - 4)
         fill_p = " " * max(0, (W - 4) - _dw(tip))
         rows = []
-        for lab, val in (("数据源", self.base),
-                         ("工作目录", ROOT),
-                         ("面板", "13 面全走 8790 真数据 · 与 web 端同名同序")):
-            pre = "* " + _pad(lab, 8) + "  "   # 按显示宽对齐三行标签
+        for lab, val in (
+            ("数据源", self.base),
+            ("工作目录", ROOT),
+            ("面板", "13 面全走 8790 真数据 · 与 web 端同名同序"),
+        ):
+            pre = "* " + _pad(lab, 8) + "  "  # 按显示宽对齐三行标签
             plain = _clip(pre + val, W - 4)
             fill = " " * max(0, (W - 4) - _dw(plain))
-            ci = len(pre)      # 字符数下标，不是显示宽（CJK 一个字 2 列）
-            rows.append(bar + C("brand", plain[:2])
-                        + C("cyan", plain[2:ci]) + plain[ci:] + fill + end)
-        return [
-            C("brand", "╭" + "─" * (W - 2) + "╮"),
-            bar + C("brand", "bold", head_t) + fill_t + end,
-            blank,
-        ] + rows + [
-            blank,
-            bar + C("dim", tip) + fill_p + end,
-            C("brand", "╰" + "─" * (W - 2) + "╯"),
-        ]
+            ci = len(pre)  # 字符数下标，不是显示宽（CJK 一个字 2 列）
+            rows.append(
+                bar
+                + C("brand", plain[:2])
+                + C("cyan", plain[2:ci])
+                + plain[ci:]
+                + fill
+                + end
+            )
+        return (
+            [
+                C("brand", "╭" + "─" * (W - 2) + "╮"),
+                bar + C("brand", "bold", head_t) + fill_t + end,
+                blank,
+            ]
+            + rows
+            + [
+                blank,
+                bar + C("dim", tip) + fill_p + end,
+                C("brand", "╰" + "─" * (W - 2) + "╯"),
+            ]
+        )
 
     def paint(self):
         size = shutil.get_terminal_size()
@@ -3238,13 +3778,13 @@ class AgentOS_TUI(object):
         # 首行：cli_gate 的 tty-noarg-enters-tui 钉死「首行含 AgentOS TUI」，
         # tui_walk 的 header_time 吃首行时钟。品牌符与配色随便加，这两样
         # 字面量不能动。先裁后上色（_clip 不认 ANSI，只能裁完再包色码）。
-        head = _clip("✻ AgentOS TUI · %s · %s"
-                     % (time.strftime("%H:%M:%S"), self.base), w)
+        head = _clip(
+            "✻ AgentOS TUI · %s · %s" % (time.strftime("%H:%M:%S"), self.base), w
+        )
         ha, hs1, hrest = head.partition(" · ")
         hb, hs2, hc = hrest.partition(" · ")
         if S and hs1 and hs2:
-            out.append(C("brand", "bold", ha) + S["dim"] + hs1 + hb + hs2
-                       + hc + S["r"])
+            out.append(C("brand", "bold", ha) + S["dim"] + hs1 + hb + hs2 + hc + S["r"])
         else:
             out.append(head)
         # tab 栏分两行画，每行最多 7 面，面名前那一位是直达键标（1-9、
@@ -3258,7 +3798,7 @@ class AgentOS_TUI(object):
             toks.append("[%s]" % label if i == self.vi else " %s " % label)
         act_tok = toks[self.vi]
         for r in range(0, len(toks), 7):
-            line = _clip(" ".join(toks[r:r + 7]), w)
+            line = _clip(" ".join(toks[r : r + 7]), w)
             if S and act_tok in line:
                 line = line.replace(act_tok, C("brand", "bold", act_tok))
             out.append(line)
@@ -3288,9 +3828,9 @@ class AgentOS_TUI(object):
                 extra = "  [回车 运行]"
             elif meta and meta.get("kind") == "approval":
                 extra = "  [回车/a 授权开关]"
-            line = _clip("%s %s %s%s"
-                         % (mark, _pad(_clip(label, 20), 20),
-                            str(value), extra), w)
+            line = _clip(
+                "%s %s %s%s" % (mark, _pad(_clip(label, 20), 20), str(value), extra), w
+            )
             if S:
                 for mk in ("  [回车 运行]", "  [回车/a 授权开关]"):
                     if mk in line:
@@ -3298,8 +3838,7 @@ class AgentOS_TUI(object):
                 if i == self.cursor and line:
                     # 光标行：Claude 橙的「>」，剥 ANSI 后仍是「> 」行首
                     # （tui_walk 的 cursor_line 判据）。
-                    line = (S["brand"] + S["bold"] + ">" + S["r"]
-                            + line[1:])
+                    line = S["brand"] + S["bold"] + ">" + S["r"] + line[1:]
             out.append(line)
         if len(self.rows) > body_h:
             out.append(C("dim", "  … 共 %d 行" % len(self.rows)))
@@ -3310,22 +3849,22 @@ class AgentOS_TUI(object):
             # 「明细 ·」必须行首（tui_walk has_detail 的 startswith 判据），
             # 颜色只能上在前缀之后。
             if S and dline.startswith("明细 · "):
-                dline = "明细 · " + C("cyan", dline[len("明细 · "):])
+                dline = "明细 · " + C("cyan", dline[len("明细 · ") :])
             out.append(dline)
             for chunk in textwrap.wrap(str(dv), max(20, w - 4)):
                 out.append(_clip("  " + chunk, w))
             out.append(C("dim", "回车返回"))
         else:
-            face = _FACES.get(self.base) \
-                if self.vi == AGENT_VI else None
+            face = _FACES.get(self.base) if self.vi == AGENT_VI else None
             if self.composing:
                 cplain = _clip("composer› " + self.cbuf + "█", w)
                 if S:
                     # composer 行剥 ANSI 后必须逐字等于
                     # 「composer› <缓冲>█」（tui_walk COMPOSER_RE 钉死），
                     # 所以色码只能包在两段既有文字外面。
-                    out.append(C("brand", "composer› ")
-                               + cplain[len("composer› "):-1] + "█")
+                    out.append(
+                        C("brand", "composer› ") + cplain[len("composer› ") : -1] + "█"
+                    )
                 else:
                     out.append(cplain)
             # hint 有两个来源：Agent 台自己的运行态，和 TUI 自己这层
@@ -3349,35 +3888,54 @@ class AgentOS_TUI(object):
                     out.append(C("dim", line))
             if self.vi == AGENT_VI:
                 # 数字键位随视图数长：1-9 有单位数键，第 10 面起必须 Tab
-                out.append(C("dim",
-                             "↑↓ 移动 · 回车 运行/授权 · a 授权开关 · "
-                             "c composer · s 中止 · Tab 切面 · %s 直达 · q 退出"
-                             % DIGIT_HINT))
+                out.append(
+                    C(
+                        "dim",
+                        "↑↓ 移动 · 回车 运行/授权 · a 授权开关 · "
+                        "c composer · s 中止 · Tab 切面 · %s 直达 · q 退出"
+                        % DIGIT_HINT,
+                    )
+                )
             elif self.vi == TERM_VI:
                 # 终端面的 footer 只讲终端面的事：命令从输入行进，rc 由服务端
                 # 回执说了算。不把「r 刷新」抄在这儿 —— 跑完一条命令历史自己
                 # 会长，r 在这面是多余动作。
-                out.append(C("dim",
-                             "↑↓ 移动 · i 或 / 输命令（Esc 取消）· "
-                             "Enter 提交即跑 · Tab 切面 · %s 直达 · q 退出"
-                             % DIGIT_HINT))
+                out.append(
+                    C(
+                        "dim",
+                        "↑↓ 移动 · i 或 / 输命令（Esc 取消）· "
+                        "Enter 提交即跑 · Tab 切面 · %s 直达 · q 退出" % DIGIT_HINT,
+                    )
+                )
             elif self.vi == FILE_VI:
-                out.append(C("dim",
-                             "↑↓ 选择 · Enter 进目录/读代码 · ← 回上层 · "
-                             "i 或 / 输路径 · Tab 切面 · %s 直达 · q 退出"
-                             % DIGIT_HINT))
+                out.append(
+                    C(
+                        "dim",
+                        "↑↓ 选择 · Enter 进目录/读代码 · ← 回上层 · "
+                        "i 或 / 输路径 · Tab 切面 · %s 直达 · q 退出" % DIGIT_HINT,
+                    )
+                )
             else:
-                out.append(C("dim",
-                             "↑↓ 移动 · Tab/→ 切面 · ← 上面 · "
-                             "回车 明细 · r 刷新 · %s 直达 · q 退出"
-                             % DIGIT_HINT))
-        fplain = _clip("视图 %d/%d · 数据源: %s"
-                       % (self.vi + 1, len(VIEWS), self.source), w)
+                out.append(
+                    C(
+                        "dim",
+                        "↑↓ 移动 · Tab/→ 切面 · ← 上面 · "
+                        "回车 明细 · r 刷新 · %s 直达 · q 退出" % DIGIT_HINT,
+                    )
+                )
+        fplain = _clip(
+            "视图 %d/%d · 数据源: %s" % (self.vi + 1, len(VIEWS), self.source), w
+        )
         k = fplain.find(" · 数据源: ")
         if S and k > 0:
             sep = " · 数据源: "
-            out.append(C("brand", "bold", fplain[:k]) + S["dim"] + sep
-                       + S["r"] + C("cyan", fplain[k + len(sep):]))
+            out.append(
+                C("brand", "bold", fplain[:k])
+                + S["dim"]
+                + sep
+                + S["r"]
+                + C("cyan", fplain[k + len(sep) :])
+            )
         else:
             out.append(fplain)
         # out[0] 是清屏序列，不是一行内容。直接 "\n".join(out) 会在
@@ -3446,8 +4004,7 @@ class AgentOS_TUI(object):
                 self.cbuf = self.cbuf[:-1]
             if panel is not None:
                 panel.buf = self.cbuf
-        elif isinstance(key, str) and len(key) == 1 \
-                and key.isprintable():
+        elif isinstance(key, str) and len(key) == 1 and key.isprintable():
             # 全选态下第一个可见键整体替换回填内容，不是追加到末尾。
             # 少了这条，回填 "tools" 后敲 ".." 会拼成 "tools.."，
             # goto("tools..") 必然失败 —— 用户看到的却是「上级按了没反应」。
@@ -3464,23 +4021,20 @@ class AgentOS_TUI(object):
         old = termios.tcgetattr(fd)
         try:
             tty.setraw(fd)
-            sys.stdout.write("\x1b[?25l")      # 隐藏光标
+            sys.stdout.write("\x1b[?25l")  # 隐藏光标
             sys.stdout.flush()
             while True:
                 self.paint()
                 # 终端/文件两面的 Panel 每帧从 extra 取一次：extra 是取数
                 # 函数返回的真身，不另存副本。
-                panel = self.extra.get("panel") \
-                    if self.vi in PANEL_VI else None
+                panel = self.extra.get("panel") if self.vi in PANEL_VI else None
                 # Agent 台：每帧 poll 运行落账（流式 transcript
                 # 逐行流动），再按需短超时等键
-                face = _FACES.get(self.base) \
-                    if self.vi == AGENT_VI else None
+                face = _FACES.get(self.base) if self.vi == AGENT_VI else None
                 if face is not None:
                     face.poll_run()
                 busy = bool(face is not None and face.run_state)
-                key = self.read_key(
-                    0.25 if (busy or self.composing) else None)
+                key = self.read_key(0.25 if (busy or self.composing) else None)
                 if self.composing:
                     self._compose_key(key)
                     continue
@@ -3493,14 +4047,12 @@ class AgentOS_TUI(object):
                     self.cursor = max(0, self.cursor - 1)
                     self.detail = None
                 elif key == "down":
-                    self.cursor = min(len(self.rows) - 1,
-                                        self.cursor + 1)
+                    self.cursor = min(len(self.rows) - 1, self.cursor + 1)
                     self.detail = None
                 elif key in ("tab", "right"):
                     self.vi = (self.vi + 1) % len(VIEWS)
                     self.load()
-                elif key == "left" and self.vi == FILE_VI \
-                        and panel is not None:
+                elif key == "left" and self.vi == FILE_VI and panel is not None:
                     # 文件面：← 回上一层目录（文件管理器三十年的肌肉记忆）。
                     # 这一面切到上一屏用 Shift-Tab —— 两者都是「往左」，
                     # 但一个动目录树、一个动视图，混用一次就够用户骂一次。
@@ -3511,22 +4063,20 @@ class AgentOS_TUI(object):
                     self.load()
                 elif key == "enter":
                     meta = None
-                    if self.detail is None \
-                            and 0 <= self.cursor < len(self.rows):
+                    if self.detail is None and 0 <= self.cursor < len(self.rows):
                         row = self.rows[self.cursor]
                         meta = row[2] if len(row) > 2 else None
-                    if self.vi == AGENT_VI and meta \
-                            and meta.get("kind") == "tool":
+                    if self.vi == AGENT_VI and meta and meta.get("kind") == "tool":
                         f = _FACES.get(self.base)
                         if f is not None:
                             f.run_tool(meta["name"])
-                    elif self.vi == AGENT_VI and meta \
-                            and meta.get("kind") == "approval":
+                    elif (
+                        self.vi == AGENT_VI and meta and meta.get("kind") == "approval"
+                    ):
                         f = _FACES.get(self.base)
                         if f is not None:
                             f.toggle_auth(meta["action"])
-                    elif self.vi == FILE_VI and panel is not None \
-                            and meta is not None:
+                    elif self.vi == FILE_VI and panel is not None and meta is not None:
                         # 文件面的行带 meta.kind：dir/file 进下一层，
                         # up 回上一层。meta 里没有 path 的行（比如代码行）
                         # 落到 toggle_detail，让用户看全文。
@@ -3547,8 +4097,7 @@ class AgentOS_TUI(object):
                         self.toggle_detail()
                 elif key == "a" and self.vi == AGENT_VI:
                     f = _FACES.get(self.base)
-                    if f is not None \
-                            and 0 <= self.cursor < len(self.rows):
+                    if f is not None and 0 <= self.cursor < len(self.rows):
                         row = self.rows[self.cursor]
                         meta = row[2] if len(row) > 2 else None
                         if meta and meta.get("kind") == "approval":
@@ -3558,8 +4107,7 @@ class AgentOS_TUI(object):
                     # 以前是静默无动作 —— 用户分不清「这面没有输入行」和
                     # 「键盘坏了」，所以这里给一句红字，不装作听见了。
                     if self.vi in INPUT_VI:
-                        panel = self.extra.get("panel") \
-                            if self.vi in PANEL_VI else None
+                        panel = self.extra.get("panel") if self.vi in PANEL_VI else None
                         self.composing = True
                         # 终端/文件两面的输入行接着上次写（上一条命令、
                         # 上一个路径），Agent 台的 composer 从头来。
@@ -3569,7 +4117,9 @@ class AgentOS_TUI(object):
                         # "tools.."，回上层就废了。
                         self.cbuf_sel = bool(panel is not None and panel.buf)
                     else:
-                        self.hint = "这一面没有输入行（i / 只对 Agent 台、终端、文件有效）"
+                        self.hint = (
+                            "这一面没有输入行（i / 只对 Agent 台、终端、文件有效）"
+                        )
                         self.hint_kind = "no"
                 elif key == "c" and self.vi == AGENT_VI:
                     self.composing = True
@@ -3579,8 +4129,7 @@ class AgentOS_TUI(object):
                     f = _FACES.get(self.base)
                     if f is not None:
                         f.abort()
-                elif key in ("1", "2", "3", "4", "5", "6", "7", "8", "9",
-                             "0"):
+                elif key in ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0"):
                     # "0" = 第 10 面，与 web 端同一口径
                     # （index.template.html 的 k==='0'?10:+k）。不能并进
                     # 上面的数字公式：int("0")-1 = -1 在 Python 里是合法
@@ -3597,7 +4146,7 @@ class AgentOS_TUI(object):
                 elif key == "r":
                     self.load()
         finally:
-            sys.stdout.write("\x1b[?25h\x1b[2J\x1b[H")   # 还原光标/清屏
+            sys.stdout.write("\x1b[?25h\x1b[2J\x1b[H")  # 还原光标/清屏
             sys.stdout.flush()
             termios.tcsetattr(fd, termios.TCSADRAIN, old)
         return self.rc
@@ -3615,18 +4164,17 @@ def cmd_tui(args):
                 print("  数据源: %s" % source)
                 for row in rows:
                     print("  %-22s %s" % (str(row[0])[:22], row[1]))
-                face = _FACES.get(base) if name == VIEWS[AGENT_VI] \
-                    else None
+                face = _FACES.get(base) if name == VIEWS[AGENT_VI] else None
                 if face is not None and face.hint:
                     print("  hint: %s" % face.hint)
-            except Exception as e:             # noqa: BLE001
+            except Exception as e:  # noqa: BLE001
                 rc = 1
                 print("  取数失败: %s" % e)
             print()
         return rc
     return AgentOS_TUI(
-        base, color=not getattr(args, "no_color", False),
-        start_vi=AGENT_VI).run()
+        base, color=not getattr(args, "no_color", False), start_vi=AGENT_VI
+    ).run()
 
 
 # ── 入口 ──────────────────────────────────────────────────────────
@@ -3643,12 +4191,12 @@ def _forward_sub_argv(argv, name):
     while i < len(argv):
         a = argv[i]
         if a in ("--url", "--port", "--timeout"):
-            i += 2                     # 这三个吃一个值，跳过值本身
+            i += 2  # 这三个吃一个值，跳过值本身
             continue
         if a.startswith("-"):
             i += 1
             continue
-        return list(argv[i + 1:]) if a == name else None
+        return list(argv[i + 1 :]) if a == name else None
     return None
 
 
@@ -3666,52 +4214,77 @@ def main(argv=None):
     # 端口在子命令解析时被悄悄抹掉、按 8790 去连，报出来的错因还是假的。
     # SUPPRESS 的代价是"没给过的字段不存在"，所以解析完统一补默认值。
     common = argparse.ArgumentParser(add_help=False)
-    common.add_argument("--url", default=argparse.SUPPRESS,
-                        help="服务地址（默认 http://127.0.0.1:%d）"
-                             % DEFAULT_PORT)
-    common.add_argument("--port", type=int, default=argparse.SUPPRESS,
-                        help="服务端口（默认 %d；8787 是 headroom 常驻口，"
-                             "serve 拒抢）" % DEFAULT_PORT)
-    common.add_argument("--timeout", type=float, default=argparse.SUPPRESS,
-                        help="单次执行上限秒（-p 用，默认 %.0f）"
-                             % PRINT_TIMEOUT)
-    common.add_argument("--no-color", dest="no_color", action="store_true",
-                        default=argparse.SUPPRESS,
-                        help="兼容预留：数据命令全量零 ANSI；"
-                             "TUI 交互面的配色可用它关闭")
-    common.add_argument("--output-format", dest="output_format",
-                        choices=("text", "json"),
-                        default=argparse.SUPPRESS,
-                        help="-p 的输出格式（默认 text；json 时 stdout 恰好"
-                             "一行、可 json.loads）")
+    common.add_argument(
+        "--url",
+        default=argparse.SUPPRESS,
+        help="服务地址（默认 http://127.0.0.1:%d）" % DEFAULT_PORT,
+    )
+    common.add_argument(
+        "--port",
+        type=int,
+        default=argparse.SUPPRESS,
+        help="服务端口（默认 %d；8787 是 headroom 常驻口，serve 拒抢）" % DEFAULT_PORT,
+    )
+    common.add_argument(
+        "--timeout",
+        type=float,
+        default=argparse.SUPPRESS,
+        help="单次执行上限秒（-p 用，默认 %.0f）" % PRINT_TIMEOUT,
+    )
+    common.add_argument(
+        "--no-color",
+        dest="no_color",
+        action="store_true",
+        default=argparse.SUPPRESS,
+        help="兼容预留：数据命令全量零 ANSI；TUI 交互面的配色可用它关闭",
+    )
+    common.add_argument(
+        "--output-format",
+        dest="output_format",
+        choices=("text", "json"),
+        default=argparse.SUPPRESS,
+        help="-p 的输出格式（默认 text；json 时 stdout 恰好一行、可 json.loads）",
+    )
 
     p = argparse.ArgumentParser(
-        prog="agentos", parents=[common],
+        prog="agentos",
+        parents=[common],
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="AgentOS 终端 CLI：驾驶舱统一入口。",
         epilog="常用：\n"
-               "  agentos tui                     进交互驾驶舱（TTY 时）\n"
-               "  agentos -p \"跑一下 livecheck\"   headless 一次跑完，"
-               "退出码可接 CI\n"
-              "  agentos health                  判 __health 的 ok:true\n"
-              "  agentos term ls -1 tools        服务端只读跑一条命令\n"
-              "  agentos gh repos                 GitHub 只读面（零远端写）\n"
-              "  agentos agent -p '把 livecheck 跑完'  "
-              "终端 agent：真模型 + 真工具循环\n"
-              "  agentos agent --provider opencode -p '...'  "
-              "# OpenCode zen 端点（需 AGENTOS_LLM_API_KEY）\n"
-              "  agentos sessions / resume       历史与会话恢复\n"
-              "  agentos completion zsh          打印 shell 补全脚本\n")
-    p.add_argument("-V", "--version", action="version",
-                   version="AgentOS %s" % VERSION,
-                   help="打印 CLI 自身版本（不连服务、不依赖服务活着）")
+        "  agentos tui                     进交互驾驶舱（TTY 时）\n"
+        '  agentos -p "跑一下 livecheck"   headless 一次跑完，'
+        "退出码可接 CI\n"
+        "  agentos health                  判 __health 的 ok:true\n"
+        "  agentos term ls -1 tools        服务端只读跑一条命令\n"
+        "  agentos gh repos                 GitHub 只读面（零远端写）\n"
+        "  agentos agent -p '把 livecheck 跑完'  "
+        "终端 agent：真模型 + 真工具循环\n"
+        "  agentos agent --provider opencode -p '...'  "
+        "# OpenCode zen 端点（需 AGENTOS_LLM_API_KEY）\n"
+        "  agentos sessions / resume       历史与会话恢复\n"
+        "  agentos completion zsh          打印 shell 补全脚本\n",
+    )
+    p.add_argument(
+        "-V",
+        "--version",
+        action="version",
+        version="AgentOS %s" % VERSION,
+        help="打印 CLI 自身版本（不连服务、不依赖服务活着）",
+    )
     # nargs="?"：给了值是需求，没给值是空需求（rc=2）。默认 None 表示"没有
     # -p 这一项"，和"-p 是空的"是两件事 —— 混成一个 None 就没法把 -p 与
     # 子命令混用判成用法错。
-    p.add_argument("-p", "--print", dest="request", metavar="需求",
-                   nargs="?", const="", default=None,
-                   help="headless 一次性模式：人话 → allowlist 动作 → "
-                        "流式执行")
+    p.add_argument(
+        "-p",
+        "--print",
+        dest="request",
+        metavar="需求",
+        nargs="?",
+        const="",
+        default=None,
+        help="headless 一次性模式：人话 → allowlist 动作 → 流式执行",
+    )
     sub = p.add_subparsers(dest="cmd", metavar="子命令")
 
     def add(name, help_, fn, **kw):
@@ -3720,36 +4293,41 @@ def main(argv=None):
         return sp
 
     sp = add("serve", "起本地服务：默认 8790、占用顺延，不抢 8787", cmd_serve)
-    sp.add_argument("--watch-tree", action="store_true",
-                    help="轮询真树变动，自动重抽+重构建+热重载")
-    sp.add_argument("--poll", type=float, default=None,
-                    help="真树轮询间隔秒（常驻建议 15）")
+    sp.add_argument(
+        "--watch-tree", action="store_true", help="轮询真树变动，自动重抽+重构建+热重载"
+    )
+    sp.add_argument(
+        "--poll", type=float, default=None, help="真树轮询间隔秒（常驻建议 15）"
+    )
     sp.add_argument("--tree", default=None, help="指定真树路径（自测用）")
-    sp.add_argument("--open", dest="open_browser", action="store_true",
-                    help="起完自动开浏览器")
+    sp.add_argument(
+        "--open", dest="open_browser", action="store_true", help="起完自动开浏览器"
+    )
 
     add("health", "判 __health 的 ok:true（rc=0 才是真健康）", cmd_health)
     add("open", "浏览器打开驾驶舱首页", cmd_open)
-    add("tui", "终端交互主界面（%d 视图走真 8790 数据）" % len(VIEWS),
-        cmd_tui)
+    add("tui", "终端交互主界面（%d 视图走真 8790 数据）" % len(VIEWS), cmd_tui)
     add("resident", "常驻真值门：核 launchd 常驻实例", cmd_resident)
     add("headroom", "headroom 8787 契约门", cmd_headroom)
 
     sp = add("gates", "转发 tools/gates.sh（门链入口）", cmd_gates)
-    sp.add_argument("gates", nargs="*",
-                    help="门名，如 resident_gate headroom_gate")
+    sp.add_argument("gates", nargs="*", help="门名，如 resident_gate headroom_gate")
 
     sp = add("term", "非交互跑一条只读命令（转发 POST /__term）", cmd_term)
-    sp.add_argument("argv", nargs=argparse.REMAINDER,
-                    help="命令与参数，如 ls -1 tools")
+    sp.add_argument("argv", nargs=argparse.REMAINDER, help="命令与参数，如 ls -1 tools")
 
     # gh 单独一个子命令而不是并进 term：term 的本机白名单只有 12 条命令，
     # 没有 gh；而 gh 的只读面在 gh_client 里自己有一道白名单。两套白名单
     # 合成一个只会让「为什么这条被拒」变得答不上来。argv 用 REMAINDER 收，
     # 子功能名（repos/issues/prs/runs/search/repo/whoami/auth）是位置量。
-    sp = add("gh", "GitHub 读写面（读直连；写默认拒绝：--yes+配置+TTY 三闸+审计链）", cmd_gh)
-    sp.add_argument("argv", nargs=argparse.REMAINDER,
-                    help="子功能与参数，如 repos --limit 20 / issues o/r")
+    sp = add(
+        "gh", "GitHub 读写面（读直连；写默认拒绝：--yes+配置+TTY 三闸+审计链）", cmd_gh
+    )
+    sp.add_argument(
+        "argv",
+        nargs=argparse.REMAINDER,
+        help="子功能与参数，如 repos --limit 20 / issues o/r",
+    )
 
     # 转发而不是重声明，理由见 cmd_agent 的 docstring：内核 CLI 是随内核
     # 演进的，这边抄一份解析器，就会出现「内核有这能力而这边报用法错」。
@@ -3757,47 +4335,74 @@ def main(argv=None):
     # 用户拿到的是「转发器」的帮助（只有 --url/--port 这些壳参数），而内核
     # 真正的 -p/--mode/--check 一个都不在上面 —— 看着像没这个能力。关掉壳
     # 帮助后 --help 落进 REMAINDER，由内核自己答，那才是唯一的真源。
-    sp = add("agent", "内置终端 agent：模型+真实工具循环（转发 agent_core）",
-             cmd_agent, add_help=False)
-    sp.add_argument("argv", nargs=argparse.REMAINDER,
-                    help="原样转发给 agent_core：-p '...' / --mode plan / "
-                         "--provider opencode / --root DIR / --max-steps N / "
-                         "--stream / --yes / --check")
+    sp = add(
+        "agent",
+        "内置终端 agent：模型+真实工具循环（转发 agent_core）",
+        cmd_agent,
+        add_help=False,
+    )
+    sp.add_argument(
+        "argv",
+        nargs=argparse.REMAINDER,
+        help="原样转发给 agent_core：-p '...' / --mode plan / "
+        "--provider opencode / --root DIR / --max-steps N / "
+        "--stream / --yes / --check",
+    )
 
-    sp = add("config", "读写 ~/.agentos/config.toml（API key / provider / model）",
-             cmd_config)
-    sp.add_argument("config_cmd", choices=("set", "get", "show"),
-                    help="set 写入 / get 读取 / show 全部")
-    sp.add_argument("key", nargs="?", default="",
-                    help="键名，如 llm.api_key / llm.provider / llm.model")
-    sp.add_argument("value", nargs="?", default="",
-                    help="值（仅 set 需要）")
+    sp = add(
+        "config",
+        "读写 ~/.agentos/config.toml（API key / provider / model）",
+        cmd_config,
+    )
+    sp.add_argument(
+        "config_cmd",
+        choices=("set", "get", "show"),
+        help="set 写入 / get 读取 / show 全部",
+    )
+    sp.add_argument(
+        "key",
+        nargs="?",
+        default="",
+        help="键名，如 llm.api_key / llm.provider / llm.model",
+    )
+    sp.add_argument("value", nargs="?", default="", help="值（仅 set 需要）")
 
     sp = add("completion", "打印 shell 补全脚本", cmd_completion)
     sp.add_argument("shell", choices=("zsh", "bash"), help="目标 shell")
 
-    add("sessions", "列 headless 会话历史（work/agent_sessions/cli-*.jsonl）",
-        cmd_sessions)
+    add(
+        "sessions",
+        "列 headless 会话历史（work/agent_sessions/cli-*.jsonl）",
+        cmd_sessions,
+    )
 
-    sp = add("steer", "老板监督指令：投给一个会话（步骤边界注入，只配送不裁决）",
-             cmd_steer)
-    sp.add_argument("argv", nargs=argparse.REMAINDER,
-                    help="会话id|--last 指令文本")
-    sp = add("watch", "老板监督面：计划/指令/会话尾一屏（默认最近会话）",
-             cmd_watch)
+    sp = add(
+        "steer", "老板监督指令：投给一个会话（步骤边界注入，只配送不裁决）", cmd_steer
+    )
+    sp.add_argument("argv", nargs=argparse.REMAINDER, help="会话id|--last 指令文本")
+    sp = add("watch", "老板监督面：计划/指令/会话尾一屏（默认最近会话）", cmd_watch)
     sp.add_argument("--sid", default="", help="会话 id（缺省取最近 agent-*）")
     sp.add_argument("--once", action="store_true", help="打一份即退")
 
-    sp = add("leader", "仓内指挥官：目标→里程碑→任务DAG→派发→回收→复盘",
-             cmd_leader, add_help=False)
-    sp.add_argument("argv", nargs=argparse.REMAINDER,
-                    help="plan '目标' [--sid S] / approve <sid> / run <sid> "
-                         "[--worker CMD] / retro <sid>（转发 tools/leader.py）")
+    sp = add(
+        "leader",
+        "仓内指挥官：目标→里程碑→任务DAG→派发→回收→复盘",
+        cmd_leader,
+        add_help=False,
+    )
+    sp.add_argument(
+        "argv",
+        nargs=argparse.REMAINDER,
+        help="plan '目标' [--sid S] / approve <sid> / run <sid> "
+        "[--worker CMD] / retro <sid>（转发 tools/leader.py）",
+    )
 
-    sp = add("resume", "回放一次会话（TTY 时回灌 Agent 台再进 TUI）",
-             cmd_resume)
-    sp.add_argument("session", metavar="会话id",
-                    help="cli-YYYYMMDD-HHMMSS-xxxx（agentos sessions 看列表）")
+    sp = add("resume", "回放一次会话（TTY 时回灌 Agent 台再进 TUI）", cmd_resume)
+    sp.add_argument(
+        "session",
+        metavar="会话id",
+        help="cli-YYYYMMDD-HHMMSS-xxxx（agentos sessions 看列表）",
+    )
 
     args = p.parse_args(argv)
     # SUPPRESS 补账：没显式给过的字段压根不存在，这里统一落默认值，
@@ -3812,7 +4417,8 @@ def main(argv=None):
         sys.stderr.write(
             "FAIL: -p/--print 不能和子命令 %s 混用：headless 自己就是一次"
             "完整执行，不是子命令的前缀。\n"
-            "  用法: agentos -p \"跑一下 livecheck\"\n" % args.cmd)
+            '  用法: agentos -p "跑一下 livecheck"\n' % args.cmd
+        )
         return 2
     if args.request is not None:
         return cmd_print(args)

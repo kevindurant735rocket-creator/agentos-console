@@ -325,10 +325,16 @@ def build_steps(nviews):
 class Walk(object):
     """真 PTY 驱动器：起子进程、发字节、收到安静为止。"""
 
-    def __init__(self, cmd, cols, rows, quiet=0.4, hard=40.0):
+    def __init__(self, cmd, cols, rows, quiet=0.4, hard=40.0,
+                 latency=2.5):
         self.cmd = cmd
         self.cols, self.rows = cols, rows
         self.quiet, self.hard = quiet, hard
+        # latency：发键后「屏必须换帧」的显式时延预算。旧逻辑在没等到换帧时
+        # 只等 quiet(0.4s) 就把旧帧当答案 —— 慢重绘的面（切过去要回 8790
+        # 取数）于是全被判红，量具测的是自己的耐心而不是产品。判据没松：
+        # 预算内不换帧仍算坏键，假 CLI 照样红。
+        self.latency = latency
         self.buf = b""
         self.last_raw = ""
         self.exited = False
@@ -388,7 +394,10 @@ class Walk(object):
                 self.exited = True
                 break
             now = time.time()
-            if now - last >= (settle if changed else q):
+            if changed:
+                if now - last >= settle:
+                    break
+            elif now - last >= min(self.latency, self.hard):
                 break
             if now - t0 >= self.hard:
                 break
@@ -416,12 +425,31 @@ class Walk(object):
                 pass
 
 
+def first_frame(w, limit=20.0):
+    """首帧必须解析出「视图 N/M」才算起屏完成，否则继续等。
+
+    为什么不能只靠 quiet：首屏要先回 8790 取数，取数期间 PTY 一个字节都
+    不吐，超过 settle(0.15s) 后 drain 就把**半张**首帧当完成帧返回。半张
+    首帧让 until_change 的比对天然成立，于是后面每一键都在对旧帧 —— 量具
+    自己造出一串假红（实测连环假红：first-frame、digit-1、digit-3、digit-0
+    全红，而真 TUI 没问题）。这里只多等「首屏画完」，判据一个字没松。
+    """
+    t0 = time.time()
+    raw = w.drain()
+    while (footer(lines_of(raw))[0] is None
+           and not w.exited
+           and time.time() - t0 < limit):
+        time.sleep(0.05)
+        raw = w.drain()
+    return raw
+
+
 def run(w):
     keys = []
     views = {}
     all_ok = True
     t0 = time.time()
-    first = w.drain()
+    first = first_frame(w)
     w.last_raw = first
     st0 = St(first, "")
     if st0.vi is None or not st0.nviews:
@@ -517,12 +545,14 @@ def main(argv=None):
     ap.add_argument("--lines", type=int, default=30)
     ap.add_argument("--quiet", type=float, default=0.4,
                     help="多久没有新字节算一屏画完")
+    ap.add_argument("--latency", type=float, default=2.5,
+                    help="发键后等换帧的时延预算秒（超了判这键没生效）")
     ap.add_argument("--hard", type=float, default=40.0,
                     help="单键等待硬上限")
     a = ap.parse_args(argv)
     VIEWS_C = read_views(ENTRY)
 
-    w = Walk(a.cmd, a.cols, a.lines, a.quiet, a.hard)
+    w = Walk(a.cmd, a.cols, a.lines, a.quiet, a.hard, a.latency)
     try:
         w.start()
         res = run(w)

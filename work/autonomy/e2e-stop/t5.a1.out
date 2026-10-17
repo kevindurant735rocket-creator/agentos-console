@@ -1,0 +1,23 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+做了什么（文件级）：
+- `probe-stop/calc.py:1-24` 计算器脚本，支持 `+ - *(/x) /`，除零抛 `ZeroDivisionError`，用法 `calc.py <a> <op> <b>`
+- `probe-stop/test_calc.py` 回归脚本：加减乘除+除零+非法操作共6例
+- `probe-stop/README.md` 用法说明
+
+验证命令真实 rc（不改数字）：
+- `python3 probe-stop/calc.py 2 + 3` → `5` rc=0 PASS
+- `python3 probe-stop/calc.py 5 - 2` → `3` rc=0 PASS
+- `python3 probe-stop/calc.py 4 * 3` → `12` rc=0 PASS
+- `python3 probe-stop/calc.py 8 / 2` → `4` rc=0 PASS
+- `python3 probe-stop/test_calc.py` → 6例全 `PASS` + `OK: all regression cases passed` rc=0 PASS
+- `python3 -m pytest probe-stop/test_calc.py -v` → `No module named pytest` rc=1 FAIL（环境缺pytest，非脚本问题，已用直跑替代验证）
+- `git status --porcelain` → rc=0，`probe-stop/` 为 untracked（`?? probe-stop/`），待提交
+
+还剩什么没做：
+- `probe-stop/` 未 `git add/commit`（本次任务只要求写脚本+运行验证，未要求提交）
+- pytest 未安装，如需 pytest 形态可 `pip install pytest` 后重跑（可选）
+
+结论：自检 rc=0（直跑链），四则运算逐个验证通过。
+
+--- agent_core：6 步，27.8s，工具调用 9 次（其中 0 次未执行：被拒/参数不对）

@@ -1,0 +1,2 @@
+{"argv": ["sh", "-c", "python3 --version && echo PYTHON_OK; echo '---判据模板自检---'; seq 1 25 > /tmp/todo_linecheck.tmp; N=$(wc -l < /tmp/todo_line"], "mode": "full", "sid": "cli-20261016-175313", "ts": 1792144418.083}
+{"argv": ["rm", "work/probeT1/old.txt"], "mode": "full", "sid": "cli-20261016-180233", "ts": 1792144964.636}

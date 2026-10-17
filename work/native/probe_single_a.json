@@ -34,7 +34,7 @@
   "browser_rejected" : "只接回环地址（收到 host=example.com）",
   "browser_rejected_navigations" : 1,
   "browser_rejected_url" : "http://example.com/steal",
-  "browser_rendered_chars" : 225,
+  "browser_rendered_chars" : 455,
   "browser_title" : "",
   "browser_url" : "http://127.0.0.1:8790/",
   "bundle_executable" : "AgentOS",
@@ -54,7 +54,7 @@
   "code_loaded" : 1,
   "code_loads" : 1,
   "code_path" : "agent_desktop.html",
-  "code_probe_file_rows" : 9,
+  "code_probe_file_rows" : 16,
   "code_probe_target" : "agent_desktop.html",
   "code_selected_path" : "agent_desktop.html",
   "code_served_path" : "agent_desktop.html",
@@ -179,11 +179,11 @@
   "native_toolbar_style_unified" : 1,
   "nsapp_is_active" : true,
   "outline_columns" : 1,
-  "outline_root_children" : 16,
-  "outline_rows" : 17,
+  "outline_root_children" : 24,
+  "outline_rows" : 25,
   "outline_selected_rows" : 1,
   "page_active_tab" : "t-over",
-  "page_body_len" : 2578,
+  "page_body_len" : 2579,
   "page_buttons" : 126,
   "page_has_tablist" : 1,
   "page_main_present" : 1,
@@ -219,7 +219,7 @@
   "panel_api" : "LocalAPI:/__fs+/__term",
   "panel_bounds_now" : "{{0, 267}, {296, 516}}",
   "panel_default_visible" : 0,
-  "panel_expand_index" : 3,
+  "panel_expand_index" : 6,
   "panel_expand_skipped_bundles" : [
     ".app",
     ".bundle",
@@ -252,9 +252,9 @@
   "preview_truncated" : false,
   "probe_mode" : 1,
   "probe_multi_instance" : 1,
-  "probe_saved_at" : "2026-10-15T10:46:14Z",
+  "probe_saved_at" : "2026-10-17T14:58:11Z",
   "probe_sequence_complete" : 1,
-  "probe_sibling_instances" : 1,
+  "probe_sibling_instances" : 0,
   "proj_active_flag" : [
     "console"
   ],
@@ -263,7 +263,7 @@
   "proj_ax_header" : "项目与任务空间",
   "proj_ax_row_count" : 2,
   "proj_ax_rows" : [
-    "● AgentOS 驾驶舱\n606 文件 · 产品根：台面、门链、账本都在这里",
+    "● AgentOS 驾驶舱\n1116 文件 · 产品根：台面、门链、账本都在这里",
     "○ future agent\n2000 文件 · 证据与企业门真树：轮次/覆盖数据由它抽取"
   ],
   "proj_ax_rows_named" : 2,
@@ -282,7 +282,7 @@
   ],
   "proj_loaded" : 1,
   "proj_nfiles" : [
-    606,
+    1116,
     2000
   ],
   "proj_roots_absolute" : true,
@@ -342,12 +342,12 @@
   "tree_last_expand_path" : "agents",
   "tree_loads" : 3,
   "tree_names_head" : [
+    ".gitignore",
     "AgentOS.app",
+    "DEPLOY.md",
+    "Dockerfile",
     "README.md",
-    "agent_desktop.html",
-    "agents",
-    "bin",
-    "completions"
+    "agent_desktop.html"
   ],
   "tree_root_ok" : 1,
   "tree_selected_is_dir" : false,

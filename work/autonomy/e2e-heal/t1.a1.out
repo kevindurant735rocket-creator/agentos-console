@@ -1,0 +1,14 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+做了什么（t1）：
+- `README.md:1-5` 读取成功，共 5 行内容，总行数 119（>0，判据通过）
+- 前5行：
+  - L1 `# AgentOS 交付驾驶舱`
+  - L3 项目根：`/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console`（非 git 仓）
+  - L5 `## 终端使用（统一入口 tools/agentos.py，只用标准库）`
+
+验证：`read_file README.md offset=1 limit=5` rc=OK（ok=true, n_lines=119, showing=5）— 证据行：rc=OK / PASS
+
+还剩什么：t2、t3 未派发，等待下游任务。
+
+--- agent_core：3 步，23.2s，工具调用 2 次（其中 0 次未执行：被拒/参数不对）

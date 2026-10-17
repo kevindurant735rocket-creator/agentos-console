@@ -1,6 +1,6 @@
 {
  "tool": "act_gate.py",
- "port": 65476,
+ "port": 51880,
  "gates": [
   {
    "name": "数字反漂移：台面标签的 livecheck 项数 == 引擎 ck 项数（不许各处写死）",
@@ -40,7 +40,7 @@
   {
    "name": "真实执行：rc 由子进程真实退出码裁决",
    "ok": true,
-   "detail": "doc-drift · HTTP rc=0 == 独立复现 rc=0 · dur=0.7s tail=漂移（SKILL/DOCTRINE 全部数字与契约/selftest 实测一致）"
+   "detail": "doc-drift · HTTP rc=0 == 独立复现 rc=0 · dur=1.3s tail=漂移（SKILL/DOCTRINE 全部数字与契约/selftest 实测一致）"
   },
   {
    "name": "判据自证：rc 接线判据能抓住「编造 rc」，且与动作成败无关",
@@ -75,7 +75,7 @@
   {
    "name": "真浏览器：能力晋升面真渲染出能力行（两尺寸，无横向溢出）",
    "ok": true,
-   "detail": "1440 行 36 溢出=False · 375 行 36 溢出=False · 标题=闭环的「晋升」一环 · 共 36 条 · 就绪 0 · 拦截 26 · 快照 10.8s"
+   "detail": "1440 行 36 溢出=False · 375 行 36 溢出=False · 标题=闭环的「晋升」一环 · 共 36 条 · 就绪 0 · 拦截 26 · 快照 15.9s"
   },
   {
    "name": "蒸馏面：/__distill 的双证据数 == 引擎账本直读（不许台面自算）",
@@ -100,7 +100,7 @@
   {
    "name": "流式：动作跑的过程中逐行推，不是跑完才一次性给",
    "ok": true,
-   "detail": "HTTP=200 实收到 4 行内容，终局=['__RC__ 0']，err=[]，前 3 行=['__RUN__ r996d77a30e', '$ bash /Users/zhangfengrui/.codex/global-background/company-delivery/company.sh doc-drift …', 'DOC_DRIFT 实测 部门=14 DoD=122 门=167 kind=35 断言=146（负向=133）livecheck=48 项']"
+   "detail": "HTTP=200 实收到 4 行内容，终局=['__RC__ 0']，err=[]，前 3 行=['__RUN__ r77f90c3228', '$ bash /Users/zhangfengrui/.codex/global-background/company-delivery/company.sh doc-drift …', 'DOC_DRIFT 实测 部门=14 DoD=122 门=167 kind=35 断言=146（负向=133）livecheck=48 项']"
   },
   {
    "name": "决策：推荐动作必须真在 allowlist 里，且都带证据",
@@ -110,7 +110,7 @@
   {
    "name": "真浏览器：建议按钮可聚焦、有可访问名、且真能驱动执行",
    "ok": true,
-   "detail": "建议 2 条，无名 0，可聚焦 2，点后结果区='EGATE | rc=0 | 0.71S | __RUN__ r7ed26e815d | $ bash /Users/zhangfengru'"
+   "detail": "建议 2 条，无名 0，可聚焦 2，点后结果区='EGATE | rc=0 | 1.4S | __RUN__ rd4f59040b1 | $ bash /Users/zhangfengrui'"
   },
   {
    "name": "判据自证：反馈判据 4 条负控都能变红 + 「旧规则误诊」反证",
@@ -120,7 +120,7 @@
   {
    "name": "真浏览器：点一下，aria-live 区真出现 rc（反馈不是画出来的）",
    "ok": true,
-   "detail": "基线='' 禁用态=True 结果区='DOC-DRIFT | rc=0 | 0.79S | __RUN__ rb13e8ef7fe | $ bash /Users/zhangfengrui/.codex/global-background'"
+   "detail": "基线='' 禁用态=True 结果区='DOC-DRIFT | rc=0 | 1.57S | __RUN__ rd05eed2cf5 | $ bash /Users/zhangfengrui/.codex/global-background'"
   }
  ],
  "passed": 24,

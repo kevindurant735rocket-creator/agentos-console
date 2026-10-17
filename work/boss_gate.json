@@ -1,0 +1,61 @@
+{
+  "judgments": [
+    {
+      "detail": "无计划可审：计划 schema 非法：任务 'b1' 的工具 'rm_warehouse' 不在合法全集里",
+      "gate": "B1 坏工具计划拒审（理由指名工具）",
+      "ok": true
+    },
+    {
+      "detail": "无计划可审：计划 schema 非法：计划有环：依赖成环，autonomy 永无可做任务（先解环）",
+      "gate": "B2 环计划拒审（理由含环）",
+      "ok": true
+    },
+    {
+      "detail": "boss 已审批",
+      "gate": "B3 好计划放行（approve + verdict schema 齐）",
+      "ok": true
+    },
+    {
+      "detail": "计划含 1 个 run_cmd 任务，但本机 full_access 未开：先开完全权限或改写只读工具",
+      "gate": "B4 含 run_cmd 无全权拒审（理由指 full_access）",
+      "ok": true
+    },
+    {
+      "detail": "boss 已审批",
+      "gate": "B5 含 run_cmd 有全权放行",
+      "ok": true
+    },
+    {
+      "detail": "remain=['g1', 'g2']",
+      "gate": "B6 monitor 报告形状（done/blocked/remain/steer 齐）",
+      "ok": true
+    },
+    {
+      "detail": "hint=判据没过：收紧判据命令，",
+      "gate": "B7 自救环（blocked 重开 todo + 换路 steer 进箱）",
+      "ok": true
+    },
+    {
+      "detail": "dup=True",
+      "gate": "B8 记忆执行体（memory 提案落账 + 同 sig 去重）",
+      "ok": true
+    },
+    {
+      "detail": "全done收工（盯了1轮）",
+      "gate": "B10 并行监工：全 done 直接收工",
+      "ok": true
+    },
+    {
+      "detail": "执行器停了还有剩['w1']（无进展，不空拉）",
+      "gate": "B11 并行监工：先审后批＋执行器停摆如实报",
+      "ok": true
+    },
+    {
+      "detail": "新增=无",
+      "gate": "B12 零污染（work/ 只多 --out；夹具全清）",
+      "ok": true
+    }
+  ],
+  "n_ok": 11,
+  "n_total": 11
+}

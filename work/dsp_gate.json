@@ -8,9 +8,9 @@
    "detail": "import ok"
   },
   {
-   "gate": "D2 --check 末行逐字 AGENT_CORE OK 140/140",
+   "gate": "D2 --check 末行逐字 AGENT_CORE OK 145/145",
    "ok": true,
-   "detail": "AGENT_CORE OK 140/140"
+   "detail": "AGENT_CORE OK 145/145"
   },
   {
    "gate": "D3 REPL 命令 /plan 锚点恰好一次",
