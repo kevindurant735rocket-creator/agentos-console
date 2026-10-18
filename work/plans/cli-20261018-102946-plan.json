@@ -1,0 +1,90 @@
+{
+ "approved": false,
+ "bind_sha": "86c93cbc9cf7d9adf5761a61ec1d28b958d205267374f64a4eb159d6c7ec3493",
+ "created": 1792290586.915,
+ "goal": "真实任务（GitHub issue tqdm/tqdm#1845）：CallbackIOWrapper(write) 对非字节 memoryview 按元素数记账（counts=[3]），应按流写入返回的字节数记账（counts=[12]）",
+ "tasks": [
+  {
+   "accept": "关键文件已读 + 现状一句话 + rc=0",
+   "depends": [],
+   "evidence": [
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 "
+   ],
+   "id": "t1",
+   "status": "done",
+   "steps_used": 27,
+   "title": "侦察：读关键文件、确认现状",
+   "tools": [
+    "list_dir",
+    "read_file",
+    "search",
+    "gh_search",
+    "gh_repo_view",
+    "gh_file_read"
+   ]
+  },
+  {
+   "accept": "改动落盘 + 验证命令 rc=0（证据行）",
+   "depends": [
+    "t1"
+   ],
+   "evidence": [],
+   "id": "t2",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "动手：按判据改代码",
+   "tools": [
+    "read_file",
+    "search",
+    "write_file",
+    "edit_file",
+    "run_cmd",
+    "git_diff"
+   ]
+  },
+  {
+   "accept": "自检 rc=0 + 回执含真实 rc",
+   "depends": [
+    "t2"
+   ],
+   "evidence": [],
+   "id": "t3",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "收尾：自检 + 回执",
+   "tools": [
+    "run_cmd",
+    "git_diff",
+    "git_status",
+    "git_log"
+   ]
+  }
+ ],
+ "version": 1
+}

@@ -905,18 +905,18 @@
    "tag": "button",
    "label": "打开命令面板（快捷键 Command 加",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
    "tag": "button",
    "label": "R1已收轮 · AC1",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -1157,9 +1157,9 @@
    "tag": "button",
    "label": "编译计划",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#gdir",
@@ -1490,9 +1490,9 @@
    "tag": "button",
    "label": "回到当前项目根",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#wscode",
@@ -1589,9 +1589,9 @@
    "tag": "button",
    "label": "R1已收轮 · AC1",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -1760,9 +1760,9 @@
    "tag": "button",
    "label": "设置",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#cmdk",
@@ -1823,9 +1823,9 @@
    "tag": "button",
    "label": "重读构建指纹",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#setre-proj",

@@ -79,8 +79,21 @@ NAMED_PROVIDERS = {
         # this protocol.」，改 /responses 才 200。所以这里写死协议，
         # 不给调用点猜的机会。
         "protocol": "responses",
+        # 2026-10-17 实测：本端点现在强制要会话头（不带必回 400
+        # MissingSessionID，连 /models 都过不了）。取 uuid4 每次 resolve
+        # 注入一个；同一 Provider 实例生命周期内稳定，够做会话亲和。
+        "session_header": "x-opencode-session",
     },
 }
+
+# 会话中毒词表：opencode 网关有状态路由在 503/断流后，对后续请求
+# 回 400「No tool call found for tool output with call_id …」。命中即
+# rotate_session 换干净 worker。别把 "call_id" 收窄到具体报错文案之外的
+# 形状——网关文案会变，抓稳定词根就够。
+_SESSION_BREAK_RE = re.compile(
+    r"no tool call found|tool output with call_id|missingsessionid",
+    re.I,
+)
 
 # Responses 协议的两个固定参数。为什么不塞进 Provider._body_responses 的
 # 字面量里：两个值都是**实测**出来的，抽成常量才能在自检里一起断言，也
@@ -88,7 +101,10 @@ NAMED_PROVIDERS = {
 #   max_output_tokens 太小 → status=incomplete 且 output 为空（实测 20 即如此）；
 #   4096 足够跑完工具循环；reasoning effort=low 实测把 output 从 659 压到
 #   344，正文仍然完整，工具调用不受影响。
-RESPONSES_MAX_OUTPUT_TOKENS = 4096
+# 2026-10-18 真任务实测纠正：4096 被 reasoning 模型烧穿 —— 步内截断成
+# 中断句的「伪终稿」，任务没做完还自报 ok。上限提到 16384（responses API
+# 上限内），截断本身就是伪终稿的根因，不是模型的错。
+RESPONSES_MAX_OUTPUT_TOKENS = 16384
 RESPONSES_REASONING_EFFORT = "low"
 
 # 默认 User-Agent。为什么不是 urllib 自带的 "Python-urllib/3.x"：
@@ -324,10 +340,14 @@ def resolve_provider(env=None):
                 "AGENTOS_LLM_BASE_URL 直指端点"
                 % (named, " / ".join(sorted(NAMED_PROVIDERS))),
             )
+        _hdr = _bearer_headers(e)
+        sh_hdr = spec.get("session_header")
+        if sh_hdr:
+            _hdr[sh_hdr] = str(uuid.uuid4())
         return {
             "base_url": spec["base_url"].rstrip("/"),
             "model": (e.get("AGENTOS_LLM_MODEL") or spec["model"]).strip(),
-            "headers": _bearer_headers(e),
+            "headers": _hdr,
             # 命名 provider 自己声明的协议优先于 env：opencode 的
             # /chat/completions 实测 400，只能走 responses。
             "protocol": _norm_protocol(
@@ -692,6 +712,19 @@ class Provider(object):
         )
         self.n_calls = 0
 
+    def rotate_session(self):
+        """换一个网关会话 id（原子性：一次调用换一次）。
+
+        为什么需要：opencode 网关按 x-opencode-session 做有状态路由，
+        服务端 503/断流后 worker 会话日志会与客户端净荷脱钩，之后每一发
+        都回 400「No tool call found for tool output with call_id …」——
+        净荷本身是自洽的（我们整条历史全量重发），坏的是服务端会话。
+        实测 2026-10-18 markdown-it-py 真任务两连跪都是这个形状。轮换
+        会话 = 换到干净 worker，按净荷重新校验，是唯一的自救出口。
+        """
+        self.session_id = "agentos-%s" % uuid.uuid4().hex[:16]
+        return self.session_id
+
     # -- 底层 HTTP -----------------------------------------------------
     def _open(self, body, stream):
         # 端点路径按协议分叉：Responses 走 /responses，chat 走
@@ -716,6 +749,13 @@ class Provider(object):
                 continue  # 这三个由 urllib 自己管
             req.add_header(str(k), str(v))
         try:
+            # 直连，不走系统代理：本机 clash 挂着 HTTP(S)_PROXY，模型端点
+            # 的长 TLS 会话经排队代理会被它抖成 SSL EOF（实测 2026-10-18
+            # 十分钟内两次掐断整轮任务）。要经代理挂 AGENTOS_LLM_VIA_PROXY=1。
+            if not (os.environ.get("AGENTOS_LLM_VIA_PROXY") or "").strip():
+                return urllib.request.build_opener(
+                    urllib.request.ProxyHandler({})
+                ).open(req, timeout=CALL_TIMEOUT)
             return urllib.request.urlopen(req, timeout=CALL_TIMEOUT)
         except urllib.error.HTTPError as e:
             raw = b""
@@ -3424,7 +3464,7 @@ def build_system_prompt(ctx):
 
 _TRANSIENT_RE = re.compile(
     r"tls handshake|connection reset|connection refused|i/o timeout|"
-    r"dial tcp|unexpected eof|temporar|timed? ?out|overloaded|"
+    r"unexpected[ _-]?eof|eof occurred|dial tcp|temporar|timed? ?out|overloaded|"
     r"rate.?limit|50[234] ",
     re.I,
 )
@@ -3585,6 +3625,8 @@ def run_agent(
     _ok_sigs = set()
     _fail_tool = ""
     _fail_n = 0
+    _transient_n = 0  # 本轮累计的「端点瞬时错重试」次数
+    _TRANSIENT_MAX = 6  # 上限：网络抖动可以骑，死循环不行
     step = 0
     _total_steps = 0
     while True:
@@ -3683,14 +3725,40 @@ def run_agent(
             if e.kind == "interrupted":
                 raise
             # 有界瞬时重试（蒸馏自 gemini-cli 的 retry 思想）：只认传输层
-            # 瞬时词表、只重试一次、只非流式——流式中途重放文本是假丑。
-            if stream or not _TRANSIENT_RE.search(str(e)) or step > 1:
+            # 瞬时词表、只非流式——流式中途重放文本是假丑。原判据
+            # `step > 1 直接抛` 在真任务里是纸糊的伞：网络抖动专挑长任务
+            # 中段来（实测 2026-10-18 十分钟两掐），一步黑掉二十步的活。
+            # 改为「整轮累计上限 _TRANSIENT_MAX 次、阶梯退避」，红门判据
+            # 不变：坏的连接照样跑不掉，只是不再一击必杀。
+            if (
+                stream
+                or not _TRANSIENT_RE.search(str(e))
+                or _transient_n >= _TRANSIENT_MAX
+            ):
                 raise
+            _transient_n += 1
+            # 会话中毒检测：网关有状态路由脱钩的 400（call_id 对不上）。
+            # 与普通瞬时错同池计时，但先轮换会话再重试——不换 id 就是
+            # 拿同一份坏会话十连跪（实测就是这样跪完 3:36 的）。
+            if _SESSION_BREAK_RE.search(str(e)):
+                provider.rotate_session()
+                if callable(on_event):
+                    on_event(
+                        {
+                            "type": "note",
+                            "text": "网关会话脱钩，轮换会话 id 后重试",
+                        }
+                    )
+            _tw = min(2.0 * (2 ** (_transient_n - 1)), 12.0)
             if callable(on_event):
                 on_event(
-                    {"type": "note", "text": "瞬时错误，重试一次：%s" % str(e)[:80]}
+                    {
+                        "type": "note",
+                        "text": "瞬时错误，%.0fs 后重试（第 %d/%d 次）：%s"
+                        % (_tw, _transient_n, _TRANSIENT_MAX, str(e)[:80]),
+                    }
                 )
-            time.sleep(1.5)
+            time.sleep(_tw)
             comp = provider.chat(
                 messages, tools, stream=stream, on_event=on_event, cancel=cancel
             )
@@ -5323,19 +5391,47 @@ def _history_from_transcript(recs, keep=COMPACT_KEEP):
     return msgs[-keep:] if keep > 0 else msgs
 
 
+def _safe_cut(rest, start):
+    """把切往前挪到「工具配对不破」的边界，返回修正后的 start。
+
+    为什么必须有：把 start 直接钉在 keep 上，切点会落在 assistant
+    (tool_calls) 与其 **tool 结果**的中间 —— 开头第一条是孤 tool 消息，
+    下一次请求直接被网关 400（实测 2026-10-18：markdown-it-py 真任务
+    2:36 后报 "No tool call found for tool output with call_id …"，一步
+    黑掉整轮）。修法不是改阈值，是不许切进配对里：切点之前如果还挂着
+    assistant(tools_calls)，它的 tool 结果也一起带走。
+    """
+    n = len(rest)
+    start = max(0, min(start, n))
+    while start < n and rest[start].get("role") == "tool":
+        start -= 1
+    start = max(0, start)
+    # 切点左边是带 tool_calls 的 assistant：其 tool 结果在切点之后 → 破配对
+    if (
+        start > 0
+        and (rest[start - 1].get("tool_calls") or rest[start - 1].get("tool"))
+    ):
+        # 把 assistant 一起留下（连同它前面更早的同环成员，放心往前扫）
+        while start > 0 and rest[start - 1].get("role") == "tool":
+            start -= 1
+        start -= 1
+    return start
+
+
 def _compact_history(history, keep=COMPACT_KEEP):
     """保留 system + 最近 keep 条，返回 (新历史, 丢掉条数)。
 
     为什么单独成函数：`/compact` 与 run_agent 的自动裁剪必须同一套口径，
     否则「手动压过」和「自动压过」保留的东西不一样，用户看到的上下文
-    和实际喂给模型的对不上。
+    和实际喂给模型的对不上。切点走 _safe_cut：宁可多留一条，不留孤儿。
     """
     if not isinstance(history, list):
         return [], 0
     head = [history[0]] if (history and history[0].get("role") == "system") else []
     rest = history[1:] if head else list(history)
-    dropped = max(0, len(rest) - keep)
-    return head + (rest[-keep:] if keep > 0 else rest), dropped
+    st = _safe_cut(rest, len(rest) - keep)
+    dropped = st  # 从头上切掉的就是 st 条（切点只会往前挪，不会往后）
+    return head + (rest[st:] if keep > 0 else rest), dropped
 
 
 DIGEST_PREFIX = "【上下文摘要·自动压缩】"
@@ -7112,13 +7208,24 @@ def _selftest_body(case, jc, tmp):
     # 为什么钉进判据：--provider 是新加的入口，内置表写错（url/模型名）
     # 或未知名不报错（fail-open 到 codex 配置），都是用户当场撞上的事。
     try:
-        spec = resolve_provider({"AGENTOS_PROVIDER": "opencode"})
+        # 注意：模型断言必须钉**端点表内的默认值**而不是「config 当前值」。
+        # resolve 会把 ~/.agentos/config.toml 的 llm.model 当覆写注入 env
+        # （这是切模型的正路），用户换模型的瞬间不该把这条例自检踢红。
+        _tmodel = NAMED_PROVIDERS["opencode"]["model"]
+        spec = resolve_provider(
+            {
+                "AGENTOS_PROVIDER": "opencode",
+                "AGENTOS_LLM_MODEL": _tmodel,
+            }
+        )
         ok_named = (
             spec.get("base_url") == "https://opencode.ai/zen/go/v1"
             and spec.get("model") == "muse-spark-1.3-contributor"
             # opencode 的 /chat/completions 实测 400，协议必须跟着
             # 端点表走；这条断言红 = 有人在表里删了 protocol。
             and spec.get("protocol") == "responses"
+            # 2026-10-17 起该端点强制会话头，不带必回 400 MissingSessionID。
+            and bool(spec.get("headers", {}).get("x-opencode-session"))
         )
         try:
             resolve_provider({"AGENTOS_PROVIDER": "no-such-provider"})

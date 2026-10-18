@@ -1,6 +1,6 @@
 {
   "checks": 194,
-  "elapsed": 150.1,
+  "elapsed": 140.8,
   "gate": "native_gate",
   "live_sha_before": {
     "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/data.json": "6fdf2493fd741696cf67fa5b9b37554ab619d35494b470f0f282710f312feb8b",
@@ -72,7 +72,7 @@
     },
     {
       "check": "ax-target-is-under-test",
-      "detail": "target_pid=95562 sampled_pid=95562",
+      "detail": "target_pid=14153 sampled_pid=14153",
       "ok": true
     },
     {
@@ -87,7 +87,7 @@
     },
     {
       "check": "ax-content-tree",
-      "detail": "nodes=19 非菜单=19(≥8) 网页内容区=1(≥1) 文本=7(≥5) 环=0 菜单节点=0",
+      "detail": "nodes=20 非菜单=20(≥8) 网页内容区=1(≥1) 文本=7(≥5) 环=0 菜单节点=0",
       "ok": true
     },
     {
@@ -247,7 +247,7 @@
     },
     {
       "check": "page-body-text",
-      "detail": "2408",
+      "detail": "2409",
       "ok": true
     },
     {
@@ -322,37 +322,37 @@
     },
     {
       "check": "shot-over-captured",
-      "detail": "ok 561474 bytes 2446x1564",
+      "detail": "ok 564122 bytes 2442x1564",
       "ok": true
     },
     {
       "check": "shot-over-bytes",
-      "detail": "561474",
+      "detail": "564122",
       "ok": true
     },
     {
       "check": "shot-over-dim",
-      "detail": "(2446, 1564)",
+      "detail": "(2442, 1564)",
       "ok": true
     },
     {
       "check": "shot-over-distinct-colors",
-      "detail": "582",
+      "detail": "609",
       "ok": true
     },
     {
       "check": "shot-over-ink-ratio",
-      "detail": "0.9980025231286795",
+      "detail": "0.9974261335589873",
       "ok": true
     },
     {
       "check": "shot-mx-captured",
-      "detail": "ok 503954 bytes 2442x1564",
+      "detail": "ok 500861 bytes 2442x1564",
       "ok": true
     },
     {
       "check": "shot-mx-bytes",
-      "detail": "503954",
+      "detail": "500861",
       "ok": true
     },
     {
@@ -362,7 +362,7 @@
     },
     {
       "check": "shot-mx-distinct-colors",
-      "detail": "528",
+      "detail": "522",
       "ok": true
     },
     {
@@ -372,12 +372,12 @@
     },
     {
       "check": "shot-cmdk-captured",
-      "detail": "ok 463807 bytes 2442x1564",
+      "detail": "ok 464308 bytes 2442x1564",
       "ok": true
     },
     {
       "check": "shot-cmdk-bytes",
-      "detail": "463807",
+      "detail": "464308",
       "ok": true
     },
     {
@@ -387,7 +387,7 @@
     },
     {
       "check": "shot-cmdk-distinct-colors",
-      "detail": "385",
+      "detail": "386",
       "ok": true
     },
     {
@@ -397,12 +397,12 @@
     },
     {
       "check": "shot-back-captured",
-      "detail": "ok 564272 bytes 2442x1564",
+      "detail": "ok 564122 bytes 2442x1564",
       "ok": true
     },
     {
       "check": "shot-back-bytes",
-      "detail": "564272",
+      "detail": "564122",
       "ok": true
     },
     {
@@ -422,12 +422,12 @@
     },
     {
       "check": "shot-final-captured",
-      "detail": "ok 458285 bytes 2442x1564",
+      "detail": "ok 458577 bytes 2442x1564",
       "ok": true
     },
     {
       "check": "shot-final-bytes",
-      "detail": "458285",
+      "detail": "458577",
       "ok": true
     },
     {
@@ -437,7 +437,7 @@
     },
     {
       "check": "shot-final-distinct-colors",
-      "detail": "455",
+      "detail": "454",
       "ok": true
     },
     {
@@ -447,7 +447,7 @@
     },
     {
       "check": "shot-hashes-distinct",
-      "detail": "5 unique of 5",
+      "detail": "4 unique of 5",
       "ok": true
     },
     {
@@ -567,7 +567,7 @@
     },
     {
       "check": "panel-shot-bytes",
-      "detail": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/shot-panel-cachedefault.png bytes=102302",
+      "detail": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/shot-panel-cachedefault.png bytes=101851",
       "ok": true
     },
     {
@@ -672,7 +672,7 @@
     },
     {
       "check": "panel-browser-rendered-chars",
-      "detail": "455",
+      "detail": "225",
       "ok": true
     },
     {
@@ -762,7 +762,7 @@
     },
     {
       "check": "projects-file-counts",
-      "detail": "[1110, 2000]",
+      "detail": "[1084, 2000]",
       "ok": true
     },
     {
@@ -902,7 +902,7 @@
     },
     {
       "check": "degraded-service-pid",
-      "detail": "95929",
+      "detail": "14341",
       "ok": true
     },
     {
@@ -927,7 +927,7 @@
     },
     {
       "check": "single-instance-a-in-process-table",
-      "detail": "A=95943 in [95943]",
+      "detail": "A=14356 in [14356]",
       "ok": true
     },
     {
@@ -937,12 +937,12 @@
     },
     {
       "check": "single-instance-second-activated-existing",
-      "detail": "[agentos] 已有实例 95943 在运行，已激活并退出",
+      "detail": "[agentos] 已有实例 14356 在运行，已激活并退出",
       "ok": true
     },
     {
       "check": "single-instance-second-exited-fast",
-      "detail": "0.3 (sequence needs ~36s)",
+      "detail": "0.4 (sequence needs ~36s)",
       "ok": true
     },
     {

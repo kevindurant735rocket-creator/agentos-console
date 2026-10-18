@@ -1,5 +1,5 @@
 {
- "ok": true,
+ "ok": false,
  "checks": [
   {
    "name": "launchd-job-loaded",
@@ -63,8 +63,8 @@
   },
   {
    "name": "resident-route/__projects",
-   "ok": true,
-   "detail": "HTTP=200 {\"ok\": true, \"n_projects\": 2, \"active\": \"console\","
+   "ok": false,
+   "detail": "HTTP=0 timed out"
   },
   {
    "name": "resident-route/__act/recommend",

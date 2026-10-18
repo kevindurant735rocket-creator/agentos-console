@@ -34,7 +34,7 @@
   "browser_rejected" : "只接回环地址（收到 host=example.com）",
   "browser_rejected_navigations" : 1,
   "browser_rejected_url" : "http://example.com/steal",
-  "browser_rendered_chars" : 455,
+  "browser_rendered_chars" : 225,
   "browser_title" : "",
   "browser_url" : "http://127.0.0.1:8790/",
   "bundle_executable" : "AgentOS",
@@ -183,8 +183,8 @@
   "outline_rows" : 25,
   "outline_selected_rows" : 1,
   "page_active_tab" : "t-over",
-  "page_body_len" : 2579,
-  "page_buttons" : 126,
+  "page_body_len" : 2409,
+  "page_buttons" : 118,
   "page_has_tablist" : 1,
   "page_main_present" : 1,
   "page_state_box" : "",
@@ -252,7 +252,7 @@
   "preview_truncated" : false,
   "probe_mode" : 1,
   "probe_multi_instance" : 1,
-  "probe_saved_at" : "2026-10-17T14:58:11Z",
+  "probe_saved_at" : "2026-10-17T16:19:36Z",
   "probe_sequence_complete" : 1,
   "probe_sibling_instances" : 0,
   "proj_active_flag" : [
@@ -263,7 +263,7 @@
   "proj_ax_header" : "项目与任务空间",
   "proj_ax_row_count" : 2,
   "proj_ax_rows" : [
-    "● AgentOS 驾驶舱\n1116 文件 · 产品根：台面、门链、账本都在这里",
+    "● AgentOS 驾驶舱\n1090 文件 · 产品根：台面、门链、账本都在这里",
     "○ future agent\n2000 文件 · 证据与企业门真树：轮次/覆盖数据由它抽取"
   ],
   "proj_ax_rows_named" : 2,
@@ -282,7 +282,7 @@
   ],
   "proj_loaded" : 1,
   "proj_nfiles" : [
-    1116,
+    1090,
     2000
   ],
   "proj_roots_absolute" : true,

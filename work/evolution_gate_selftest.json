@@ -77,5 +77,5 @@
    "detail": "隔离目录=['capability_gate.json', 'evolution_gate.json']"
   }
  ],
- "port": 56907
+ "port": 59600
 }

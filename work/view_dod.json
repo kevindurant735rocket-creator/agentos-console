@@ -1,7 +1,7 @@
 {
  "tool": "view_dod.py",
  "method": "playwright-cdp-real-viewport",
- "url": "http://127.0.0.1:64688/index.html",
+ "url": "http://127.0.0.1:53143/index.html",
  "transport": "real-http",
  "served_root": "live",
  "views": [
@@ -37,7 +37,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 85165,
+   "png_bytes": 85385,
    "viewport_faked": false,
    "overflow": false
   },
@@ -53,7 +53,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 78566,
+   "png_bytes": 78794,
    "viewport_faked": false,
    "overflow": false
   },
@@ -69,7 +69,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 81615,
+   "png_bytes": 81850,
    "viewport_faked": false,
    "overflow": false
   },
@@ -85,7 +85,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 78687,
+   "png_bytes": 78913,
    "viewport_faked": false,
    "overflow": false
   },
@@ -101,7 +101,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 84406,
+   "png_bytes": 84623,
    "viewport_faked": false,
    "overflow": false
   },
@@ -117,7 +117,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 80846,
+   "png_bytes": 81065,
    "viewport_faked": false,
    "overflow": false
   },
@@ -133,7 +133,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 84778,
+   "png_bytes": 84999,
    "viewport_faked": false,
    "overflow": false
   },
@@ -149,7 +149,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 87318,
+   "png_bytes": 87538,
    "viewport_faked": false,
    "overflow": false
   },
@@ -165,7 +165,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 83358,
+   "png_bytes": 83582,
    "viewport_faked": false,
    "overflow": false
   },
@@ -175,13 +175,13 @@
    "docClientW": 375,
    "visible": true,
    "nodes": 150,
-   "textLen": 758,
+   "textLen": 759,
    "tabsSelected": [
     "ws"
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 78020,
+   "png_bytes": 78257,
    "viewport_faked": false,
    "overflow": false
   },
@@ -197,7 +197,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 79065,
+   "png_bytes": 79283,
    "viewport_faked": false,
    "overflow": false
   },
@@ -207,13 +207,13 @@
    "docClientW": 375,
    "visible": true,
    "nodes": 126,
-   "textLen": 693,
+   "textLen": 721,
    "tabsSelected": [
     "file"
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 78344,
+   "png_bytes": 78570,
    "viewport_faked": false,
    "overflow": false
   },
@@ -229,7 +229,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 78605,
+   "png_bytes": 78834,
    "viewport_faked": false,
    "overflow": false
   },
@@ -245,7 +245,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 138289,
+   "png_bytes": 138518,
    "viewport_faked": false,
    "overflow": false
   },
@@ -261,7 +261,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 124712,
+   "png_bytes": 124936,
    "viewport_faked": false,
    "overflow": false
   },
@@ -277,7 +277,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 124237,
+   "png_bytes": 124469,
    "viewport_faked": false,
    "overflow": false
   },
@@ -293,7 +293,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 126361,
+   "png_bytes": 126590,
    "viewport_faked": false,
    "overflow": false
   },
@@ -303,13 +303,13 @@
    "docClientW": 768,
    "visible": true,
    "nodes": 303,
-   "textLen": 4948,
+   "textLen": 4946,
    "tabsSelected": [
     "eng"
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 131287,
+   "png_bytes": 131503,
    "viewport_faked": false,
    "overflow": false
   },
@@ -325,7 +325,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 125029,
+   "png_bytes": 125252,
    "viewport_faked": false,
    "overflow": false
   },
@@ -341,7 +341,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 126092,
+   "png_bytes": 126322,
    "viewport_faked": false,
    "overflow": false
   },
@@ -357,7 +357,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 133974,
+   "png_bytes": 134199,
    "viewport_faked": false,
    "overflow": false
   },
@@ -373,7 +373,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 126381,
+   "png_bytes": 126612,
    "viewport_faked": false,
    "overflow": false
   },
@@ -383,13 +383,13 @@
    "docClientW": 768,
    "visible": true,
    "nodes": 150,
-   "textLen": 758,
+   "textLen": 759,
    "tabsSelected": [
     "ws"
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 113812,
+   "png_bytes": 113974,
    "viewport_faked": false,
    "overflow": false
   },
@@ -405,7 +405,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 115156,
+   "png_bytes": 115380,
    "viewport_faked": false,
    "overflow": false
   },
@@ -415,13 +415,13 @@
    "docClientW": 768,
    "visible": true,
    "nodes": 126,
-   "textLen": 693,
+   "textLen": 721,
    "tabsSelected": [
     "file"
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 114218,
+   "png_bytes": 114396,
    "viewport_faked": false,
    "overflow": false
   },
@@ -437,7 +437,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 119589,
+   "png_bytes": 119663,
    "viewport_faked": false,
    "overflow": false
   },
@@ -453,7 +453,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 266408,
+   "png_bytes": 266492,
    "viewport_faked": false,
    "overflow": false
   },
@@ -469,7 +469,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 166591,
+   "png_bytes": 166628,
    "viewport_faked": false,
    "overflow": false
   },
@@ -485,7 +485,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 239334,
+   "png_bytes": 239412,
    "viewport_faked": false,
    "overflow": false
   },
@@ -501,7 +501,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 235483,
+   "png_bytes": 235538,
    "viewport_faked": false,
    "overflow": false
   },
@@ -517,7 +517,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 270548,
+   "png_bytes": 270643,
    "viewport_faked": false,
    "overflow": false
   },
@@ -533,7 +533,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 243185,
+   "png_bytes": 243189,
    "viewport_faked": false,
    "overflow": false
   },
@@ -549,7 +549,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 256588,
+   "png_bytes": 256614,
    "viewport_faked": false,
    "overflow": false
   },
@@ -565,7 +565,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 281406,
+   "png_bytes": 281397,
    "viewport_faked": false,
    "overflow": false
   },
@@ -581,7 +581,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 260147,
+   "png_bytes": 260197,
    "viewport_faked": false,
    "overflow": false
   },
@@ -591,13 +591,13 @@
    "docClientW": 1440,
    "visible": true,
    "nodes": 150,
-   "textLen": 758,
+   "textLen": 759,
    "tabsSelected": [
     "ws"
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 210603,
+   "png_bytes": 210561,
    "viewport_faked": false,
    "overflow": false
   },
@@ -607,13 +607,13 @@
    "docClientW": 1440,
    "visible": true,
    "nodes": 17,
-   "textLen": 2681,
+   "textLen": 2687,
    "tabsSelected": [
     "term"
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 198918,
+   "png_bytes": 199006,
    "viewport_faked": false,
    "overflow": false
   },
@@ -623,13 +623,13 @@
    "docClientW": 1440,
    "visible": true,
    "nodes": 126,
-   "textLen": 693,
+   "textLen": 721,
    "tabsSelected": [
     "file"
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 191541,
+   "png_bytes": 194390,
    "viewport_faked": false,
    "overflow": false
   },
@@ -645,7 +645,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 219321,
+   "png_bytes": 219113,
    "viewport_faked": false,
    "overflow": false
   }

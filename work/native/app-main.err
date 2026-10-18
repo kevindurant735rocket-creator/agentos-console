@@ -1,9 +1,9 @@
-[probe 2026-10-17T14:56:10Z] probe: step 0 begin
-[probe 2026-10-17T14:56:11Z] probe: step 1 begin
-[probe 2026-10-17T14:56:14Z] probe: step 2 begin
-[probe 2026-10-17T14:56:16Z] probe: step 3 begin
-[probe 2026-10-17T14:56:18Z] probe: step 4 begin
-[probe 2026-10-17T14:56:20Z] probe: step 5 begin
-[probe 2026-10-17T14:56:30Z] probe: step 6 begin
-[probe 2026-10-17T14:56:46Z] probe: sequence drained -> final shot + flush
-[probe 2026-10-17T14:56:47Z] probe: evidence flushed, holding 120.0s for external AX series
+[probe 2026-10-17T16:17:34Z] probe: step 0 begin
+[probe 2026-10-17T16:17:36Z] probe: step 1 begin
+[probe 2026-10-17T16:17:38Z] probe: step 2 begin
+[probe 2026-10-17T16:17:41Z] probe: step 3 begin
+[probe 2026-10-17T16:17:42Z] probe: step 4 begin
+[probe 2026-10-17T16:17:45Z] probe: step 5 begin
+[probe 2026-10-17T16:17:55Z] probe: step 6 begin
+[probe 2026-10-17T16:18:10Z] probe: sequence drained -> final shot + flush
+[probe 2026-10-17T16:18:11Z] probe: evidence flushed, holding 120.0s for external AX series
