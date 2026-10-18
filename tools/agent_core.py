@@ -239,6 +239,25 @@ def _toml_kv(k, v):
     raise ValueError("不支持的类型：%s=%r" % (k, v))
 
 
+def _key_hint(code, raw):
+    """认证/额度类 HTTP 错误的「下一步怎么办」提示。
+
+    为什么不进 _TRANSIENT_RE 也不自愈：401/403 用户必须自己去发新 key，
+    机器无权替他造凭证。能做的是把求医三件套（现象、病灶、药方）一句话
+    说全——实测 2026-10-18「无法正常使用」半天，就是因为裸 401 不带指引。
+    """
+    if int(code) not in (401, 402, 403):
+        return ""
+    if re.search(
+        r"api[_ ]?key|auth\b|expires|unauthorized", raw, re.I
+    ):
+        return (
+            "\n  → API key 缺失/失效：`agentos config set llm.api_key <新key>`"
+            "（或 AGENTOS_LLM_API_KEY）后重试"
+        )
+    return "\n  → 端点拒绝本请求：检查 key 权限/额度（agentos config get llm）"
+
+
 def _bearer_headers(e):
     """AGENTOS_LLM_HEADERS（JSON 对象）+ AGENTOS_LLM_API_KEY → 请求头。
 
@@ -340,10 +359,12 @@ def resolve_provider(env=None):
                 "AGENTOS_LLM_BASE_URL 直指端点"
                 % (named, " / ".join(sorted(NAMED_PROVIDERS))),
             )
+        # 注意：这里**不**注入会话头值。会话 id 必须只归 Provider 一个来源
+        # （self.session_id），否则 rotate_session() 换了 id 但真正发出的
+        # 头还是 resolve 时钉死的旧 uuid —— 实测 2026-10-18 attrs 真任务
+        # 6:25 里自愈全弹在同一个旧会话上，等于没换。表里的 session_header
+        # 字段只作声明/自检用。
         _hdr = _bearer_headers(e)
-        sh_hdr = spec.get("session_header")
-        if sh_hdr:
-            _hdr[sh_hdr] = str(uuid.uuid4())
         return {
             "base_url": spec["base_url"].rstrip("/"),
             "model": (e.get("AGENTOS_LLM_MODEL") or spec["model"]).strip(),
@@ -711,6 +732,11 @@ class Provider(object):
             cfg.get("session_id") or ("agentos-%s" % uuid.uuid4().hex[:16])
         )
         self.n_calls = 0
+        # 传输层双出口状态：direct（默认，不走系统代理）与 via-proxy（clash
+        # 稳定 mixed 口）。SSL EOF 连续 2 次自动降路到 proxy —— 同主端点同
+        # 净荷，只换出口，不是模型/端点降级。
+        self._proxy_mode = False
+        self._ssl_fail_n = 0
 
     def rotate_session(self):
         """换一个网关会话 id（原子性：一次调用换一次）。
@@ -724,6 +750,28 @@ class Provider(object):
         """
         self.session_id = "agentos-%s" % uuid.uuid4().hex[:16]
         return self.session_id
+
+    def _send(self, req, timeout):
+        """发请求（双出口择路）。
+
+        direct 连续 2 次 SSL EOF → 全面降路 via-proxy；成功即清计数。经
+        proxy 后仍 EOF 不回荡（proxy 是最后一条路），如实抛给上层重试。
+        """
+        if (os.environ.get("AGENTOS_LLM_VIA_PROXY") or "").strip():
+            return urllib.request.urlopen(req, timeout=timeout)
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        try:
+            resp = opener.open(req, timeout=timeout)
+            self._ssl_fail_n = 0
+            return resp
+        except urllib.error.URLError as _ue:
+            _why = str(getattr(_ue, "reason", _ue))
+            if "SSL" in _why and "EOF" in _why and self._proxy_mode is False:
+                # 第一次 TLS 抖就换路：链路断窗里赌第二次=必然死（实测）。
+                self._ssl_fail_n += 1
+                self._proxy_mode = True
+                return urllib.request.urlopen(req, timeout=timeout)
+            raise
 
     # -- 底层 HTTP -----------------------------------------------------
     def _open(self, body, stream):
@@ -749,14 +797,7 @@ class Provider(object):
                 continue  # 这三个由 urllib 自己管
             req.add_header(str(k), str(v))
         try:
-            # 直连，不走系统代理：本机 clash 挂着 HTTP(S)_PROXY，模型端点
-            # 的长 TLS 会话经排队代理会被它抖成 SSL EOF（实测 2026-10-18
-            # 十分钟内两次掐断整轮任务）。要经代理挂 AGENTOS_LLM_VIA_PROXY=1。
-            if not (os.environ.get("AGENTOS_LLM_VIA_PROXY") or "").strip():
-                return urllib.request.build_opener(
-                    urllib.request.ProxyHandler({})
-                ).open(req, timeout=CALL_TIMEOUT)
-            return urllib.request.urlopen(req, timeout=CALL_TIMEOUT)
+            return self._send(req, CALL_TIMEOUT)
         except urllib.error.HTTPError as e:
             raw = b""
             try:
@@ -765,7 +806,12 @@ class Provider(object):
                 pass
             raise AgentError(
                 "provider",
-                "模型端点 HTTP %s：%s" % (e.code, raw.decode("utf-8", "replace")[:300]),
+                "模型端点 HTTP %s：%s%s"
+                % (
+                    e.code,
+                    raw.decode("utf-8", "replace")[:300],
+                    _key_hint(e.code, raw.decode("utf-8", "replace")),
+                ),
             )
         except urllib.error.URLError as e:
             raise AgentError(
@@ -3741,6 +3787,25 @@ def run_agent(
             # 与普通瞬时错同池计时，但先轮换会话再重试——不换 id 就是
             # 拿同一份坏会话十连跪（实测就是这样跪完 3:36 的）。
             if _SESSION_BREAK_RE.search(str(e)):
+                # 先留证再自救：把 400 当下的完整净荷 dump 到盘上。
+                # 黑盒 reroll 治标不治本（实测两连跪），先看历史到底哪里破的。
+                try:
+                    _tr = os.path.join(
+                        os.path.dirname(
+                            os.path.dirname(os.path.abspath(__file__))
+                        ),
+                        "work",
+                        "llm_400_trace.json",
+                    )
+                    with open(_tr, "w", encoding="utf-8") as _tf:
+                        json.dump(
+                            {"error": str(e)[:500], "messages": messages},
+                            _tf,
+                            ensure_ascii=False,
+                            indent=1,
+                        )
+                except Exception:  # noqa: BLE001  留证失败不挡自救
+                    pass
                 provider.rotate_session()
                 if callable(on_event):
                     on_event(
@@ -7224,8 +7289,9 @@ def _selftest_body(case, jc, tmp):
             # opencode 的 /chat/completions 实测 400，协议必须跟着
             # 端点表走；这条断言红 = 有人在表里删了 protocol。
             and spec.get("protocol") == "responses"
-            # 2026-10-17 起该端点强制会话头，不带必回 400 MissingSessionID。
-            and bool(spec.get("headers", {}).get("x-opencode-session"))
+            # 2026-10-17 起该端点强制会话头；值由 Provider 持有并在
+            # rotate_session 时原子轮换 —— resolve 层带值会让轮换失效。
+            and spec.get("headers", {}).get("x-opencode-session") is None
         )
         try:
             resolve_provider({"AGENTOS_PROVIDER": "no-such-provider"})

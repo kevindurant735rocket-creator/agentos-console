@@ -1,4 +1,5 @@
-[回退] 主端点失败（模型端点 HTTP 403：{"error": "blocked"}），改用本机离线后端 fb-model
+[回退] 主端点失败（模型端点 HTTP 403：{"error": "blocked"}
+  → 端点拒绝本请求：检查 key 权限/额度（agentos config get llm）），改用本机离线后端 fb-model
 [主端点重试] 第 1 次失败（模型端点 HTTP 500：{"error": "boom1"}），1s 后重试主端点（no_fallback：不换本地，Esc 可停）
 [主端点重试] 第 2 次失败（模型端点 HTTP 500：{"error": "boom2"}），2s 后重试主端点（no_fallback：不换本地，Esc 可停）
 [主端点重试] 第 1 次失败（模型端点 HTTP 500：{"error": "down"}），1s 后重试主端点（no_fallback：不换本地，Esc 可停）
@@ -20,8 +21,8 @@
 
 [K
 [K
-[K已还原 /Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/_st_agent_core.14443/undo-probe.txt（自快照 1792253997760__undo-probe.txt）
-已删除 /Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/_st_agent_core.14443/undo-probe.txt（快照时点该文件尚不存在）
+[K已还原 /Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/_st_agent_core.4208/undo-probe.txt（自快照 1792294458904__undo-probe.txt）
+已删除 /Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/_st_agent_core.4208/undo-probe.txt（快照时点该文件尚不存在）
 （没有可撤销的写文件快照）
 目标：给自主引擎做个小目标夹具
 bind=041e26e0b684 approved=no
@@ -36,4 +37,4 @@ bind=041e26e0b684 approved=no
 [todo] t5：收尾：全链自检 + 回执
     判据=自检 rc=0 + 回执含真实 rc · 工具=run_cmd,git_diff,git_status,read_file · 依赖=t3,t4
 下一步：检查每项判据（可给任务补 verify 命令组，引擎会真跑），/approve 审批后 /goal run 全流程无人干预跑到收口。
-autonomy 拒：计划未审批（ck_goal_14443）—— 先 approve
+autonomy 拒：计划未审批（ck_goal_4208）—— 先 approve

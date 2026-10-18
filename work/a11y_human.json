@@ -57,7 +57,7 @@
   {
    "sel": "#v-over",
    "tag": "section",
-   "label": "证据已 16 天前未复跑\n       ",
+   "label": "证据已 17 天前未复跑\n       ",
    "why": [
     "outline solid 2px"
    ],
@@ -77,9 +77,9 @@
    "tag": "button",
    "label": "打开命令面板（快捷键 Command 加",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -140,9 +140,9 @@
    "tag": "button",
    "label": "打开命令面板（快捷键 Command 加",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -194,9 +194,9 @@
    "tag": "button",
    "label": "phase1-p01-benchmark",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "main.mn > section.vw.on > div.mx > button.cell",
@@ -1157,9 +1157,9 @@
    "tag": "button",
    "label": "编译计划",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "#gdir",
@@ -1436,18 +1436,18 @@
    "tag": "button",
    "label": "打开命令面板（快捷键 Command 加",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
    "tag": "button",
    "label": "R1已收轮 · AC1",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -1679,9 +1679,9 @@
    "tag": "button",
    "label": "文件",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "#cmdk",
@@ -1875,7 +1875,7 @@
    "ok": true
   },
   {
-   "t": "证据 陈旧 · 16 天前",
+   "t": "证据 陈旧 · 17 天前",
    "cr": 6.82,
    "need": 4.5,
    "ok": true
@@ -2205,7 +2205,7 @@
    "ok": true
   },
   {
-   "t": "证据已 16 天前未复跑",
+   "t": "证据已 17 天前未复跑",
    "cr": 4.84,
    "need": 4.5,
    "ok": true
@@ -2955,7 +2955,7 @@
    "ok": true
   },
   {
-   "t": "陈旧 16 天前",
+   "t": "陈旧 17 天前",
    "cr": 5.08,
    "need": 4.5,
    "ok": true
@@ -3003,7 +3003,7 @@
    "ok": true
   },
   {
-   "t": "证据 陈旧 · 16 天前",
+   "t": "证据 陈旧 · 17 天前",
    "cr": 6.82,
    "need": 4.5,
    "ok": true
@@ -3999,7 +3999,7 @@
    "ok": true
   },
   {
-   "t": "陈旧 16 天前",
+   "t": "陈旧 17 天前",
    "cr": 5.08,
    "need": 4.5,
    "ok": true
@@ -4047,7 +4047,7 @@
    "ok": true
   },
   {
-   "t": "证据 陈旧 · 16 天前",
+   "t": "证据 陈旧 · 17 天前",
    "cr": 6.82,
    "need": 4.5,
    "ok": true
@@ -5475,7 +5475,7 @@
    "ok": true
   },
   {
-   "t": "陈旧 16 天前",
+   "t": "陈旧 17 天前",
    "cr": 5.08,
    "need": 4.5,
    "ok": true
@@ -5523,7 +5523,7 @@
    "ok": true
   },
   {
-   "t": "证据 陈旧 · 16 天前",
+   "t": "证据 陈旧 · 17 天前",
    "cr": 6.82,
    "need": 4.5,
    "ok": true
@@ -8625,7 +8625,7 @@
    "ok": true
   },
   {
-   "t": "陈旧 16 天前",
+   "t": "陈旧 17 天前",
    "cr": 5.08,
    "need": 4.5,
    "ok": true
@@ -8673,7 +8673,7 @@
    "ok": true
   },
   {
-   "t": "证据 陈旧 · 16 天前",
+   "t": "证据 陈旧 · 17 天前",
    "cr": 6.82,
    "need": 4.5,
    "ok": true
@@ -10617,7 +10617,7 @@
    "ok": true
   },
   {
-   "t": "陈旧 16 天前",
+   "t": "陈旧 17 天前",
    "cr": 5.08,
    "need": 4.5,
    "ok": true
@@ -10665,7 +10665,7 @@
    "ok": true
   },
   {
-   "t": "证据 陈旧 · 16 天前",
+   "t": "证据 陈旧 · 17 天前",
    "cr": 6.82,
    "need": 4.5,
    "ok": true
@@ -11655,7 +11655,7 @@
    "ok": true
   },
   {
-   "t": "陈旧 16 天前",
+   "t": "陈旧 17 天前",
    "cr": 5.08,
    "need": 4.5,
    "ok": true
@@ -11703,7 +11703,7 @@
    "ok": true
   },
   {
-   "t": "证据 陈旧 · 16 天前",
+   "t": "证据 陈旧 · 17 天前",
    "cr": 6.82,
    "need": 4.5,
    "ok": true
@@ -12615,7 +12615,7 @@
    "ok": true
   },
   {
-   "t": "陈旧 16 天前",
+   "t": "陈旧 17 天前",
    "cr": 5.08,
    "need": 4.5,
    "ok": true
@@ -12663,7 +12663,7 @@
    "ok": true
   },
   {
-   "t": "证据 陈旧 · 16 天前",
+   "t": "证据 陈旧 · 17 天前",
    "cr": 6.82,
    "need": 4.5,
    "ok": true
@@ -13341,7 +13341,7 @@
    "ok": true
   },
   {
-   "t": "陈旧 16 天前",
+   "t": "陈旧 17 天前",
    "cr": 5.08,
    "need": 4.5,
    "ok": true
@@ -13389,7 +13389,7 @@
    "ok": true
   },
   {
-   "t": "证据 陈旧 · 16 天前",
+   "t": "证据 陈旧 · 17 天前",
    "cr": 6.82,
    "need": 4.5,
    "ok": true
@@ -14121,7 +14121,7 @@
    "ok": true
   },
   {
-   "t": "陈旧 16 天前",
+   "t": "陈旧 17 天前",
    "cr": 5.08,
    "need": 4.5,
    "ok": true
@@ -14169,7 +14169,7 @@
    "ok": true
   },
   {
-   "t": "证据 陈旧 · 16 天前",
+   "t": "证据 陈旧 · 17 天前",
    "cr": 6.82,
    "need": 4.5,
    "ok": true
@@ -14967,7 +14967,7 @@
    "ok": true
   },
   {
-   "t": "陈旧 16 天前",
+   "t": "陈旧 17 天前",
    "cr": 5.08,
    "need": 4.5,
    "ok": true
@@ -15015,7 +15015,7 @@
    "ok": true
   },
   {
-   "t": "证据 陈旧 · 16 天前",
+   "t": "证据 陈旧 · 17 天前",
    "cr": 6.82,
    "need": 4.5,
    "ok": true
@@ -15717,7 +15717,7 @@
    "ok": true
   },
   {
-   "t": "陈旧 16 天前",
+   "t": "陈旧 17 天前",
    "cr": 5.08,
    "need": 4.5,
    "ok": true
@@ -15765,7 +15765,7 @@
    "ok": true
   },
   {
-   "t": "证据 陈旧 · 16 天前",
+   "t": "证据 陈旧 · 17 天前",
    "cr": 6.82,
    "need": 4.5,
    "ok": true
@@ -16467,7 +16467,7 @@
    "ok": true
   },
   {
-   "t": "陈旧 16 天前",
+   "t": "陈旧 17 天前",
    "cr": 5.08,
    "need": 4.5,
    "ok": true
@@ -16515,7 +16515,7 @@
    "ok": true
   },
   {
-   "t": "证据 陈旧 · 16 天前",
+   "t": "证据 陈旧 · 17 天前",
    "cr": 6.82,
    "need": 4.5,
    "ok": true
@@ -17307,7 +17307,7 @@
    "ok": true
   },
   {
-   "t": "陈旧 16 天前",
+   "t": "陈旧 17 天前",
    "cr": 5.08,
    "need": 4.5,
    "ok": true
@@ -17669,7 +17669,7 @@
   {
    "name": "真渲染对比度：逐视图实测 ≥4.5 / 大字 ≥3.0（WCAG 1.4.3）",
    "ok": true,
-   "detail": "实测 2580 个文字节点 最低 4.84（需 4.5）· 样本 '证据已 16 天前未复跑'"
+   "detail": "实测 2580 个文字节点 最低 4.84（需 4.5）· 样本 '证据已 17 天前未复跑'"
   },
   {
    "name": "减弱动态效果：prefers-reduced-motion 下 0 个运行中动画（WCAG 2.3.3）",

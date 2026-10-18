@@ -183,8 +183,8 @@
   "outline_rows" : 25,
   "outline_selected_rows" : 1,
   "page_active_tab" : "t-over",
-  "page_body_len" : 2409,
-  "page_buttons" : 118,
+  "page_body_len" : 2580,
+  "page_buttons" : 126,
   "page_has_tablist" : 1,
   "page_main_present" : 1,
   "page_state_box" : "",
@@ -252,9 +252,9 @@
   "preview_truncated" : false,
   "probe_mode" : 1,
   "probe_multi_instance" : 1,
-  "probe_saved_at" : "2026-10-17T16:19:36Z",
+  "probe_saved_at" : "2026-10-18T03:33:57Z",
   "probe_sequence_complete" : 1,
-  "probe_sibling_instances" : 0,
+  "probe_sibling_instances" : 1,
   "proj_active_flag" : [
     "console"
   ],
@@ -263,7 +263,7 @@
   "proj_ax_header" : "项目与任务空间",
   "proj_ax_row_count" : 2,
   "proj_ax_rows" : [
-    "● AgentOS 驾驶舱\n1090 文件 · 产品根：台面、门链、账本都在这里",
+    "● AgentOS 驾驶舱\n1519 文件 · 产品根：台面、门链、账本都在这里",
     "○ future agent\n2000 文件 · 证据与企业门真树：轮次/覆盖数据由它抽取"
   ],
   "proj_ax_rows_named" : 2,
@@ -282,7 +282,7 @@
   ],
   "proj_loaded" : 1,
   "proj_nfiles" : [
-    1090,
+    1519,
     2000
   ],
   "proj_roots_absolute" : true,

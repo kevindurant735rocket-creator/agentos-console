@@ -3,9 +3,9 @@
  "ok": false,
  "pre_ok": true,
  "prefail": "",
- "elapsed": 12.18,
+ "elapsed": 4.82,
  "cli": [
-  "/var/folders/3p/m9ntmpmn5z34b3my27hrjdmm0000gn/T/cli_gate_mut-_fgi1c_a/writeok.py"
+  "/var/folders/3p/m9ntmpmn5z34b3my27hrjdmm0000gn/T/cli_gate_mut-rrwshkh1/writeok.py"
  ],
  "dest": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/cli_gate_dest",
  "skip_install": false,
@@ -278,7 +278,7 @@
   {
    "gate": "tty-noarg-enters-tui",
    "ok": false,
-   "detail": "首行='' footer=None elapsed=0.09s",
+   "detail": "首行='' footer=None elapsed=0.01s",
    "cmd": "agentos   # 真 PTY、无参数、零送键（门在 boot 后主动终止，故不判 rc）",
    "rc": null
   },
@@ -341,15 +341,15 @@
   {
    "gate": "inst-isolated-port-health",
    "ok": true,
-   "detail": "port=59557 rc=0   code_sha  c10e8cac5f26fcef",
-   "cmd": "env -i PATH=/usr/bin:/bin <shim> --port 59557 health",
+   "detail": "port=55979 rc=0   code_sha  c10e8cac5f26fcef",
+   "cmd": "env -i PATH=/usr/bin:/bin <shim> --port 55979 health",
    "rc": 0
   },
   {
    "gate": "inst-isolated-port-released",
    "ok": true,
-   "detail": "port=59557 仍可连=False",
-   "cmd": "connect 127.0.0.1:59557（服务已停）",
+   "detail": "port=55979 仍可连=False",
+   "cmd": "connect 127.0.0.1:55979（服务已停）",
    "rc": 0
   },
   {

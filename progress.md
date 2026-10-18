@@ -162,3 +162,19 @@ gh_gate W13b 判据同步扩：venv 免扫 + 带默认值模板放行 + ghp_/sk-
   被真任务反向验证。
 - 门禁复查：agent_core --check 145/145、neg_agent_core 32/32（清残留 `_st_agent_core.18514`
   目录后复绿）、dsp_gate 18/18、leader_selftest、evo_merge_selftest 全绿。
+
+## 第二十一波（2026-10-18）：首个 71/71 满绿链 + 第三个高星真项目闭环
+- **全链 71 门首次满绿收口**（/tmp/chain_w21.log，2740s，CHAIN_RC=0）：perf_gate 因负载回落
+  归绿，a11y 全家绿，gh_gate、native 194 全绿。链后对最终 HEAD 快验 agent 面 4 门
+  （agent_core_gate / neg_agent_core 32/32 / repl_ux / cli 59/59）全绿。
+- 产品侧：
+  1) 401/403 key 失效提示带处方（`agentos config set llm.api_key <新key>`）。
+  2) Provider 双出口择路：direct TLS 抖 → 同主端点同净荷自动经代理口重发（非降级）。
+  3) 会话单源化：resolve 层不再注入静态会话头（它把 rotate_session 的新 id 顶掉了，
+     实测 6:25 自愈全弹在同一旧会话上）；会话 id 只归 Provider 持有。
+  4) 会话中毒 400 当下净荷证据转储 work/llm_400_trace.json（先留证再自救）。
+  5) README 补新用户上手面 + 故障三连表。
+- 第三个真项目 **attrs#1637**：agent 21 步/300s/65 工具调用，修「自声明 __slots__ 被丢」
+  （src/attr/_make.py +77 行，mangle/pickle/冻结/去重边界全过），test_slots 67 passed、
+  全量 1414 passed（4 个无关失败基线复现=环境），changelog.d 按仓库惯例落条。
+  w20+21 三连：tqdm#1845 / markdown-it-py#374 / attrs#1637 全部真修真测、独立复核。

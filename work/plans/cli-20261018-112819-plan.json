@@ -1,0 +1,123 @@
+{
+ "approved": false,
+ "bind_sha": "4b6f97990445f587b9d5d1a35b2624df6efdae5db41ca008112149fdf46fb6ac",
+ "created": 1792294099.303,
+ "goal": "重演 attrs#1637 任务（测试环境用 ./.venv-attrs/bin/python，PYTHONPATH=src；先复现 __slots__ 丢失，定位 src/attrs/_make.py 修复，回归测试先红后绿，全量不退化）",
+ "tasks": [
+  {
+   "accept": "关键文件已读 + 现状一句话 + rc=0",
+   "depends": [],
+   "evidence": [
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=1 gh 搜索失败：gh 退出码 1：Invalid search query \"( repo:\\\"python-attrs/attrs declared __slots__\\\" ) type:pr\".\nThe listed users and",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=1 old_string 出现 2 次；要么带更多上下文让它唯一，要么 replace_all=true",
+    "rc=1 old_string 一次都没出现（未改动任何字节）",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 "
+   ],
+   "id": "t1",
+   "status": "done",
+   "steps_used": 60,
+   "title": "侦察：读关键文件、确认现状",
+   "tools": [
+    "list_dir",
+    "read_file",
+    "search",
+    "gh_search",
+    "gh_repo_view",
+    "gh_file_read"
+   ]
+  },
+  {
+   "accept": "改动落盘 + 验证命令 rc=0（证据行）",
+   "depends": [
+    "t1"
+   ],
+   "evidence": [],
+   "id": "t2",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "动手：按判据改代码",
+   "tools": [
+    "read_file",
+    "search",
+    "write_file",
+    "edit_file",
+    "run_cmd",
+    "git_diff"
+   ]
+  },
+  {
+   "accept": "自检 rc=0 + 回执含真实 rc",
+   "depends": [
+    "t2"
+   ],
+   "evidence": [],
+   "id": "t3",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "收尾：自检 + 回执",
+   "tools": [
+    "run_cmd",
+    "git_diff",
+    "git_status",
+    "git_log"
+   ]
+  }
+ ],
+ "version": 1
+}

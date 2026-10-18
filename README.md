@@ -1,6 +1,34 @@
 # AgentOS 交付驾驶舱
 
-项目根：`/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console`（非 git 仓）
+仓库：https://github.com/kevindurant735rocket-creator/agentos-console
+本机开发根：`/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console`
+
+AgentOS 是一个**只用 Python 标准库**的终端 agent 产品：真模型 + 真工具循环（Claude Code 式 REPL）、
+驾驶舱 TUI/Web 13 视图、71 门质量链、老板监督与自进化账本。
+
+## 新机快速上手
+
+```bash
+git clone https://github.com/kevindurant735rocket-creator/agentos-console
+cd agentos-console
+python3 tools/agentos.py health                       # 服务健康（首次自动起 8790）
+python3 tools/agentos.py config set llm.provider opencode
+python3 tools/agentos.py config set llm.api_key <你的key>   # 缺它必 401
+python3 tools/agentos.py agent -p 'ping 一下自己'      # 第一次真模型对话
+python3 tools/agentos.py tui                          # 13 视图驾驶舱
+```
+
+配置都在 `~/.agentos/config.toml`（[llm] provider/model/api_key/no_fallback、
+[gh] write_enabled、[agent] full_access）。`no_fallback="true"` = 云端端点失败只重试
+主端点、绝不静默换本地模型。
+
+## 故障三连（都是实测踩出来的）
+
+| 症状 | 根因 | 处置 |
+|---|---|---|
+| HTTP 401 `api_key_expired` | key 过期 | `agentos config set llm.api_key <新key>`（错误信息会带这条提示） |
+| `SSL: UNEXPECTED_EOF_WHILE_READING` | 本机代理/TUN 链路抖 | 直连失败自动换经代理口重发（同主端点同净荷，非降级）；中段瞬时错有界重试 6 次 |
+| 网关 400 `No tool call found for tool output` | 有状态路由的会话日志与净荷脱钩 | 自动轮换会话 id 重试（rotate_session），净荷本身自洽 |
 
 ## 终端使用（统一入口 `tools/agentos.py`，只用标准库）
 
