@@ -8,7 +8,7 @@
   权限可以不继承外层 —— 桩模型换个说法全都能绕。本门站在外面认这些
   事实（纯离线，桩在回环；真跑 run_agent 递归一次）：
     D1  可 import + 符号齐（TOOLS 含 subagent / 默认单轮=12）
-    D2  `--check` 末行逐字 `AGENT_CORE OK 145/145`（数漂移即红）
+    D2  `--check` 末行逐字 `AGENT_CORE OK 147/147`（数漂移即红）
     D3  源码锚点四元：工具本体 / 嵌套闸 / 步数不钳 / 子集闸 各恰 1
     D4  可重入（行为）：外层停→内层终答→外层继续（序贯桩恰 3 请求）
     D5  禁嵌套（行为）：depth>0 直接拒 + 零请求（fail-closed）
@@ -34,7 +34,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 DEFAULT_CORE = os.path.join(HERE, "agent_core.py")
 DEFAULT_OUT = os.path.join(ROOT, "work", "subagent_gate.json")
-EXPECT_CHECK = "AGENT_CORE OK 145/145"
+EXPECT_CHECK = "AGENT_CORE OK 147/147"
 
 results = []
 

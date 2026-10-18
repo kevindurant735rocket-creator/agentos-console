@@ -235,6 +235,140 @@ def cmd_serve(args):
 
 
 # ── health：判 __health ok:true ───────────────────────────────────
+def cmd_doctor(_args):
+    """一键体检（对标 CC /doctor）：配置→key→端点→服务→门锁，红给处方。
+
+    为什么并到 agentos 而不进 agent_core：doctor 是**壳层运维面**（它的
+    读者是用户，产出是处方，不是引擎能力）；但它要借 resolve_provider
+    （真正会跑的解析路径），所以 import agent_core。rc：0 全绿 / 1 有红。
+    """
+    checks = []
+
+    def ck(name, ok, detail, fix=""):
+        checks.append((name, bool(ok), detail, fix))
+
+    # ① 配置文件
+    acfg_path = os.path.expanduser("~/.agentos/config.toml")
+    cfg, cfg_err = {}, ""
+    if os.path.exists(acfg_path):
+        try:
+            import tomllib
+
+            with open(acfg_path, "rb") as f:
+                cfg = tomllib.load(f)
+        except Exception as e:  # noqa: BLE001  坏 tom 不藏
+            cfg_err = str(e)[:120]
+        ck(
+            "config",
+            not cfg_err,
+            ("~/.agentos/config.toml 可解析" if not cfg_err else "坏账：" + cfg_err),
+            "重写：agentos config set llm.provider <名>",
+        )
+    else:
+        ck(
+            "config",
+            False,
+            "~/.agentos/config.toml 不存在",
+            "python3 tools/agentos.py config set llm.provider opencode",
+        )
+
+    llm = (cfg.get("llm") or {}) if isinstance(cfg, dict) else {}
+    has_key = bool(str(llm.get("api_key") or "").strip())
+    ck(
+        "llm.api_key",
+        has_key,
+        "key 挂着（长度=%d）" % len(str(llm.get("api_key") or ""))
+        if has_key
+        else "没配 key",
+        "agentos config set llm.api_key <新key>",
+    )
+    ck(
+        "llm.provider/model",
+        bool(str(llm.get("provider") or "").strip()),
+        "provider=%s model=%s"
+        % (llm.get("provider") or "-", llm.get("model") or "-"),
+        "provider 缺：agentos config set llm.provider opencode",
+    )
+
+    # ③ 端点解析 + 探活（借 resolve_provider —— 用户实际会跑的路径）
+    try:
+        import agent_core as _ac
+
+        spec = _ac.resolve_provider({})
+        base = spec["base_url"]
+        req = urllib.request.Request(base + "/models", method="GET")
+        for k, v in (spec.get("headers") or {}).items():
+            req.add_header(k, str(v))
+        # 探活必须与 Provider 实跑**同一条传输路径**：同一 UA（裸
+        # Python-urllib 会被 WAF 403——实测 2026-10-18 doctor 误红）、
+        # 同一直连（经本机 clash 抖）。否则 doctor 与真机不同命。
+        req.add_header("User-Agent", getattr(_ac, "_DEFAULT_UA", "agentos"))
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with opener.open(req, timeout=10) as resp:
+            st = resp.status
+            body = resp.read(4096)
+        live = st == 200 and b'"' in body
+        ck(
+            "endpoint",
+            live,
+            "%s GET /models HTTP=%s" % (base, st),
+            "裸 401=api_key_expired：agentos config set llm.api_key <新key>",
+        )
+        ck(
+            "model-on-endpoint",
+            bool(
+                llm.get("model") is None
+                or any(
+                    str(m.get("id") or "") == str(llm.get("model"))
+                    for m in json.loads(body.decode("utf-8", "replace")).get(
+                        "data", []
+                    )
+                    if isinstance(m, dict)
+                )
+                or not json.loads(body.decode("utf-8", "replace")).get("data")
+            ),
+            "config 模型 %s 在端点清单里" % (llm.get("model") or "-"),
+            "agentos config set llm.model <端点清单里的 id>",
+        )
+    except urllib.error.HTTPError as e:
+        ck("endpoint", False, "HTTP %s" % e.code, "401/403=换 key；4xx 稳定=config")
+    except Exception as e:  # noqa: BLE001  网络/解析都归基础设施
+        ck("endpoint", False, str(e)[:120], "SSL EOF 类=网络抖动（双出口自愈会兜）")
+
+    # ④ 本地服务
+    hb = base_url(_args)
+    try:
+        st, h = http_json(hb + "/__health")
+        ck("serve", st == 200 and h.get("ok") is True,
+           "%s/__health HTTP=%s" % (hb, st),
+           "agentos serve --watch-tree 起常驻")
+    except Exception as e:  # noqa: BLE001
+        ck("serve", False, str(e)[:80], "agentos serve --watch-tree")
+
+    # ⑤ 门链锁（陈旧锁会冤枉下一次链）
+    lockd = os.path.join(ROOT, "work", "gates.lockd")
+    if os.path.exists(lockd):
+        holder = ""
+        holder_p = os.path.join(lockd, "holder")
+        try:
+            holder = open(holder_p, encoding="utf-8").read()[:60]
+        except OSError:
+            pass
+        ck("gates-lock", True, "持有者=%s（链在跑，正常态）" % holder)
+    else:
+        ck("gates-lock", True, "无锁（空闲，正常态）")
+
+    fails = [c for c in checks if not c[1]]
+    for name, ok, detail, fix in checks:
+        print("%s %s  %s%s" % ("PASS" if ok else "FAIL", name, detail,
+                               ("  → %s" % fix if (fix and not ok) else "")))
+    if fails:
+        print("DOCTOR FAIL %d/%d" % (len(fails), len(checks)))
+        return 1
+    print("DOCTOR OK %d/%d" % (len(checks), len(checks)))
+    return 0
+
+
 def cmd_health(args):
     base = base_url(args)
     try:
@@ -285,6 +419,16 @@ def cmd_resident(args):
     return subprocess.run(
         [sys.executable, os.path.join(HERE, "resident_gate.py")], cwd=ROOT
     ).returncode
+
+
+def cmd_evolve(args):
+    """转 tools/evolve.py：经验账 → 提案 → 沙箱门验 → 自动合入。"""
+    argv = ["python3", os.path.join(HERE, "evolve.py")]
+    if getattr(args, "rule", None):
+        argv += ["--rule", str(args.rule)]
+    if getattr(args, "no_merge", False):
+        argv += ["--no-merge"]
+    return subprocess.run(argv, cwd=ROOT).returncode
 
 
 def cmd_headroom(args):
@@ -4305,6 +4449,14 @@ def main(argv=None):
     )
 
     add("health", "判 __health 的 ok:true（rc=0 才是真健康）", cmd_health)
+    add(
+        "doctor",
+        "一键体检：配置/key/端点/服务/门锁，红给处方（对标 CC /doctor）",
+        cmd_doctor,
+    )
+    sp = add("evolve", "框架级自进化一圈：规则账→模型提案→沙箱门验→自动合入", cmd_evolve)
+    sp.add_argument("--rule", default=None, help="指定规则 id（默认取最热 CANDIDATE）")
+    sp.add_argument("--no-merge", action="store_true", help="只到沙箱全绿（dry-ok）")
     add("open", "浏览器打开驾驶舱首页", cmd_open)
     add("tui", "终端交互主界面（%d 视图走真 8790 数据）" % len(VIEWS), cmd_tui)
     add("resident", "常驻真值门：核 launchd 常驻实例", cmd_resident)

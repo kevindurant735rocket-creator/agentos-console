@@ -239,23 +239,89 @@ def _toml_kv(k, v):
     raise ValueError("不支持的类型：%s=%r" % (k, v))
 
 
-def _key_hint(code, raw):
-    """认证/额度类 HTTP 错误的「下一步怎么办」提示。
+def _provider_hint(code, raw, base_url=""):
+    """端点失败的「求医三件套」：现象（HTTP 码 + body）已在报错里，这里补病灶与药方。
 
-    为什么不进 _TRANSIENT_RE 也不自愈：401/403 用户必须自己去发新 key，
-    机器无权替他造凭证。能做的是把求医三件套（现象、病灶、药方）一句话
-    说全——实测 2026-10-18「无法正常使用」半天，就是因为裸 401 不带指引。
+    为什么不在码上自愈：400/401/403/404/429 都不是传输层瞬时错（_TRANSIENT_RE
+    只管 TLS/重置/超时那一档），机器也无权替用户造 key、改网关路由、猜协议。
+    能做的只有一件事 —— 把下一步该敲哪条命令说全。同一条 err:provider 反复
+    出现 5 次，形态全是「裸 400/403/不可达」不带指引，每次都要从头重推诊断。
+    分档对齐 openai-python 的 _exceptions.py：状态码各自成类、连接失败另立
+    APIConnectionError，不把「网关拒了请求」和「根本连不上」混成一句「端点失败」。
+    探活一律给 /models：它把「端点活着但上游/请求体有问题」与「链路根本不通」
+    当场分开，是这条教训里唯一真正省时间的判据。
     """
-    if int(code) not in (401, 402, 403):
+    try:
+        code = int(code)
+    except (TypeError, ValueError):  # 提示层永不抛错（它本身在错误路径上）
         return ""
-    if re.search(
-        r"api[_ ]?key|auth\b|expires|unauthorized", raw, re.I
+    body = raw or ""
+    base = (base_url or "<base_url>").rstrip("/")
+    probe = (
+        "\n  → 先探活：`curl -sS %s/models`（HTTP 200=端点活着，问题在上游/请求体；"
+        "连不上=网络/代理）" % base
+    )
+    if code in (401, 402) or re.search(
+        r"api[_ ]?key|auth\b|expires|unauthorized|invalid.*key", body, re.I
     ):
         return (
             "\n  → API key 缺失/失效：`agentos config set llm.api_key <新key>`"
-            "（或 AGENTOS_LLM_API_KEY）后重试"
+            "（或 AGENTOS_LLM_API_KEY）后重试" + probe
         )
-    return "\n  → 端点拒绝本请求：检查 key 权限/额度（agentos config get llm）"
+    if code == 403:
+        if re.search(
+            r"cloudflare|error code:? ?10\d\d|just a moment|attention required|waf",
+            body,
+            re.I,
+        ):
+            return (
+                "\n  → 403 是 WAF/网关按客户端特征拦的，不是 key：换 UA 或"
+                "`AGENTOS_LLM_VIA_PROXY=1` 换路再试" + probe
+            )
+        return (
+            "\n  → 端点拒绝本请求：检查 key 权限/额度（agentos config get llm）"
+            + probe
+        )
+    if code in (400, 422):
+        if re.search(r"protocol|not support", body, re.I):
+            return (
+                "\n  → 协议不对：该端点可能只认 responses，"
+                "`AGENTOS_LLM_PROTOCOL=responses` 再试" + probe
+            )
+        if re.search(r"missing[ _]?session|session.*(required|missing)", body, re.I):
+            return (
+                "\n  → 网关要会话头而这份请求没带：用 `--provider opencode`"
+                "（内核自动注入 x-opencode-session），或 AGENTOS_LLM_HEADERS 手动补"
+                + probe
+            )
+        if re.search(r"call_id|no tool call found|tool output", body, re.I):
+            return (
+                "\n  → 网关会话脱钩：净荷自洽、坏的是服务端会话 —— 换会话再发"
+                "（重启 REPL 或 /branch 出新会话），别拿同一份会话连跪" + probe
+            )
+        return (
+            "\n  → key 多半没问题，是网关路由/请求体：查上游路由与会话头，"
+            "或用 AGENTOS_LLM_MODEL 换模型" + probe
+        )
+    if code == 404:
+        return (
+            "\n  → 路径或模型名不对：`%s/models` 列可用模型，"
+            "再用 AGENTOS_LLM_MODEL=<名> 换模型" % base + probe
+        )
+    if code == 429:
+        return "\n  → 限流/额度：退避后重试，或换 key / 换模型" + probe
+    if 500 <= code <= 599:
+        return (
+            "\n  → 上游 5xx：网关/模型侧过载，退避重试；持续报就用"
+            " AGENTOS_LLM_MODEL 换个模型或换 key" + probe
+        )
+    return ""
+
+
+_UNREACHABLE_HINT = (
+    "\n  → 不可达=网络/代理，不是 key：先 `curl -sS <上面那个端点>/models` 确认链路，"
+    "再查代理变量与 AGENTOS_LLM_VIA_PROXY 该不该开；本机后端就查进程在不在"
+)
 
 
 def _bearer_headers(e):
@@ -810,12 +876,20 @@ class Provider(object):
                 % (
                     e.code,
                     raw.decode("utf-8", "replace")[:300],
-                    _key_hint(e.code, raw.decode("utf-8", "replace")),
+                    _provider_hint(
+                        e.code, raw.decode("utf-8", "replace"), self.base_url
+                    ),
                 ),
             )
         except urllib.error.URLError as e:
             raise AgentError(
-                "provider", "模型端点不可达：%s" % (getattr(e, "reason", e),)
+                "provider",
+                "模型端点不可达：%s（端点 %s）%s"
+                % (
+                    getattr(e, "reason", e),
+                    self.base_url or "<未配置 base_url>",
+                    _UNREACHABLE_HINT,
+                ),
             )
         except Exception as e:  # noqa: BLE001  socket.timeout 等
             raise AgentError(
@@ -3511,7 +3585,9 @@ def build_system_prompt(ctx):
 _TRANSIENT_RE = re.compile(
     r"tls handshake|connection reset|connection refused|i/o timeout|"
     r"unexpected[ _-]?eof|eof occurred|dial tcp|temporar|timed? ?out|overloaded|"
-    r"rate.?limit|50[234] ",
+    r"rate.?limit|50[234] |429|remote disconnected|broken pipe|closed connection|"
+    r"incomplete ?read|content length|chunked error|decoding error|"
+    r"without response|empty reply|aborted",
     re.I,
 )
 
@@ -3673,6 +3749,10 @@ def run_agent(
     _fail_n = 0
     _transient_n = 0  # 本轮累计的「端点瞬时错重试」次数
     _TRANSIENT_MAX = 6  # 上限：网络抖动可以骑，死循环不行
+    # 会话中毒轮换走独立预算：与 SSL 同池会互相烧光（实测第六圈死法——
+    # SSL 六次把池子吃完，中毒轮换没得花，裸死）。
+    _sess_n = 0
+    _SESS_MAX = 3
     step = 0
     _total_steps = 0
     while True:
@@ -3771,62 +3851,80 @@ def run_agent(
             if e.kind == "interrupted":
                 raise
             # 有界瞬时重试（蒸馏自 gemini-cli 的 retry 思想）：只认传输层
-            # 瞬时词表、只非流式——流式中途重放文本是假丑。原判据
-            # `step > 1 直接抛` 在真任务里是纸糊的伞：网络抖动专挑长任务
-            # 中段来（实测 2026-10-18 十分钟两掐），一步黑掉二十步的活。
-            # 改为「整轮累计上限 _TRANSIENT_MAX 次、阶梯退避」，红门判据
-            # 不变：坏的连接照样跑不掉，只是不再一击必杀。
-            if (
-                stream
-                or not _TRANSIENT_RE.search(str(e))
-                or _transient_n >= _TRANSIENT_MAX
-            ):
-                raise
-            _transient_n += 1
-            # 会话中毒检测：网关有状态路由脱钩的 400（call_id 对不上）。
-            # 与普通瞬时错同池计时，但先轮换会话再重试——不换 id 就是
-            # 拿同一份坏会话十连跪（实测就是这样跪完 3:36 的）。
-            if _SESSION_BREAK_RE.search(str(e)):
-                # 先留证再自救：把 400 当下的完整净荷 dump 到盘上。
-                # 黑盒 reroll 治标不治本（实测两连跪），先看历史到底哪里破的。
-                try:
-                    _tr = os.path.join(
-                        os.path.dirname(
-                            os.path.dirname(os.path.abspath(__file__))
-                        ),
-                        "work",
-                        "llm_400_trace.json",
-                    )
-                    with open(_tr, "w", encoding="utf-8") as _tf:
-                        json.dump(
-                            {"error": str(e)[:500], "messages": messages},
-                            _tf,
-                            ensure_ascii=False,
-                            indent=1,
+            # 瞬时词表、只非流式——流式中途重放文本是假丑。
+            #
+            # 顺序纪律（实测第六圈死法）：**中毒分支必须排在词表门前面**。
+            # 会话脱钩的 400（No tool call found）不含传输词，排在后面就被
+            # `not _TRANSIENT_RE.search → raise` 一刀毙命，rotate 永远轮不
+            # 到。且走**独立预算**：与 SSL 同池会互相烧光。
+            if _SESSION_BREAK_RE.search(str(e)) and not stream:
+                # 循环 reroll：每次轮换后再捕一次（预算 _SESS_MAX 内），
+                # 命中断流/打断/非中毒错都原样抛出，不吞。
+                while True:
+                    if _sess_n >= _SESS_MAX:
+                        raise
+                    _sess_n += 1
+                    # 先留证再自救：完整净荷 dump（黑盒 reroll 治标不治本）
+                    try:
+                        _tr = os.path.join(
+                            os.path.dirname(
+                                os.path.dirname(os.path.abspath(__file__))
+                            ),
+                            "work",
+                            "llm_400_trace.json",
                         )
-                except Exception:  # noqa: BLE001  留证失败不挡自救
-                    pass
-                provider.rotate_session()
+                        with open(_tr, "w", encoding="utf-8") as _tf:
+                            json.dump(
+                                {"error": str(e)[:500], "messages": messages},
+                                _tf,
+                                ensure_ascii=False,
+                                indent=1,
+                            )
+                    except Exception:  # noqa: BLE001  留证失败不挡自救
+                        pass
+                    provider.rotate_session()
+                    if callable(on_event):
+                        on_event(
+                            {
+                                "type": "note",
+                                "text": "网关会话脱钩，轮换会话 id 重试"
+                                "（%d/%d）" % (_sess_n, _SESS_MAX),
+                            }
+                        )
+                    time.sleep(1.0)
+                    try:
+                        comp = provider.chat(
+                            messages, tools, stream=stream, on_event=on_event,
+                            cancel=cancel,
+                        )
+                        break
+                    except AgentError as e2:
+                        if e2.kind == "interrupted" or not _SESSION_BREAK_RE.search(
+                            str(e2)
+                        ):
+                            raise
+                        e = e2  # 还是中毒：预算 -1，继续轮换
+            else:
+                if (
+                    stream
+                    or not _TRANSIENT_RE.search(str(e))
+                    or _transient_n >= _TRANSIENT_MAX
+                ):
+                    raise
+                _transient_n += 1
+                _tw = min(2.0 * (2 ** (_transient_n - 1)), 12.0)
                 if callable(on_event):
                     on_event(
                         {
                             "type": "note",
-                            "text": "网关会话脱钩，轮换会话 id 后重试",
+                            "text": "瞬时错误，%.0fs 后重试（第 %d/%d 次）：%s"
+                            % (_tw, _transient_n, _TRANSIENT_MAX, str(e)[:80]),
                         }
                     )
-            _tw = min(2.0 * (2 ** (_transient_n - 1)), 12.0)
-            if callable(on_event):
-                on_event(
-                    {
-                        "type": "note",
-                        "text": "瞬时错误，%.0fs 后重试（第 %d/%d 次）：%s"
-                        % (_tw, _transient_n, _TRANSIENT_MAX, str(e)[:80]),
-                    }
+                time.sleep(_tw)
+                comp = provider.chat(
+                    messages, tools, stream=stream, on_event=on_event, cancel=cancel
                 )
-            time.sleep(_tw)
-            comp = provider.chat(
-                messages, tools, stream=stream, on_event=on_event, cancel=cancel
-            )
         if isinstance(comp.get("usage"), dict) and comp["usage"]:
             usage = comp["usage"]
         calls = comp.get("tool_calls") or []
@@ -7464,6 +7562,87 @@ def _selftest_body(case, jc, tmp):
         cx_kind == "provider" and len(stub_down.seen) == 1 and slept2 == [1],
         "kind=%s seen=%d slept=%r" % (cx_kind, len(stub_down.seen), slept2),
     )
+
+    # (18b-2) 会话中毒 400 的自救判据（W22 双刺）：
+    # ① 词表外 400（No tool call found…不含任何传输词）也必须轮换重试
+    #    ——曾因中毒分支排在词表门后面被 `not _TRANSIENT_RE → raise`
+    #    一刀毙命，rotate 永远轮不到（实测第六圈就这样死）。
+    # ② 轮换走独立预算 _SESS_MAX：三连跪后如实抛 provider，
+    #    不许无限 reroll（也不许和 SSL 池互相烧光）。
+    stub_poison = Stub(
+        [
+            {
+                "status": 400,
+                "json": {
+                    "error": {
+                        "message": "No tool call found for tool output "
+                        "with call_id call_01_poison"
+                    }
+                },
+            },
+            jc(None, "POISON-RECOVERED"),
+        ]
+    )
+    _rot = stub_poison.provider()
+    _rots = []
+    _rot_orig = _rot.rotate_session
+
+    def _cnt_rot():
+        _rots.append(1)
+        _rot_orig()
+
+    _rot.rotate_session = _cnt_rot
+    try:
+        res_pois = run_agent(
+            "会话中毒自检",
+            ctx={"root": tmproot, "mode": "plan"},
+            provider=_rot,
+        )
+        pois_ok = (
+            res_pois.get("ok")
+            and res_pois.get("answer") == "POISON-RECOVERED"
+            and len(stub_poison.seen) == 2
+            and len(_rots) == 1
+        )
+        pois_detail = "answer=%r seen=%d rot=%d" % (
+            (res_pois.get("answer") or "")[:20],
+            len(stub_poison.seen),
+            len(_rots),
+        )
+    except Exception as e:  # noqa: BLE001
+        pois_ok, pois_detail = False, "%s: %s" % (type(e).__name__, str(e)[:90])
+    finally:
+        stub_poison.close()
+    case(
+        "会话中毒 400（词表外）也轮换重试且成功",
+        pois_ok,
+        pois_detail,
+    )
+
+    stub_poison3 = Stub(
+        [
+            {
+                "status": 400,
+                "json": {"error": {"message": "MissingSessionID"}},
+            },
+        ]
+    )  # 脚本尾永远复放同一条坏 400 → 必然走到预算上限
+    try:
+        try:
+            run_agent(
+                "会话中毒预算自检",
+                ctx={"root": tmproot, "mode": "plan"},
+                provider=stub_poison3.provider(),
+            )
+            pois3_kind = "没抛错（无限 reroll？）"
+        except AgentError as e:
+            pois3_kind = e.kind
+        pois3_ok = pois3_kind == "provider" and len(stub_poison3.seen) == 4
+        # seen=4：初试 + 3 次轮换重试（1 初 + _SESS_MAX=3），第 5 次不再打
+        pois3_detail = "kind=%s seen=%d" % (pois3_kind, len(stub_poison3.seen))
+    finally:
+        stub_poison3.close()
+    case("会话中毒轮换有独立上限（3 次到顶如实例外）", pois3_ok, pois3_detail)
 
     # (18c) no_fallback 判据矩阵 + 启动期兜底零触碰。
     # 为什么两件事都要钉：只堵中途回退、启动时照样换本地，等于「云端挂了

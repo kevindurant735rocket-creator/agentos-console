@@ -75,7 +75,10 @@ CORE = os.path.join(ROOT, "tools", "agent_core.py")
 # 改这个数必须与 agent_core._selftest 的真实用例数同时改，否则门形同虚设。
 # 131 → 134：W13 自主执行 3 例（/goal 建计划 / 未审批拒跑 / 桩小闭环）
 # 140 → 142：W18 no_fallback 2 例（主端点抖动只重试主端点 / cancel 出口）。
-EXPECT_N = 145
+# 142 → 147：W22 会话中毒双预算 5 例（RemoteDisconnected/429/IncompleteRead
+# 词表补齐在词表本身；中毒 400 词表外也轮换重试 / 轮换独立预算 3 次到顶 /
+# 分层退避循环 reroll / 提案复用幂等 / 真圆闭环四圈教训五例——见 progress.md）。
+EXPECT_N = 147
 TOKEN = "AGENT_CORE OK %d/%d" % (EXPECT_N, EXPECT_N)
 # 自检临时目录带 pid（并发安全），所以残留判据用 glob，别去猜具体名字。
 STRAY_GLOB = os.path.join(ROOT, "work", "_st_agent_core*")

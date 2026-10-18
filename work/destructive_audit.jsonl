@@ -1,3 +1,5 @@
 {"argv": ["sh", "-c", "python3 --version && echo PYTHON_OK; echo '---判据模板自检---'; seq 1 25 > /tmp/todo_linecheck.tmp; N=$(wc -l < /tmp/todo_line"], "mode": "full", "sid": "cli-20261016-175313", "ts": 1792144418.083}
 {"argv": ["rm", "work/probeT1/old.txt"], "mode": "full", "sid": "cli-20261016-180233", "ts": 1792144964.636}
 2026-10-18T10:45:05 kill_leaked_dsh pids=65798,65800,66167,66168,81718,81719,84136,90605,92829,93577,94550,95101,95764 why=泄漏12h+每进程66-84%CPU致load90/网络瘫痪
+{"ts": "2026-10-18T12:36:49.737983", "op": "clash_runtime_route_fix", "group": "星链机场", "before": "自动选择", "after": "自动选择", "why": "opencode.ai 域经 TUN 全断（两出口都 000/SSL EOF），组内'自动选择'选中的节点已死；切到故障转移组。runtime-only，重启 clash 即还原。"}
+{"argv": ["rm", "-rf", "work/evo_sandbox/probe-check"], "mode": "full", "sid": "", "ts": 1792298462.819}

@@ -7,7 +7,7 @@
    "id": "evo-err-provider",
    "notified": true,
    "sig": "err:provider",
-   "state": "CANDIDATE"
+   "state": "ACTIVE"
   },
   {
    "advice": "查 stderr 里 [失败 kind] 的原文；同类失败连续出现会在此聚成经验规则",

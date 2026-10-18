@@ -10,7 +10,7 @@ DSP（tools/dsp.py + agent_core 的接线）自称「大任务自动建计划、
 任何一处漂移，链就会悄悄变空。本门站在外面认这些事（纯离线，不碰 8790）：
 
   D1  tools/dsp.py 存在且可 import（缺失即红）。
-  D2  `agent_core.py --check` 末行逐字 `AGENT_CORE OK 145/145`（数漂移即红）。
+  D2  `agent_core.py --check` 末行逐字 `AGENT_CORE OK 147/147`（数漂移即红）。
   D3  四 REPL 命令源码锚点（/plan /approve /tasks /block 各恰好命中一次）。
   D4  计划锁源码锚点（_authorize 内「计划未审批」恰好命中一次）。
   D5  自启接线锚点（run_agent 内 auto_plan + _run_once 内 sid 各命中一次）。
@@ -41,7 +41,7 @@ ROOT = os.path.dirname(HERE)
 DEFAULT_OUT = os.path.join(ROOT, "work", "dsp_gate.json")
 DSP = os.path.join(HERE, "dsp.py")
 CORE = os.path.join(HERE, "agent_core.py")
-EXPECT_CHECK = "AGENT_CORE OK 145/145"
+EXPECT_CHECK = "AGENT_CORE OK 147/147"
 
 results = []
 

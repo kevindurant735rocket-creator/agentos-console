@@ -178,3 +178,39 @@ gh_gate W13b 判据同步扩：venv 免扫 + 带默认值模板放行 + ghp_/sk-
   （src/attr/_make.py +77 行，mangle/pickle/冻结/去重边界全过），test_slots 67 passed、
   全量 1414 passed（4 个无关失败基线复现=环境），changelog.d 按仓库惯例落条。
   w20+21 三连：tqdm#1845 / markdown-it-py#374 / attrs#1637 全部真修真测、独立复核。
+
+## 第二十二波（2026-10-18）：框架级自进化闭环 + doctor（体验对标 CC）
+- **tools/evolve.py 落地**：把自进化闭环的缺失原子补上——经验账候选规则 → 真模型读码
+  生成 evo_merge 提案（禁改区/锚点恰一铁律写进提案规）→ evo_merge 沙箱四门
+  （agent_core_gate/neg_agent_core/dsp_gate/minimize_check）→ 全绿自动合入、红了零污染，
+  merged 后规则自动转 ACTIVE（教训固化为产品）。--selftest 7/7：stub 提案真空针、
+  dry-ok 不进账、真树零改动、只挑 CANDIDATE、无候选 rc=2、finalize 账转 ACTIVE、
+  锚点拒（依托 evo_merge.validate）。事故即教训两刺：空 gate 集被 `or` 吃回默认门集
+  （夹具真空针变真门链 3min）；会话 id/规则账双来源会让轮换/收尾悄悄写错账——单一
+  来源原则第二次立功。
+- **agentos doctor（对标 CC /doctor）**：config/key/端点/服务/门锁 7 项一键体检，
+  红带处方。上线即逮真红：探活用裸 urllib UA（Python-urllib）被 WAF 403 误红——
+  修成与 Provider 实跑同传输（_DEFAULT_UA + 直连 opener），doctor 与真机同命。
+- #### 瞬时词表补齐：RemoteDisconnected/broken pipe/closed connection/without response/
+  429——自进化首轮提案就死于 RemoteDisconnected 漏词（重试没接住），补完 145/145。
+- agentos evolve 壳命令接通（--rule/--no-merge）。
+
+## 第二十二波收尾（2026-10-18）：自进化闭环首次真合入 ✅
+- **第一圈真自进化合入（EVOLVE_RC=0，三重证据：日志/账本/规则账）**：
+  候选规则 evo-err-provider（×5）→ 模型提案（_key_hint 泛化 _provider_hint 全码度诊）
+  → 沙箱三门（agent_core 147 / neg 32 / dsp 18）全绿 → 自动合入真树
+  → 真树复验（同三门 + minimize_check 真机门）全绿 → 规则 ACTIVE。
+  账本末行：verdict=merged，files=[agent_core.py ×3 edits]。
+- 收口前真凶链（全部现场取证，无一拍脑袋）：
+  ① 词表漏 RemoteDisconnected/429/IncompleteRead → 补（401/402 保持不可重试）；
+  ② 中毒 400 无传输词，旧结构排在词表门后必死 → 分支前置 + 独立预算循环 reroll；
+  ③ 空 gate 集被 `or` 吃回默认 → 显式 None 分流（真空针回归）；
+  ④ merge_and_verify 签名漏收 gates_post（只改体内引用）→ 合入瞬间 NameError 裸崩；
+  ⑤ 分层门把 minimize_check 放在沙箱集 → 沙箱无 app bundle 结构性必红（假红冤杀）；
+  ⑥ _gates_on 用 sys.executable（brew 裸 py 无 pyobjc）→ 真机门必假红 → 全链改走
+     gates.sh pick_python 准则 .venv-pw。
+- 假通知警钟：本波后期 shell 完成通知多次与磁盘矛盾（phantom「merged rc=0」先行
+  于真实落盘 7 次）——一律以磁盘为准，完成宣称必须三证齐（日志+账本+真树 diff）。
+- 体验面收口：doctor 7/7（config/key/端点/模型/服务/门锁 + 处方）；/cli_gate 59/59。
+- 产物：tools/evolve.py（提案生成+幂等复用+--fresh/--no-merge/--check 7/7）、
+  agentos doctor/evolve 子命令；agent_core 自检 145→147；EXPECT_N 全链 11 文件同步。

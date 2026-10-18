@@ -149,7 +149,18 @@ def build_sandbox(root, sid):
     return sb
 
 
-def _gates_on(tree, gates, py, timeout=600):
+# 链准则解释器：与 gates.sh pick_python 同一优先序的第一选。门里凡用
+# pyobjc（minimize_check/a11y 系）必须用它；用 sys.executable（宿主可能是
+# brew 裸 py）会让真机门全体假红（实测 2026-10-18 第八圈 rollback 冤案）。
+_GATE_PY = ".venv-pw/bin/python"
+
+
+def _gates_on(tree, gates, py=None, timeout=600):
+    """py 缺省走链准则解释器（.venv-pw），不要露天 sys.executable。"""
+    if py is None:
+        cand = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                            _GATE_PY)
+        py = cand if os.path.isfile(cand) else sys.executable
     out = []
     base = os.path.join(tree, "tools")
     for g in gates:
@@ -167,8 +178,13 @@ def _gates_on(tree, gates, py, timeout=600):
     return out
 
 
-def run_pipeline(proposal, root, gates, ledger, do_merge=True):
-    """全流程：闸 → 沙箱 → （合入 + 真树复验）。返回 rc。"""
+def run_pipeline(proposal, root, gates, ledger, do_merge=True, gates_post=None):
+    """全流程：闸 → 沙箱 → （合入 + 真树复验）。返回 rc。
+
+    分层门（2026-10-18 attrs 循环实测教训）：沙箱只复制 tools/，钉死本机
+    GUI/原生资源的门（minimize_check 的 AX 走查、tui_walk 的真终端）在
+    沙箱里**结构性必红**，会把好提案冤杀。所以沙箱验 SAFE 集，合入
+    真树后的复验跑 SAFE + 真机门（gates_post；默认=gates 向后兼容）。"""
     ok, err = validate(proposal, root)
     if not ok:
         _ledger_append(ledger, {"id": proposal.get("id"), "verdict":
@@ -184,7 +200,7 @@ def run_pipeline(proposal, root, gates, ledger, do_merge=True):
                                 "why": "沙箱应用失败：" + str(ex)[:140]})
         print("EVO_MERGE rejected：沙箱应用失败（%s）" % str(ex)[:110])
         return 2
-    res = _gates_on(sb, gates, sys.executable)
+    res = _gates_on(sb, gates)
     all_ok = all(rc == 0 for _, rc, _ in res)
     if not all_ok:      # 沙箱有红 → 拒绝（真树零改动）
         _ledger_append(ledger, {"id": sid, "verdict": "rejected",
@@ -197,14 +213,15 @@ def run_pipeline(proposal, root, gates, ledger, do_merge=True):
     if not do_merge:
         print("EVO_MERGE dry-ok：沙箱全绿（--no-merge，未合入）")
         return 0
-    return merge_and_verify(proposal, root, gates, ledger)
+    return merge_and_verify(proposal, root, gates, ledger, gates_post=gates_post)
 
 
-def merge_and_verify(proposal, root, gates, ledger):
+def merge_and_verify(proposal, root, gates, ledger, gates_post=None):
     """合入真树 + 真树复验；任一环失败自动回退。返回 rc（0/2）。
 
-    单独成函数的理由：回退是**原语**，门要在夹具树上直接驱动它
-    （进程内直调）——不像 CLI 那样受"验证后目标消失"的时序窗限制。
+    gates_post：合入后真树复验的完整门集（分层门的真机层）。缺省=gates
+    （向后兼容）。**签名必须把这个参数收进来**——曾只改了体内引用没改
+    签名，真圆合入瞬间 NameError 裸崩（实测 2026-10-18）。
     """
     sid = proposal["id"]
     snaps, touched = {}, []
@@ -221,7 +238,7 @@ def merge_and_verify(proposal, root, gates, ledger):
                                 "why": "合入失败：" + str(ex)[:140]})
         print("EVO_MERGE rolled_back：合入失败已回退（%s）" % str(ex)[:110])
         return 2
-    post = _gates_on(root, gates, sys.executable)
+    post = _gates_on(root, gates if gates_post is None else gates_post)
     post_ok = all(rc == 0 for _, rc, _ in post)
     if not post_ok:  # 合入后复验红 → 自动回退
         _rollback(snaps)
