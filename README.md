@@ -22,6 +22,21 @@ python3 tools/agentos.py tui                          # 13 视图驾驶舱
 [gh] write_enabled、[agent] full_access）。`no_fallback="true"` = 云端端点失败只重试
 主端点、绝不静默换本地模型。
 
+## 一键体检与自进化（W22 新增）
+
+```bash
+python3 tools/agentos.py doctor     # 7 项体检：config/key/端点/模型/服务/门锁，红给处方
+python3 tools/agentos.py evolve     # 框架级自进化一圈：经验账候选 → 模型提案 → 沙箱门验 → 自动合入
+```
+
+- `doctor`：配置可解析、key 挂着、端点 `GET /models` 200 且模型在清单、本地服务
+  `__health` ok、门链无陈旧锁。任一项红就打印处方（如 `401 → agentos config set llm.api_key <新key>`）。
+- `evolve`：把「反复失败的真实教训」（`work/agent_evo_rules.json` 里 state=CANDIDATE 的规则）
+  变成模型读码生成的 evo_merge 提案，**沙箱门验全绿才自动合入真树**（红了零污染，
+  自动回退），合入后规则转 ACTIVE。首圈实测：`evo-err-provider`（端点错误 5 连）
+  → `_key_hint` 泛化为 `_provider_hint` 全码度诊，`EVOLVE_RC=0`，账本 `verdict=merged`。
+  已实测的同类真修复：tqdm#1845、markdown-it-py#374、attrs#1637（真项目真测真修）。
+
 ## 故障三连（都是实测踩出来的）
 
 | 症状 | 根因 | 处置 |
