@@ -437,6 +437,27 @@ def cmd_headroom(args):
     ).returncode
 
 
+def cmd_replay(args):
+    """真实会话回放基准：把录下的真实会话用桩重放，引擎开/关做 A/B。
+
+    这条命令回答的是自进化最容易被糊弄过去的问题：**行为真的变好了吗**。
+    「规则合入了、门是绿的」证明不了这个；回放同一份真实语料、
+    两次跑出同一份成绩单才能。
+
+    --check 走门模式：有回归就非零退出。
+    """
+    here = os.path.dirname(os.path.abspath(__file__))
+    if here not in sys.path:
+        sys.path.insert(0, here)
+    try:
+        import replay_bench
+    except ImportError as e:
+        sys.stderr.write("回放基准不可用：%s\n" % e)
+        return 3
+    argv = list(getattr(args, "argv", None) or [])
+    return int(replay_bench.main(argv) or 0)
+
+
 def cmd_selfscan(args):
     """转 tools/selfscan.py：bandit 静态安全自检（`--install` 幂等部署）。"""
     argv = [sys.executable, os.path.join(HERE, "selfscan.py")] + list(
@@ -2230,6 +2251,9 @@ _AGENTOS_SUBS = (
     ("steer", "老板监督指令：投给一个会话（步骤边界注入，只配送不裁决）"),
     ("watch", "老板监督面：计划/指令/会话尾一屏"),
     ("leader", "仓内指挥官：目标→里程碑→任务DAG→派发→回收→复盘"),
+    ("doctor", "一键体检：配置/key/端点/服务/门锁，红给处方"),
+    ("evolve", "框架级自进化一圈：规则账→模型提案→沙箱门验→自动合入"),
+    ("replay", "真实会话回放基准：引擎开/关 A/B，量「空口完成」被压住多少"),
 )
 
 
@@ -2350,10 +2374,12 @@ _agentos() {
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-  # 这个集合必须与 _AGENTOS_SUBS / argparse 的 18 个子命令逐项相等：
+  # 这个集合必须与 _AGENTOS_SUBS / argparse 的 21 个子命令逐项相等：
   # 2026-10-10 实测这里漏了 gh（用户敲 agentos gh <Tab> 什么都补不出来），
   # 而 --help 里明明有 —— cli_gate 的「补全与真实子命令不漂移」就是抓这个的。
-  local subs="serve health open tui gates resident headroom selfscan term gh agent config completion sessions resume steer watch leader"
+  # 2026-10-19 复测：doctor/evolve（W22 加的子命令）也漏在这串里，
+  # 同样「--help 里有、Tab 补不出来」—— 一起补上。
+  local subs="serve health open tui gates resident headroom selfscan term gh agent config completion sessions resume steer watch leader doctor evolve replay"
   local globals="-V --version -h --help -p --print --url --port --timeout --no-color --output-format"
   local gates="%(gates)s"
   local shells="zsh bash"
@@ -4479,6 +4505,17 @@ def main(argv=None):
         "argv",
         nargs=argparse.REMAINDER,
         help="原样转发给 selfscan.py：--install / --rebuild-baseline / --json P",
+    )
+
+    sp = add(
+        "replay",
+        "真实会话回放基准：引擎开/关 A/B，量「空口完成」被压住多少",
+        cmd_replay,
+    )
+    sp.add_argument(
+        "argv",
+        nargs=argparse.REMAINDER,
+        help="原样转发给 replay_bench.py：--check（门模式）",
     )
 
     sp = add("gates", "转发 tools/gates.sh（门链入口）", cmd_gates)

@@ -4,6 +4,8 @@ __pycache__/
 .DS_Store
 .venv-pw/
 work/gates/*.log
+work/gates.lockd/
+work/gates_*.log
 work/agent_sessions/
 work/agent_snapshots/
 *.bak*

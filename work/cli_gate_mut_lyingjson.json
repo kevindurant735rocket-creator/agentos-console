@@ -3,9 +3,9 @@
  "ok": false,
  "pre_ok": true,
  "prefail": "",
- "elapsed": 9.41,
+ "elapsed": 9.43,
  "cli": [
-  "/var/folders/3p/m9ntmpmn5z34b3my27hrjdmm0000gn/T/cli_gate_mut-rrwshkh1/lyingjson.py"
+  "/var/folders/3p/m9ntmpmn5z34b3my27hrjdmm0000gn/T/cli_gate_mut-uhy2bvwn/lyingjson.py"
  ],
  "dest": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/cli_gate_dest",
  "skip_install": false,
@@ -31,6 +31,7 @@
   "tui",
   "resident",
   "headroom",
+  "selfscan",
   "gates",
   "term",
   "gh",
@@ -41,7 +42,10 @@
   "resume",
   "steer",
   "watch",
-  "leader"
+  "leader",
+  "doctor",
+  "evolve",
+  "replay"
  ],
  "results": [
   {
@@ -117,15 +121,15 @@
   {
    "gate": "help-lists-all-subs",
    "ok": false,
-   "detail": "缺 ['serve', 'health', 'open', 'tui', 'resident', 'headroom', 'gates', 'term', 'gh', 'agent', 'config', 'completion', 'sessions', 'resume', 'steer', 'watch', 'leader']",
+   "detail": "缺 ['serve', 'health', 'open', 'tui', 'resident', 'headroom', 'selfscan', 'gates', 'term', 'gh', 'agent', 'config', 'completion', 'sessions', 'resume', 'steer', 'watch', 'leader', 'doctor', 'evolve', 'replay']",
    "cmd": "agentos --help",
    "rc": 0
   },
   {
    "gate": "sub-help-all-rc0",
    "ok": true,
-   "detail": "17 面子命令 --help 全 rc=0",
-   "cmd": "for s in <17 subs>: agentos <s> --help",
+   "detail": "21 面子命令 --help 全 rc=0",
+   "cmd": "for s in <21 subs>: agentos <s> --help",
    "rc": 0
   },
   {
@@ -278,7 +282,7 @@
   {
    "gate": "tty-noarg-enters-tui",
    "ok": false,
-   "detail": "首行='' footer=None elapsed=0.01s",
+   "detail": "首行='' footer=None elapsed=0.02s",
    "cmd": "agentos   # 真 PTY、无参数、零送键（门在 boot 后主动终止，故不判 rc）",
    "rc": null
   },
@@ -341,15 +345,15 @@
   {
    "gate": "inst-isolated-port-health",
    "ok": true,
-   "detail": "port=55997 rc=0   code_sha  c10e8cac5f26fcef",
-   "cmd": "env -i PATH=/usr/bin:/bin <shim> --port 55997 health",
+   "detail": "port=63943 rc=0   code_sha  c10e8cac5f26fcef",
+   "cmd": "env -i PATH=/usr/bin:/bin <shim> --port 63943 health",
    "rc": 0
   },
   {
    "gate": "inst-isolated-port-released",
    "ok": true,
-   "detail": "port=55997 仍可连=False",
-   "cmd": "connect 127.0.0.1:55997（服务已停）",
+   "detail": "port=63943 仍可连=False",
+   "cmd": "connect 127.0.0.1:63943（服务已停）",
    "rc": 0
   },
   {
@@ -390,14 +394,14 @@
   {
    "gate": "completion-bash-subs",
    "ok": false,
-   "detail": "rc=0 bash -n rc=0 got=0 want=17 差=['agent', 'completion', 'config', 'gates', 'gh', 'headroom', 'health', 'leader', 'open', 'resident', 'resume', 'serve', 'sessions', 'steer', 'term', 'tui', 'watch']",
+   "detail": "rc=0 bash -n rc=0 got=0 want=21 差=['agent', 'completion', 'config', 'doctor', 'evolve', 'gates', 'gh', 'headroom', 'health', 'leader', 'open', 'replay', 'resident', 'resume', 'selfscan', 'serve', 'sessions', 'steer', 'term', 'tui', 'watch']",
    "cmd": "agentos completion bash > f && bash -n f && 比对 Subs",
    "rc": 0
   },
   {
    "gate": "completion-gates-chain",
    "ok": false,
-   "detail": "got=0 chain=71 差=['a11y_human', 'a11y_served', 'a11y_walk', 'abort_e2e', 'abort_gate', 'act_gate', 'agent_core_gate', 'at_selftest', 'autonomy_gate', 'autonomy_selftest', 'boss_gate', 'branches_gate', 'branches_selftest', 'capability_gate', 'capmap_gate', 'cli_gate', 'cli_gate_selftest', 'close_gate', 'dsp_gate', 'dsp_gate_selftest', 'env_gate', 'evo_merge_gate', 'evo_merge_selftest', 'evolution_gate', 'evolution_gate_selftest', 'flake_retry_selftest', 'freshness_gate', 'gh_gate', 'goal_gate', 'headroom_gate', 'hooks_gate', 'hooks_selftest', 'http_shot_gate', 'indep_field_gate', 'intent_gate', 'kbd_gate_selftest', 'layout_gate', 'leader_gate', 'leader_selftest', 'mcp_gate', 'mcp_selftest', 'minimize_check', 'native_gate', 'native_gate_selftest', 'neg_a11y', 'neg_a11y_human', 'neg_agent_core', 'neg_at_selftest', 'perf_gate', 'projspace_gate', 'promo_gate', 'repl_ux_gate', 'repl_ux_selftest', 'resident_gate', 'retro_gate', 'rewind_gate', 'rewind_selftest', 'round_gate', 'safety_gate', 'safety_selftest', 'shoot', 'snap_gate', 'subagent_gate', 'subagent_selftest', 'supervise_gate', 'supervise_selftest', 'tui_walk_gate', 'ux_audit', 'view_dod', 'view_dod_selftest', 'web_gate']",
+   "detail": "got=0 chain=74 差=['a11y_human', 'a11y_served', 'a11y_walk', 'abort_e2e', 'abort_gate', 'act_gate', 'agent_core_gate', 'at_selftest', 'autonomy_gate', 'autonomy_selftest', 'boss_gate', 'branches_gate', 'branches_selftest', 'capability_gate', 'capmap_gate', 'cli_gate', 'cli_gate_selftest', 'close_gate', 'converge_gate', 'dsp_gate', 'dsp_gate_selftest', 'env_gate', 'evo_merge_gate', 'evo_merge_selftest', 'evolution_gate', 'evolution_gate_selftest', 'flake_retry_selftest', 'freshness_gate', 'gh_gate', 'goal_gate', 'headroom_gate', 'hooks_gate', 'hooks_selftest', 'http_shot_gate', 'indep_field_gate', 'intent_gate', 'kbd_gate_selftest', 'layout_gate', 'leader_gate', 'leader_selftest', 'mcp_gate', 'mcp_selftest', 'minimize_check', 'native_gate', 'native_gate_selftest', 'neg_a11y', 'neg_a11y_human', 'neg_agent_core', 'neg_at_selftest', 'perf_gate', 'projspace_gate', 'promo_gate', 'repl_ux_gate', 'repl_ux_selftest', 'replay_gate', 'resident_gate', 'retro_gate', 'rewind_gate', 'rewind_selftest', 'round_gate', 'safety_gate', 'safety_selftest', 'selfscan_gate', 'shoot', 'snap_gate', 'subagent_gate', 'subagent_selftest', 'supervise_gate', 'supervise_selftest', 'tui_walk_gate', 'ux_audit', 'view_dod', 'view_dod_selftest', 'web_gate']",
    "cmd": "agentos completion bash 的 local gates vs gates.sh 正确链",
    "rc": 1
   },
@@ -505,6 +509,7 @@
     "tui",
     "resident",
     "headroom",
+    "selfscan",
     "gates",
     "term",
     "gh",
@@ -515,7 +520,10 @@
     "resume",
     "steer",
     "watch",
-    "leader"
+    "leader",
+    "doctor",
+    "evolve",
+    "replay"
    ]
   ],
   "completion_gates": [
@@ -591,7 +599,10 @@
     "safety_selftest",
     "autonomy_gate",
     "autonomy_selftest",
-    "boss_gate"
+    "boss_gate",
+    "selfscan_gate",
+    "converge_gate",
+    "replay_gate"
    ]
   ],
   "tui_nontty_out_has_esc": false,
@@ -616,14 +627,14 @@
    {
     "index.html": "e8bd8c9cd5ac2b5220d10e9832ca12bf4135435be69480b7324bc6c6f85a5d40",
     "data.json": "6fdf2493fd741696cf67fa5b9b37554ab619d35494b470f0f282710f312feb8b",
-    "tools/agentos.py": "e3b3001983ebe1d9c7d554de03bf0621d82635e753ae21fcbc0b5f0d28f8f253",
+    "tools/agentos.py": "b98fd66e81a8eb0082ee12826d27591f6e45a2d351f8573af4b4038e8f5bd585",
     "tools/serve.py": "c10e8cac5f26fcef6b4f0125a8e632757dd2b3ce6bf000ea889a07dab95d7886",
     "bin/agentos": "041119e9439a803285e1a4325e8b94d90dc0cded0e19152769cc8bb3ef867dc1"
    },
    {
     "index.html": "e8bd8c9cd5ac2b5220d10e9832ca12bf4135435be69480b7324bc6c6f85a5d40",
     "data.json": "6fdf2493fd741696cf67fa5b9b37554ab619d35494b470f0f282710f312feb8b",
-    "tools/agentos.py": "e3b3001983ebe1d9c7d554de03bf0621d82635e753ae21fcbc0b5f0d28f8f253",
+    "tools/agentos.py": "b98fd66e81a8eb0082ee12826d27591f6e45a2d351f8573af4b4038e8f5bd585",
     "tools/serve.py": "c10e8cac5f26fcef6b4f0125a8e632757dd2b3ce6bf000ea889a07dab95d7886",
     "bin/agentos": "041119e9439a803285e1a4325e8b94d90dc0cded0e19152769cc8bb3ef867dc1"
    }

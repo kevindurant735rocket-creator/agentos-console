@@ -123,6 +123,89 @@ try:
 finally:
     shutil.rmtree(tmp, ignore_errors=True)
 
+# D9b 自进化旋钮：apply_policy 能拧紧且只许收紧
+c7 = cv.Converge()
+ap = c7.apply_policy({"max_stall": 4, "max_explore": 3, "loop_repeat": 2})
+gate(
+    "自进化旋钮：apply_policy 真把阈值拧紧",
+    ap.get("max_stall") == 4 and ap.get("max_explore") == 3 and ap.get("loop_repeat") == 2,
+    "applied=%r" % (ap,),
+)
+c8 = cv.Converge()
+ap2 = c8.apply_policy({"max_stall": 99, "max_explore": 99})
+gate(
+    "自进化旋钮：只许收紧，放宽被钳住（不能拆护栏）",
+    ap2.get("max_stall") == 6 and ap2.get("max_explore") == 6,
+    "applied=%r" % (ap2,),
+)
+c9 = cv.Converge()
+ap3 = c9.apply_policy({"max_stall": 1})
+gate(
+    "自进化旋钮：下限 2 钳制（不会退化成每步都催）",
+    ap3.get("max_stall") == 2,
+    "applied=%r" % (ap3,),
+)
+c10 = cv.Converge()
+ap4 = c10.apply_policy({"max_stall": "坏值"})
+gate(
+    "自进化旋钮：坏值不生效也不炸",
+    ap4 == {} and c10.max_stall == 6,
+    "applied=%r" % (ap4,),
+)
+
+# D9c 分类计数：停滞/循环/闸退回各自计数（自进化账靠它分辨病因）
+c11 = cv.Converge(max_stall=2, loop_repeat=2, max_explore=2)
+for _ in range(3):
+    c11.observe("read_file", {"path": "f%d" % _}, ok=True)
+c11.directive()
+c12 = cv.Converge(loop_repeat=2, max_stall=99)
+for _ in range(2):
+    c12.observe("run_cmd", {"argv": ["ls"]}, ok=True, rc=0)
+c12.directive()
+c13 = cv.Converge(task_text="实现一个功能")
+c13.gate("已经完成了。")
+snap13 = c13.snapshot()
+gate(
+    "分类计数：停滞/循环/闸退回各自可分辨",
+    snap13.get("gate_retries") == 1 and isinstance(snap13.get("stall_hits"), int),
+    "snap=%r" % (snap13,),
+)
+
+# D9d 内核真的把旋钮接上了（规则→运行期）
+src2 = open(os.path.join(HERE, "agent_core.py"), encoding="utf-8").read()
+gate(
+    "内核已接收敛旋钮（policy/apply_policy 都接线）",
+    "_evo_converge_policy(" in src2 and "apply_policy(" in src2,
+    "缺接线",
+)
+
+# D9e 变异体：拆掉「只许收紧」的钳制 → 门必须判红
+tmp2 = tempfile.mkdtemp(prefix="converge_mut2_")
+try:
+    s3 = open(os.path.join(HERE, "converge.py"), encoding="utf-8").read()
+    s3 = s3.replace(
+        "newv = max(2, min(want, cur))", "newv = want"
+    )
+    mut2 = os.path.join(tmp2, "converge_mut2.py")
+    open(mut2, "w", encoding="utf-8").write(s3)
+    sys.path.insert(0, tmp2)
+    import importlib
+
+    try:
+        m2 = importlib.import_module("converge_mut2")
+    finally:
+        sys.path.remove(tmp2)
+        sys.modules.pop("converge_mut2", None)
+    cm2 = m2.Converge()
+    cm2.apply_policy({"max_stall": 99})
+    gate(
+        "变异体：拆掉收紧钳制 → 阈值被放宽（门判红）",
+        cm2.max_stall == 99,
+        "变异体没放宽 = 钳制摘不干净",
+    )
+finally:
+    shutil.rmtree(tmp2, ignore_errors=True)
+
 # D10 零污染：门跑完 work/ 下不留本门专属残留
 gate(
     "零污染：门不写生产账",

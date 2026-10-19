@@ -3766,9 +3766,20 @@ def run_agent(
     try:
         import converge as _cv_mod
 
+        # 收敛引擎可显式关（ctx["converge"] is False）：回放基准要 A/B 对照，
+        # 没有「关」的一侧就没法证明引擎到底带来了什么。
+        if ctx.get("converge") is False:
+            raise ImportError("converge disabled by ctx")
         _conv = _cv_mod.Converge(
             task_text=str(prompt or "")[:400], mode=str(ctx.get("mode") or "")
         )
+        # 自进化调参：ACTIVE 规则真拧旋钮（只允许收紧，由 apply_policy 钳制）
+        try:
+            _pol = _evo_converge_policy(ctx.get("evo_rules_path"))
+            if _pol:
+                _conv.apply_policy(_pol)
+        except Exception:  # noqa: BLE001  调参坏不许拖垮主链路
+            pass
     except Exception:  # noqa: BLE001  收敛层坏不许拖垮主链路
         _cv_mod = None
         _conv = None
@@ -4023,28 +4034,46 @@ def run_agent(
             _empty = not _ans.strip()
             # 交付闸（W23）：终答自称完成却零验证证据 → 退回补证据，别放行。
             # 形状来自真实事故：900 秒那次它说了「已完成」，全程没跑出一条 rc。
-            if _conv is not None and not _empty and _gate_retries < _GATE_BUDGET:
+            if _conv is not None and not _empty:
                 try:
                     _gok, _gwhy = _conv.gate(_ans)
                 except Exception:  # noqa: BLE001
                     _gok, _gwhy = True, ""
                 if not _gok:
-                    _gate_retries += 1
-                    try:
-                        _gmsg = _conv.require_evidence()
-                    except Exception:  # noqa: BLE001
-                        _gmsg = "[交付闸] 终答缺证据：%s" % _gwhy
-                    messages.append({"role": "user", "content": _gmsg})
-                    if callable(on_event):
-                        on_event({"type": "note", "text": _gmsg})
-                    # 退回主循环，但**不消耗用户的 step 预算**：
-                    # 这是内核要求补证据，不是任务本身多走一步
-                    # （step -= 1 把那一步还回去；cap 判据照旧生效）。
-                    # 模型这一轮可以直接调工具补证据（跑 pytest / 写文件），
-                    # 走的是和正常轮完全一样的执行路径，不另开一条支线。
-                    step -= 1
-                    _total_steps -= 1
-                    continue
+                    if _gate_retries < _GATE_BUDGET:
+                        _gate_retries += 1
+                        try:
+                            _gmsg = _conv.require_evidence()
+                        except Exception:  # noqa: BLE001
+                            _gmsg = "[交付闸] 终答缺证据：%s" % _gwhy
+                        messages.append({"role": "user", "content": _gmsg})
+                        if callable(on_event):
+                            on_event({"type": "note", "text": _gmsg})
+                        # 退回主循环，但**不消耗用户的 step 预算**：
+                        # 这是内核要求补证据，不是任务本身多走一步
+                        # （step -= 1 把那一步还回去；cap 判据照旧生效）。
+                        # 模型这一轮可以直接调工具补证据（跑 pytest / 写文件），
+                        # 走的是和正常轮完全一样的执行路径，不另开一条支线。
+                        step -= 1
+                        _total_steps -= 1
+                        continue
+                    # 退到底了还是没证据 → **不按完成交付**。
+                    # 放行等于把「空口完成」洗成「已完成」，那正是
+                    # 900 秒事故的根：说了做了，其实没做。这里如实报未交付。
+                    return {
+                        "ok": False,
+                        "kind": "gate",
+                        "steps": step,
+                        "answer": _ans,
+                        "verified": False,
+                        "error": "交付闸：终答缺证据（%s），补证据轮用尽仍不通过——"
+                        "本轮不按完成交付" % _gwhy,
+                        "messages": messages,
+                        "tools_used": used,
+                        "usage": usage,
+                        "elapsed": round(time.time() - t0, 2),
+                        "converge": _conv.snapshot(),
+                    }
             return {
                 "ok": True,
                 "kind": "ok",
@@ -5168,8 +5197,28 @@ _EVO_ADVICE.update(
         "tool-fail:write_file": "write_file 失败：核对相对路径与权限模式",
         "tool-fail:run_cmd": "run_cmd 失败：命令是否在只读白名单内，长输出先缩小范围",
         "tool-fail:gh_search": "gh_search 失败：缩小 query 或检查 gh 认证",
+        # 收敛类签名：来自引擎自己的打转统计（不是模型报错，是行为形状）
+        "converge:stall": "本机历史：连续多步没有产出（只读/只查不动手）。"
+        "先动手改一处再继续，别把时间花在读完再读上",
+        "converge:loop": "本机历史：同一调用方式重复多次无进展。换个工具、"
+        "换文件、换思路，别在同一条路上打转",
+        "converge:explore-only": "本机历史：只探查没落地。探查够信息就动手，"
+        "本轮必须有写盘或改动",
+        "converge:no-verify": "本机历史：改了但没核对。改完必须读回或跑一条"
+        "命令拿到真实 rc，再交付",
+        "converge:gate-reject": "本机历史：终答缺证据被交付闸退回过。"
+        "终答必须附真实 rc / 文件行号，别只说「已完成」",
     }
 )
+
+# 收敛类签名 → 该拧哪个旋钮（自进化真的改行为，不只是加提示）
+# 旋钮方向是「更早介入」：本机反复打转 = 现在的阈值太宽。
+# 每条只拧一个旋钮，且只允许收紧（apply_policy 里钳制）。
+_EVO_CONVERGE_TUNE = {
+    "converge:stall": {"op": "converge_tune", "max_stall": 4},
+    "converge:loop": {"op": "converge_tune", "loop_repeat": 2},
+    "converge:explore-only": {"op": "converge_tune", "max_explore": 4},
+}
 
 
 def _evo_signal(
@@ -5278,6 +5327,34 @@ def _evo_mine(rules_path=None, signals_path=None, min_count=None):
                 for t in s.get("denied") or []:
                     k = "denied:%s" % t
                     counts[k] = counts.get(k, 0) + 1
+                # 收敛打转统计 → 签名。这是**行为形状**的失败（不是工具报错），
+                # 只有引擎自己数得出来；数出来才能自动拧阈值。
+                _cv = s.get("converge") or {}
+                if isinstance(_cv, dict):
+                    if _cv.get("stall_hits"):
+                        counts["converge:stall"] = (
+                            counts.get("converge:stall", 0) + 1
+                        )
+                    if _cv.get("loop_hits"):
+                        counts["converge:loop"] = (
+                            counts.get("converge:loop", 0) + 1
+                        )
+                    if (
+                        _cv.get("phase") == "explore"
+                        and _cv.get("steps")
+                        and not _cv.get("write_seen")
+                    ):
+                        counts["converge:explore-only"] = (
+                            counts.get("converge:explore-only", 0) + 1
+                        )
+                    if _cv.get("write_seen") and not _cv.get("verify_seen"):
+                        counts["converge:no-verify"] = (
+                            counts.get("converge:no-verify", 0) + 1
+                        )
+                    if _cv.get("gate_retries"):
+                        counts["converge:gate-reject"] = (
+                            counts.get("converge:gate-reject", 0) + 1
+                        )
     except OSError:
         counts = {}
     by_sig = {r.get("sig"): r for r in rules}
@@ -5301,6 +5378,8 @@ def _evo_mine(rules_path=None, signals_path=None, min_count=None):
                     "created": time.strftime("%F %T"),
                 }
             )
+            if sig in _EVO_CONVERGE_TUNE:
+                rules[-1]["action"] = dict(_EVO_CONVERGE_TUNE[sig])
             changed = True
         elif r.get("count") != n:
             r["count"] = n
@@ -5449,6 +5528,37 @@ def _evo_midflight(rules_path=None, signals_path=None):
     if new:
         _evo_rules_save(rules, rules_path)
     return new
+
+
+def _evo_converge_policy(rules_path=None):
+    """ACTIVE 规则里的收敛调参 → 合并后的 policy 字典。
+
+    这是「根源级自进化」的落点：规则不再只是往 system prompt 里塞一段
+    提醒（**文字不改变行为**），而是能拧收敛引擎的行为旋钮——本机历史
+    反复停滞/打转/只探查，就让引擎**更早**介入。
+
+    冲突处理：多条规则命中同一旋钮时取**最紧**的值。规则是「本机老是
+    在这里打转」的证据，方向一致（更早介入）；取最松等于让一条弱证据
+    规则抵消掉强证据规则。
+    """
+    rules, _ = _evo_rules_load(rules_path)
+    pol = {}
+    for r in rules:
+        if r.get("state") != "ACTIVE":
+            continue
+        act = r.get("action") or {}
+        if not isinstance(act, dict) or act.get("op") != "converge_tune":
+            continue
+        for k in ("max_stall", "max_explore", "loop_repeat"):
+            if k not in act:
+                continue
+            try:
+                v = int(act[k])
+            except (TypeError, ValueError):
+                continue
+            cur = pol.get(k)
+            pol[k] = v if cur is None else min(cur, v)
+    return pol
 
 
 def _evo_prompt_lines(rules_path=None):
@@ -6908,6 +7018,10 @@ def _repl(args):
         _transcript_append(tpath, {"ts": time.time(), "kind": "assistant", "text": ans})
         if res.get("kind") == "limit":
             sys.stderr.write("预算用尽：%s\n" % res.get("error"))
+        elif res.get("kind") == "gate":
+            sys.stderr.write(
+                "交付闸未通过（本轮不算完成）：%s\n" % (res.get("error") or "")
+            )
         if stream and seen.get("delta"):
             sys.stdout.write("\n")  # 增量已逐字打过，别把终答再抄一遍
         elif not stream:
@@ -9607,6 +9721,74 @@ def _selftest_body(case, jc, tmp):
         ok_ap and "自进化经验规则" in ptext and "config set llm.api_key" in ptext,
         "applied=%s has_section=%s" % (ok_ap, "自进化经验规则" in ptext),
     )
+    # (CONVERGE-EVO) 收敛打转 → 规则 → 旋钮真被拧紧（本机失败数据改本机行为）
+    # 写 3 条真形状的信号：停滞命中 1 次、只探查没写盘。
+    cevo_sig = os.path.join(tmp, "signals_conv.jsonl")
+    cevo_rules = os.path.join(tmp, "rules_conv.json")
+    with open(cevo_sig, "w", encoding="utf-8") as f:
+        for _ in range(3):
+            f.write(
+                json.dumps(
+                    {
+                        "kind": "turn",
+                        "ok": True,
+                        "converge": {
+                            "phase": "explore",
+                            "steps": 12,
+                            "write_seen": False,
+                            "verify_seen": True,
+                            "stall_hits": 1,
+                            "loop_hits": 0,
+                            "gate_retries": 0,
+                        },
+                    }
+                )
+                + "\n"
+            )
+    cevo_r, cevo_err = _evo_mine(rules_path=cevo_rules, signals_path=cevo_sig)
+    _csig = [r for r in cevo_r if r.get("sig") == "converge:stall"]
+    _cexo = [r for r in cevo_r if r.get("sig") == "converge:explore-only"]
+    case(
+        "evo 收敛：3 次真停滞 → 聚成规则且带拧旋钮的动作",
+        cevo_err == ""
+        and len(_csig) == 1
+        and _csig[0]["state"] == "CANDIDATE"
+        and _csig[0]["count"] == 3
+        and (_csig[0].get("action") or {}).get("op") == "converge_tune"
+        and (_csig[0].get("action") or {}).get("max_stall") == 4
+        and len(_cexo) == 1,
+        "rules=%r err=%r"
+        % ([(r.get("sig"), r.get("state"), r.get("action")) for r in cevo_r], cevo_err),
+    )
+    _evo_set_state("evo-converge-stall", "ACTIVE", rules_path=cevo_rules)
+    _evo_set_state("evo-converge-explore-only", "ACTIVE", rules_path=cevo_rules)
+    _cpol = _evo_converge_policy(cevo_rules)
+    case(
+        "evo 收敛：ACTIVE 规则 → policy 收紧旋钮（6→4）",
+        _cpol.get("max_stall") == 4 and _cpol.get("max_explore") == 4,
+        "pol=%r" % (_cpol,),
+    )
+    _cstub = Stub([jc(content="本轮结论")])
+    try:
+        _cres = run_agent(
+            "随便看一眼",
+            ctx={
+                "root": tmproot,
+                "mode": "plan",
+                "evo_rules_path": cevo_rules,
+            },
+            provider=_cstub.provider(),
+            max_steps=2,
+        )
+    finally:
+        _cstub.close()
+    _csnap = _cres.get("converge") or {}
+    case(
+        "evo 收敛：旋钮在运行期真被拧紧（快照 max_stall=4）",
+        _csnap.get("max_stall") == 4 and _csnap.get("max_explore") == 4,
+        "snap=%r" % (_csnap,),
+    )
+
     _evo_set_state("evo-err-no-provider", "CANDIDATE", rules_path=evo_rules)
     ptext2 = build_system_prompt(
         {"root": tmp, "mode": "plan", "evo_rules_path": evo_rules}
@@ -10132,11 +10314,17 @@ def _selftest_body(case, jc, tmp):
         "收敛指令" in _cs1_seen,
         "没进 messages",
     )
+    # 被退回后模型要**真的**去写+跑命令才算补上证据——
+    # 文本里写「pytest rc=0」不算证据（判据只认证据不认措辞）。
+    with open(os.path.join(tmproot, "x.txt"), "w", encoding="utf-8") as _xfh:
+        _xfh.write("x\n")
     _cs2 = Stub(
         [
             jc(tool=("read_file", {"path": "x.txt"}), cid="g1"),
             jc(content="我已经完成部署了，仓库在 GitHub 上。"),
-            jc(content="补充证据：pytest rc=0，文件 tools/y.py 已改。"),
+            jc(tool=("write_file", {"path": "y.txt", "content": "y\n"}), cid="g2"),
+            jc(tool=("run_cmd", {"argv": ["pytest", "-q"]}), cid="g3"),
+            jc(content="写完了，pytest 跑过，y.txt 已落盘。"),
         ]
     )
     try:

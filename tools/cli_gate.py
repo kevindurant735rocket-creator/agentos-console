@@ -73,9 +73,13 @@ CLI_ARGV = [os.path.join(HERE, "agentos.py")]
 
 # 子命令全集。写死在这里是有意的：门存在的意义就是「宣称支持的面」与
 # 「真的能跑的面」逐一对上。漏一个面 = 那个面的 --help 从没被量过。
+# 补全表必须与真实子命令**逐项相等**（不是「差不多」）。
+# 2026-10-19：doctor/evolve（W22 加的）漏在补全表外 —— 用户敲
+# `agentos doctor<Tab>` 什么也补不出来，而 --help 里明明有。
+# 同批补上 replay（W24 的回放基准）。漂移就红，别放松成子集比较。
 SUBS = ("serve", "health", "open", "tui", "resident", "headroom", "selfscan", "gates",
         "term", "gh", "agent", "config", "completion", "sessions", "resume",
-        "steer", "watch", "leader")
+        "steer", "watch", "leader", "doctor", "evolve", "replay")
 
 results = []
 

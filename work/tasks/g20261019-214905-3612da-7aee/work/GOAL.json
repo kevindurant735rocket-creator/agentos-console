@@ -1,0 +1,57 @@
+{
+ "version": "v138",
+ "demand": "实现一个本地库存后台，AC 全 PASS rc=0",
+ "goal": "交付「实现一个本地库存后台，AC 全 PASS rc=0」：AC 全部有断言且命令退出码为 0",
+ "acs": [
+  "库存列表 3s 内可见",
+  "扣减后库存数正确",
+  "回滚可用"
+ ],
+ "non_goals": [
+  "不做移动端"
+ ],
+ "rounds_plan": 3,
+ "goal_table": [
+  {
+   "n": 1,
+   "goal": "跑通 R1 提升：库存列表 3s 内可见",
+   "ac": "AC 全 PASS，命令 rc=0",
+   "state": "待办",
+   "giga_run": null,
+   "delta": null,
+   "evidence": null
+  },
+  {
+   "n": 2,
+   "goal": "跑通 R2 提升：扣减后库存数正确",
+   "ac": "AC 全 PASS，命令 rc=0",
+   "state": "待办",
+   "giga_run": null,
+   "delta": null,
+   "evidence": null
+  },
+  {
+   "n": 3,
+   "goal": "跑通 R3 提升：回滚可用",
+   "ac": "AC 全 PASS，命令 rc=0",
+   "state": "待办",
+   "giga_run": null,
+   "delta": null,
+   "evidence": null
+  }
+ ],
+ "depts": [
+  "PMO",
+  "ARCH",
+  "UX",
+  "DEV",
+  "QA",
+  "SRE"
+ ],
+ "goal_id": null,
+ "created": "2026-10-19 21:49:05",
+ "updated": "2026-10-19 21:49:05",
+ "rounds": [],
+ "goal_chain": [],
+ "state": "GOAL_SET"
+}

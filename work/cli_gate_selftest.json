@@ -1,7 +1,7 @@
 {
  "tool": "cli_gate_selftest.py",
  "ok": true,
- "elapsed": 184.43,
+ "elapsed": 186.3,
  "mutants": [
   "silent0",
   "hangq",
@@ -37,7 +37,7 @@
   {
    "gate": "BASE·tty-noarg-enters-tui 必须绿",
    "ok": true,
-   "detail": "ok=True | 首行='✻ AgentOS TUI · 11:38:33 · http://127.0.0.1:87' footer='视图 6/13 · 数据源: GET /__health +"
+   "detail": "ok=True | 首行='✻ AgentOS TUI · 22:04:02 · http://127.0.0.1:87' footer='视图 6/13 · 数据源: GET /__health +"
   },
   {
    "gate": "M·silent0 整门 rc=2（有红项）",
@@ -57,7 +57,7 @@
   {
    "gate": "M·silent0·help-lists-all-subs 必须红",
    "ok": true,
-   "detail": "ok=False | 缺 ['serve', 'health', 'open', 'tui', 'resident', 'headroom', 'gates', 'term', 'gh', 'agent"
+   "detail": "ok=False | 缺 ['serve', 'health', 'open', 'tui', 'resident', 'headroom', 'selfscan', 'gates', 'term', "
   },
   {
    "gate": "M·silent0·tui-nontty-all-views 必须红",
@@ -167,7 +167,7 @@
   {
    "gate": "M·silent0·sub-help-all-rc0 必须绿",
    "ok": true,
-   "detail": "ok=True | 17 面子命令 --help 全 rc=0"
+   "detail": "ok=True | 21 面子命令 --help 全 rc=0"
   },
   {
    "gate": "M·silent0·sessions-rc0 必须绿",

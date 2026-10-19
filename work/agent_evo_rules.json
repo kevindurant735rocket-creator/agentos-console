@@ -35,6 +35,95 @@
    "notified": true,
    "sig": "tool-fail:run_cmd",
    "state": "CANDIDATE"
+  },
+  {
+   "advice": "查 stderr 里 [失败 kind] 的原文；同类失败连续出现会在此聚成经验规则",
+   "count": 1,
+   "created": "2026-10-19 21:25:13",
+   "id": "evo-denied-run_cmd",
+   "notified": true,
+   "sig": "denied:run_cmd",
+   "state": "CANDIDATE"
+  },
+  {
+   "advice": "查 stderr 里 [失败 kind] 的原文；同类失败连续出现会在此聚成经验规则",
+   "count": 2,
+   "created": "2026-10-19 21:25:13",
+   "id": "evo-err-no-evidence-claim",
+   "notified": true,
+   "sig": "err:no-evidence-claim",
+   "state": "CANDIDATE"
+  },
+  {
+   "advice": "查 stderr 里 [失败 kind] 的原文；同类失败连续出现会在此聚成经验规则",
+   "count": 1,
+   "created": "2026-10-19 21:25:13",
+   "id": "evo-err-stale-reply",
+   "notified": true,
+   "sig": "err:stale-reply",
+   "state": "CANDIDATE"
+  },
+  {
+   "advice": "查 stderr 里 [失败 kind] 的原文；同类失败连续出现会在此聚成经验规则",
+   "count": 2,
+   "created": "2026-10-19 21:25:13",
+   "id": "evo-tool-fail-gh_deploy",
+   "notified": true,
+   "sig": "tool-fail:gh_deploy",
+   "state": "CANDIDATE"
+  },
+  {
+   "advice": "查 stderr 里 [失败 kind] 的原文；同类失败连续出现会在此聚成经验规则",
+   "count": 1,
+   "created": "2026-10-19 21:25:13",
+   "id": "evo-tool-fail-git_log",
+   "notified": true,
+   "sig": "tool-fail:git_log",
+   "state": "CANDIDATE"
+  },
+  {
+   "advice": "查 stderr 里 [失败 kind] 的原文；同类失败连续出现会在此聚成经验规则",
+   "count": 1,
+   "created": "2026-10-19 21:25:13",
+   "id": "evo-tool-fail-git_status",
+   "notified": true,
+   "sig": "tool-fail:git_status",
+   "state": "CANDIDATE"
+  },
+  {
+   "advice": "查 stderr 里 [失败 kind] 的原文；同类失败连续出现会在此聚成经验规则",
+   "count": 1,
+   "created": "2026-10-19 21:25:13",
+   "id": "evo-tool-fail-list_dir",
+   "notified": true,
+   "sig": "tool-fail:list_dir",
+   "state": "CANDIDATE"
+  },
+  {
+   "action": {
+    "max_explore": 4,
+    "op": "converge_tune"
+   },
+   "advice": "本机历史：只探查没落地。探查够信息就动手，本轮必须有写盘或改动",
+   "count": 4,
+   "created": "2026-10-19 21:26:38",
+   "id": "evo-converge-explore-only",
+   "notified": true,
+   "sig": "converge:explore-only",
+   "state": "ACTIVE"
+  },
+  {
+   "action": {
+    "max_stall": 4,
+    "op": "converge_tune"
+   },
+   "advice": "本机历史：连续多步没有产出（只读/只查不动手）。先动手改一处再继续，别把时间花在读完再读上",
+   "count": 4,
+   "created": "2026-10-19 21:26:38",
+   "id": "evo-converge-stall",
+   "notified": true,
+   "sig": "converge:stall",
+   "state": "ACTIVE"
   }
  ],
  "version": 1

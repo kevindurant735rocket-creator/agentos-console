@@ -54,7 +54,7 @@
   "code_loaded" : 1,
   "code_loads" : 1,
   "code_path" : "agent_desktop.html",
-  "code_probe_file_rows" : 16,
+  "code_probe_file_rows" : 17,
   "code_probe_target" : "agent_desktop.html",
   "code_selected_path" : "agent_desktop.html",
   "code_served_path" : "agent_desktop.html",
@@ -179,11 +179,11 @@
   "native_toolbar_style_unified" : 1,
   "nsapp_is_active" : true,
   "outline_columns" : 1,
-  "outline_root_children" : 24,
-  "outline_rows" : 25,
+  "outline_root_children" : 25,
+  "outline_rows" : 26,
   "outline_selected_rows" : 1,
   "page_active_tab" : "t-over",
-  "page_body_len" : 2580,
+  "page_body_len" : 2579,
   "page_buttons" : 126,
   "page_has_tablist" : 1,
   "page_main_present" : 1,
@@ -217,9 +217,9 @@
     "文件"
   ],
   "panel_api" : "LocalAPI:/__fs+/__term",
-  "panel_bounds_now" : "{{0, 267}, {296, 516}}",
+  "panel_bounds_now" : "{{0, 265}, {296, 512}}",
   "panel_default_visible" : 0,
-  "panel_expand_index" : 6,
+  "panel_expand_index" : 7,
   "panel_expand_skipped_bundles" : [
     ".app",
     ".bundle",
@@ -252,7 +252,7 @@
   "preview_truncated" : false,
   "probe_mode" : 1,
   "probe_multi_instance" : 1,
-  "probe_saved_at" : "2026-10-18T03:33:57Z",
+  "probe_saved_at" : "2026-10-19T13:58:22Z",
   "probe_sequence_complete" : 1,
   "probe_sibling_instances" : 1,
   "proj_active_flag" : [
@@ -263,7 +263,7 @@
   "proj_ax_header" : "项目与任务空间",
   "proj_ax_row_count" : 2,
   "proj_ax_rows" : [
-    "● AgentOS 驾驶舱\n1519 文件 · 产品根：台面、门链、账本都在这里",
+    "● AgentOS 驾驶舱\n1743 文件 · 产品根：台面、门链、账本都在这里",
     "○ future agent\n2000 文件 · 证据与企业门真树：轮次/覆盖数据由它抽取"
   ],
   "proj_ax_rows_named" : 2,
@@ -282,7 +282,7 @@
   ],
   "proj_loaded" : 1,
   "proj_nfiles" : [
-    1519,
+    1743,
     2000
   ],
   "proj_roots_absolute" : true,
@@ -343,11 +343,11 @@
   "tree_loads" : 3,
   "tree_names_head" : [
     ".gitignore",
+    "AGENTS.md",
     "AgentOS.app",
     "DEPLOY.md",
     "Dockerfile",
-    "README.md",
-    "agent_desktop.html"
+    "README.md"
   ],
   "tree_root_ok" : 1,
   "tree_selected_is_dir" : false,
@@ -389,7 +389,7 @@
   ],
   "window_deminaturized_on_launch" : 0,
   "window_did_became_key" : 1,
-  "window_frame" : "{{0, 65}, {1352, 783}}",
+  "window_frame" : "{{0, 71}, {1352, 777}}",
   "window_frame_on_screen" : true,
   "window_is_key" : true,
   "window_is_miniaturized" : false,

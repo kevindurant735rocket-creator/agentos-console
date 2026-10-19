@@ -1,0 +1,23 @@
+{
+ "diff": {
+  "delivered_delta": 0,
+  "false_claims_avoided": 1,
+  "steps_delta": 2
+ },
+ "off": {
+  "delivered": 3,
+  "false_claims": 1,
+  "gate_retries": 0,
+  "interventions": 0,
+  "records": 3,
+  "steps": 14
+ },
+ "on": {
+  "delivered": 3,
+  "false_claims": 0,
+  "gate_retries": 1,
+  "interventions": 2,
+  "records": 3,
+  "steps": 16
+ }
+}

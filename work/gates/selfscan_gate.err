@@ -1,0 +1,2 @@
+SELFSCAN UNDEPLOYED: work/_no_such_vendor_ 不存在。先跑 python3 tools/selfscan.py --install
+SELFSCAN_GATE RED: D2-production-green

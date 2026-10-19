@@ -37,6 +37,45 @@ python3 tools/agentos.py evolve     # 框架级自进化一圈：经验账候选
   → `_key_hint` 泛化为 `_provider_hint` 全码度诊，`EVOLVE_RC=0`，账本 `verdict=merged`。
   已实测的同类真修复：tqdm#1845、markdown-it-py#374、attrs#1637（真项目真测真修）。
 
+## 收敛引擎与自进化旋钮（W23–W24 新增）
+
+内核带收敛引擎（`tools/converge.py`），治的是**"探查很多、交付为零"**：
+
+| 机制 | 判据 | 动作 |
+|---|---|---|
+| 阶段机 | 工具语义（探查/动手/验证） | 到边界注入方向指令 |
+| 循环熔断 | 同 (工具, 参数指纹) 重复 ≥3 次 | 注入"换一条完全不同的路径" |
+| 停滞探测 | 连续 N 步无产出（写盘成功 / rc=0） | 注入"立刻动手，或立刻交付并说清卡点" |
+| 交付闸 | 终答缺证据 | 退回补证据（**不烧用户 step 预算**） |
+
+**证据判据只认证据不认措辞**：模型说"完成了"不算证据，`write_file` 成功 + `run_cmd rc=0` 才算；
+诚实报告失败（"写盘被拒，做不到"）是**合格终答**，不退回。
+
+**自进化旋钮（W24）**：ACTIVE 规则不再只是往 prompt 里塞提示文字，而是能真拧行为旋钮。
+引擎把打转分类计数（停滞/循环/只探查/改了没验/闸退回）写进信号账 → 挖掘器聚成规则 →
+规则带 `action.op=converge_tune` → 晋升 ACTIVE 后，**下一轮引擎阈值自动收紧**（只许收紧、
+下限 2、放宽被钳住）。
+
+实测：连续 3 轮真实停滞 → 挖出 `evo-converge-stall`(count=3) → 晋升 ACTIVE →
+下一轮快照 `max_stall 6→4`、`max_explore 6→4`。**agent 用自己的失败数据改了自己的行为。**
+
+## 回放基准：证明「自进化真的改了行为」（W24 新增）
+
+自进化闭环此前只能证明「规则合入了、门是绿的」——**证明不了行为变好了**。
+`agentos replay` 把真实跑过的会话语料（`work/replay_corpus.jsonl`，每条带 note
+标注源自哪次真实会话）用桩原样重放，**引擎开/关做 A/B**，用交付闸自己的
+判据量「空口完成」（说完成了但全程零证据 = 2026-10-19 那次 23 步 900 秒事故的形状）。
+
+实测 A/B（3 条真实语料）：
+
+| | 交付 | **空口完成** | 干预 | 闸退回 |
+|---|---|---|---|---|
+| 引擎开 | 3/3 | **0** | 2 | 1 |
+| 引擎关 | 3/3 | **1** | 0 | 0 |
+
+差值 = **避免 1 条空口完成**。`replay_gate` 把它钉进门链，并带一个变异体：
+两侧都强制关掉引擎 → 分辨力归零 → 门判红（证明语料不是摆设）。
+
 ## 故障三连（都是实测踩出来的）
 
 | 症状 | 根因 | 处置 |
@@ -58,6 +97,8 @@ python3 tools/agentos.py resident               # 常驻真值门：核 launchd 
 python3 tools/agentos.py headroom               # headroom 8787 契约门
 python3 tools/agentos.py selfscan               # 静态安全自检：bandit 扫 tools/，只判新增 MEDIUM/HIGH
 python3 tools/agentos.py selfscan --install     # 幂等部署 bandit 到 .vendor/（不进运行时，主链路仍纯 stdlib）
+python3 tools/agentos.py replay                 # 真实会话回放基准：引擎开/关 A/B，量「空口完成」被压住多少
+python3 tools/agentos.py replay --check         # 基准门模式：有回归就非零退出
 python3 tools/agentos.py open                   # 浏览器打开驾驶舱首页
 python3 tools/agentos.py tui                    # 终端交互主界面：总览/轮次/阶段矩阵/证据账本/引擎/Agent 台/目标台/复盘台/能力地图/工作区/终端/文件/设置 13 视图全走真 8790 数据
 python3 tools/agentos.py agent                  # 内置终端 agent：真模型 + 真工具循环（Claude Code 式 REPL）

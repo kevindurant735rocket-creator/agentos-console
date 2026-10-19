@@ -164,6 +164,12 @@ class Converge:
         self.repeat_fps = None
         self.repeat_count = 0
         self.dirty = False  # 有没有产出性调用
+        self.gate_retries = 0  # 交付闸退回次数（证据不足被退了几回）
+        # 分类型命中计数：自进化账靠它分辨「是停滞还是循环还是只探查」，
+        # 再决定拧哪个旋钮（收紧错了旋钮 = 治错了病）。
+        self.stall_hits = 0
+        self.loop_hits = 0
+        self.phase_hits = 0
         self.notes = []  # 注入过的指令（供自检/审计）
         self.hints = []  # 交付闸退回的待办
         # 任务字面像不像「要做出东西」——决定要不要强推 VERIFY
@@ -246,6 +252,40 @@ class Converge:
     def repeat_fps_repeat(self):
         return self.loop_repeat
 
+    # ── 自进化调参（根源级：规则账能改引擎行为，不只是加提示）──────
+    def apply_policy(self, policy):
+        """把一条自进化规则算出的参数落进引擎。返回实际生效值。
+
+        为什么要有这条：ACTIVE 规则以前只会往 system prompt 里塞一段
+        「照此避坑」的文字——**文字不改变行为**。收敛引擎的阈值是真正
+        的行为旋钮：本机历史反复停滞，就该更早催它动手；反复同参打转，
+        就该更早熔断。所以规则必须能拧旋钮。
+
+        安全钳制：下限 2（比 2 还小会变成"每步都催"，模型被噪声淹没，
+        反而更差）；上限不超过构造时的初值（只允许收紧，不允许放宽
+        ——放宽等于把刚修好的护栏拆掉）。
+        """
+        if not isinstance(policy, dict):
+            return {}
+        applied = {}
+        for key, attr in (
+            ("max_stall", "max_stall"),
+            ("max_explore", "max_explore"),
+            ("loop_repeat", "loop_repeat"),
+        ):
+            if key not in policy:
+                continue
+            try:
+                want = int(policy[key])
+            except (TypeError, ValueError):
+                continue
+            cur = int(getattr(self, attr))
+            newv = max(2, min(want, cur))  # 只允许收紧，且不低于 2
+            if newv != cur:
+                setattr(self, attr, newv)
+            applied[attr] = int(getattr(self, attr))
+        return applied
+
     # ── 指令注入 ────────────────────────────────────────────────────
     def directive(self):
         """给模型的一句话方向指令（没有就返回 None）。
@@ -260,6 +300,7 @@ class Converge:
                 "不要再重复读同样的文件。" % self.since_productive
             )
             self.since_productive = 0  # 注入过就重置计数，别每步都喊
+            self.stall_hits += 1
             self.notes.append(msg)
             return msg
         if self.repeat_count >= self.loop_repeat and self.fps.get(self.repeat_fps, 0) >= self.loop_repeat:
@@ -269,6 +310,7 @@ class Converge:
                 % (str(self.repeat_fps).split(":")[0], self.fps.get(self.repeat_fps, 0))
             )
             self.repeat_count = 0
+            self.loop_hits += 1
             self.notes.append(msg)
             return msg
         if self.phase == P_EXPLORE and self.steps >= self.max_explore:
@@ -277,6 +319,7 @@ class Converge:
                 "（写盘/改文件/跑命令），不要继续读。"
                 % self.steps
             )
+            self.phase_hits += 1
             self.notes.append(msg)
             return msg
         if self.phase == P_ACT and self.verify_seen is False and self.steps > self.max_explore:
@@ -301,6 +344,7 @@ class Converge:
         """
         text = (answer or "").strip()
         if not text:
+            self.gate_retries += 1
             return False, "最终回答为空"
         # 诚实报告失败是**真交付**（说清了没做成 + 原因），不退回。
         if _REPORTS_FAILURE.search(text):
@@ -309,14 +353,17 @@ class Converge:
         # 这正是 900 秒那次事故的形状（探查 86 次、一步没落地）。
         if self.implies_build and self.steps > 0:
             if not self.write_seen and not self.dirty:
+                self.gate_retries += 1
                 return False, "任务像是要做东西，但全程只有探查没有写盘/改动证据"
         # 规则 B：需求**点名要验证**却没验 → 退回。
         # 判据来自需求字面（「验证/测试/跑一次」），不是「所有改动都得验」——
         # 否则「把第二行改掉」这种小事会被无端卡住。
         if self.demands_verify and self.steps > 0 and not self.verify_seen:
+            self.gate_retries += 1
             return False, "需求要求验证，但没有跑命令也没有读回任何证据"
         # 规则 C：一次工具都没调，却宣称做完了 → 空口交付，退回。
         if self.steps == 0 and _CLAIMS_DONE.search(text):
+            self.gate_retries += 1
             return False, "零工具调用却宣称完成（没有任何事实依据）"
         return True, ""
 
@@ -342,6 +389,13 @@ class Converge:
             "repeat_fp": self.repeat_fps,
             "repeat_count": self.repeat_count,
             "notes": len(self.notes),
+            "gate_retries": self.gate_retries,
+            "stall_hits": self.stall_hits,
+            "loop_hits": self.loop_hits,
+            "phase_hits": self.phase_hits,
+            "max_stall": self.max_stall,
+            "max_explore": self.max_explore,
+            "loop_repeat": self.loop_repeat,
         }
 
 

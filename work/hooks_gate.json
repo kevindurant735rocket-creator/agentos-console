@@ -7,8 +7,8 @@
       "ok": true
     },
     {
-      "detail": "rc=0 tail='AGENT_CORE OK 145/145'",
-      "gate": "D2 --check 末行逐字 AGENT_CORE OK 145/145",
+      "detail": "rc=0 tail='AGENT_CORE OK 152/152'",
+      "gate": "D2 --check 末行逐字 AGENT_CORE OK 152/152",
       "ok": true
     },
     {
@@ -27,7 +27,7 @@
       "ok": true
     },
     {
-      "detail": "len=1862",
+      "detail": "len=2062",
       "gate": "D6 注入：hook_context 真进 system prompt",
       "ok": true
     },

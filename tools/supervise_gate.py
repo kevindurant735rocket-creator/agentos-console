@@ -6,7 +6,7 @@
   监督通道的每一层都能「看起来在工作」：指令可以投了不进、可以重复进、
   可以进错会话；监督面可以永远空着。本门站在外面认这些事实（纯离线）：
     D1  steer 纯面：往返 / 游标只进不退 / 坏 sid 拒（防路径穿越）
-    D2  `--check` 末行逐字 `AGENT_CORE OK 149/149`（数漂移即红）
+    D2  `--check` 末行逐字 `AGENT_CORE OK 152/152`（数漂移即红）
     D3  源码锚点：步骤边界消费 / /steer / /watch / 补全表 / CLI 两子命令 +
         bash 补全字面 各就位
     D4  注入（行为）：指令进本轮消息 [老板指令…]（走真 run_agent）
@@ -34,7 +34,7 @@ ROOT = os.path.dirname(HERE)
 DEFAULT_CORE = os.path.join(HERE, "agent_core.py")
 DEFAULT_AGENTOS = os.path.join(HERE, "agentos.py")
 DEFAULT_OUT = os.path.join(ROOT, "work", "supervise_gate.json")
-EXPECT_CHECK = "AGENT_CORE OK 149/149"
+EXPECT_CHECK = "AGENT_CORE OK 152/152"
 
 results = []
 
@@ -163,7 +163,14 @@ def main():
     # 锚点只认「steer/watch 两命令注册了」这个事实，不认排版。
     n_a1 = len(_re.findall(r'add\(\s*"steer"', gsrc))
     n_a2 = len(_re.findall(r'add\(\s*"watch"', gsrc))
-    n_bash = 1 if 'steer watch leader"' in gsrc else 0
+    # bash 补全串：判「steer/watch 真在补全表里」，**不钉串尾字面**。
+    # 原来钉的是 'steer watch leader"' —— 2026-10-19 给补全表加了
+    # doctor/evolve/replay 之后，串尾变成 '... leader doctor evolve replay"'，
+    # 锚点当场失配（与 supervise 功能本身无关）。判据的意图是
+    # 「这两个命令能被 Tab 补出来」，那就按集合成员判，别按排版判。
+    _ms = _re.search(r'local subs="([^"]*)"', gsrc)
+    _subs_set = set((_ms.group(1) if _ms else "").split())
+    n_bash = 1 if ("steer" in _subs_set and "watch" in _subs_set) else 0
     gate(
         "D3 源码锚点（边界消费//steer//watch/补全表/CLI 两命令/bash 字面）",
         (n_take, n_steer, n_watch, n_tbl, n_a1, n_a2, n_bash) == (1, 1, 1, 1, 1, 1, 1),

@@ -242,3 +242,67 @@ gh_gate W13b 判据同步扩：venv 免扫 + 带默认值模板放行 + ghp_/sk-
 
 **真实终端复验**：同类任务（摸清仓库→写观察→cat 验证）**10 步 51.2s 交付**（回执 13/13、
 产物 5280B、无异常），对照事故那次 23 步 900s 零交付。
+
+## 第二十四波（2026-10-19）：收敛引擎接入自进化 —— agent 用自己的失败数据改自己的行为
+
+**上一波的缺口**：ACTIVE 自进化规则只会往 system prompt 里塞一段「照此避坑」的文字。
+**文字不改变行为**——提醒写在第 40 段、任务在第 3 段，中间隔了 37 段，模型照样原地打转。
+规则必须能拧**行为旋钮**，才算真的进化。
+
+**这一波做的事**（全部有真实证据，不是演示数据）：
+1. `tools/converge.py` 新增 `apply_policy()`：规则可调 `max_stall` / `max_explore` / `loop_repeat`；
+   钳制规则=**只许收紧**（放宽等于把刚修好的护栏拆掉）、下限 2（不会退化成每步都催）、坏值不生效也不炸。
+2. 引擎快照新增分类型命中计数（`stall_hits` / `loop_hits` / `phase_hits` / `gate_retries`）→
+   进信号账 `converge` 字段 → 挖掘器据此聚出 `converge:stall` / `converge:loop` /
+   `converge:explore-only` / `converge:no-verify` / `converge:gate-reject` 五类签名，
+   其中前三类自带 `action.op=converge_tune`（拧哪个旋钮、拧到几）。
+3. 运行期：`_evo_converge_policy()` 读 ACTIVE 规则的 action，冲突取**最紧**，
+   在 `run_agent` 建引擎时立刻落进旋钮（下一轮就生效，不等重启）。
+
+**闭环实测（真实终端，真实账本）**：
+- 真实任务「逐个读 14 个 txt 并逐行列出」→ 引擎判停滞 **stall_hits=1~2、15 步零写盘**（跑了 4 轮）
+- 3 轮同形状证据 → 挖出 `evo-converge-stall`(count=3) + `evo-converge-explore-only`(count=3)，均 CANDIDATE
+- 晋升 ACTIVE → 第 4 轮快照实测 `max_stall=4 max_explore=4`（默认 6/6）——**旋钮被自己的历史拧紧了**
+- 全程无人工调参、无手写阈值改动
+
+**门与自检**：converge_selftest 29→**37/37** · converge_gate 10→**17/17**
+（新增旋钮判据 + 第二个变异体：拆掉「只许收紧」钳制必红）· agent_core 自检 149→**152**
+（新增 3 例：停滞聚成带旋钮动作的规则 / ACTIVE 规则收紧 policy / 旋钮运行期真生效）· 计数钉 11 文件同步 152。
+
+**纪律固化**：新增 `AGENTS.md`——写死「永不上传自有内容到 GitHub」、
+「部署=本地蒸馏高星项目（gh_search→gh_file_read→本地写盘→门自检→本仓 commit）」、
+「宣称完成三证齐（日志+账本+真树 diff）」。
+
+**第二十四波·续：回放基准 —— 证明「自进化真的改了行为」**
+
+自进化闭环此前只能证明「规则合入了、门是绿的」，**证明不了行为真的变好了**——
+那只是自我感觉。补上可测量的那层：
+
+- `tools/replay_bench.py`：把真实跑过的会话语料用桩**原样重放**（确定性），
+  引擎开 / 引擎关（`ctx["converge"]=False`）做 A/B，用**交付闸自己的判据**
+  量「空口完成」（说完成了但全程零证据）。
+- `work/replay_corpus.jsonl`：3 条语料，每条带 `note` 标注源自哪次真实会话
+  （连读 14 文件的停滞形状 / 写→读回的交付形状 / 23 步 900 秒的空口完成形状）。
+- `tools/replay_gate.py`：8/8 判据 + 变异体（两侧都强制关引擎 → 分辨力归零 → 判红）。
+- 入口：`agentos replay` / `agentos replay --check`（已上链，链尾）。
+
+**实测 A/B**（3 条真实语料）：
+
+| | 交付 | 空口完成 | 干预 | 闸退回 | 总步数 |
+|---|---|---|---|---|---|
+| 引擎开 | 3/3 | **0** | 2 | 1 | 16 |
+| 引擎关 | 3/3 | **1** | 0 | 0 | 14 |
+
+差值 = **避免 1 条空口完成**。这就是引擎的真实贡献，第一次有了可复算的数字。
+
+**同波修的两个真缺陷**
+1. **交付闸退到底会放行空口完成** —— 退回 2 次仍无证据时旧逻辑直接
+   `ok=True` 放行，等于把「空口完成」洗成「已完成」。改为**如实报未交付**
+   （`kind="gate"`、REPL 打红字「本轮不算完成」）。
+2. **补全表漂移** —— `doctor`/`evolve`（W22 加的子命令）漏在 bash 补全表外，
+   用户敲 `agentos doctor<Tab>` 补不出来而 `--help` 里明明有；同批补上
+   `replay`，并把 cli_gate 的 SUBS 钉从 18 更新到 21（仍是逐项相等，不是子集）。
+
+**GitHub 止血**：`agentos-study-cli` + `cli2..cli8` 共 8 个误部署的 public 仓库，
+当前 token 无 `delete_repo` scope（403），**已先全部转 PRIVATE 止血**（`repo` scope 足够）；
+删除脚本 `tools/cleanup_study_repos.sh` 就绪，授权后一条命令收尾并逐个验 404。

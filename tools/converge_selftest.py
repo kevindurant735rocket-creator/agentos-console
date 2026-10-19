@@ -211,6 +211,63 @@ case(
     "first=%s second=%s" % (bool(first), bool(second)),
 )
 
+# ── 10. 自进化旋钮：apply_policy ─────────────────────────────────
+_ap1 = cv.Converge()
+_a1 = _ap1.apply_policy({"max_stall": 4, "max_explore": 3, "loop_repeat": 2})
+case(
+    "旋钮：apply_policy 真拧紧三个阈值",
+    _a1.get("max_stall") == 4
+    and _a1.get("max_explore") == 3
+    and _a1.get("loop_repeat") == 2
+    and _ap1.max_stall == 4,
+    "applied=%r" % (_a1,),
+)
+_ap2 = cv.Converge()
+_a2 = _ap2.apply_policy({"max_stall": 99, "max_explore": 99, "loop_repeat": 99})
+case(
+    "旋钮：只许收紧，放宽被钳住（不能拆护栏）",
+    _a2.get("max_stall") == 6
+    and _a2.get("max_explore") == 6
+    and _a2.get("loop_repeat") == 3,
+    "applied=%r" % (_a2,),
+)
+_ap3 = cv.Converge()
+_a3 = _ap3.apply_policy({"max_stall": 1})
+case("旋钮：下限 2 钳制（不会退化成每步都催）", _a3.get("max_stall") == 2, "applied=%r" % (_a3,))
+_ap4 = cv.Converge()
+_a4 = _ap4.apply_policy({"max_stall": "坏值", "loop_repeat": None})
+case(
+    "旋钮：坏值不生效也不炸",
+    _a4 == {} and _ap4.max_stall == 6,
+    "applied=%r" % (_a4,),
+)
+
+# ── 11. 分类命中计数（自进化账靠它分辨病因）──────────────────────
+_h1 = cv.Converge(max_stall=2, loop_repeat=99, max_explore=99)
+for _i in range(3):
+    _h1.observe("read_file", {"path": "f%d" % _i}, ok=True)
+_h1.directive()
+case("分类计数：停滞命中被单独记下", _h1.snapshot().get("stall_hits") == 1, "snap=%r" % (_h1.snapshot(),))
+_h2 = cv.Converge(loop_repeat=2, max_stall=99)
+for _i in range(2):
+    _h2.observe("run_cmd", {"argv": ["ls"]}, ok=True, rc=0)
+_h2.directive()
+case("分类计数：循环命中被单独记下", _h2.snapshot().get("loop_hits") == 1, "snap=%r" % (_h2.snapshot(),))
+_h3 = cv.Converge(task_text="实现一个功能")
+_h3.gate("已经完成了。")
+case(
+    "分类计数：交付闸退回被单独记下",
+    _h3.snapshot().get("gate_retries") == 1,
+    "snap=%r" % (_h3.snapshot(),),
+)
+_h4 = cv.Converge(task_text="实现一个功能")
+_h4.gate("写盘被拒，做不到。")
+case(
+    "分类计数：诚实报告失败不算退回",
+    _h4.snapshot().get("gate_retries") == 0,
+    "snap=%r" % (_h4.snapshot(),),
+)
+
 bad = [c for c in CASES if not c[1]]
 for name, ok, detail in CASES:
     print("%s %s%s" % ("PASS" if ok else "FAIL", name, ("  -- " + detail) if detail else ""))

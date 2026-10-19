@@ -7,7 +7,7 @@
   上锁路径整个失效、连硬阻断一起放掉。本门站在外面认这些事实（纯离线；
   CLI 侧用隔离 HOME 真跑）：
     D1  _safety_flags 纯面：缺键=自由 / 字面 True 才上锁 / 字符串不认
-    D2  `--check` 末行逐字 `AGENT_CORE OK 149/149`（数漂移即红）
+    D2  `--check` 末行逐字 `AGENT_CORE OK 152/152`（数漂移即红）
     D3  源码锚点：入口两处载入 / 三键站点齐 / CLI 白名单扩到 agent 三键
     D4  默认自由（行为）：入口派生旗标下未审批写放行；裸 ctx（无旗标）
         保守仍锁 —— 闸的钥匙只在旗标上，没旗标不许自个儿松
@@ -37,7 +37,7 @@ ROOT = os.path.dirname(HERE)
 DEFAULT_CORE = os.path.join(HERE, "agent_core.py")
 DEFAULT_AGENTOS = os.path.join(HERE, "agentos.py")
 DEFAULT_OUT = os.path.join(ROOT, "work", "safety_gate.json")
-EXPECT_CHECK = "AGENT_CORE OK 149/149"
+EXPECT_CHECK = "AGENT_CORE OK 152/152"
 
 results = []
 
