@@ -438,3 +438,11 @@ pid 已不在 → 那才是真残留（上一轮被杀的自检留下的），�
 `_st_agent_core.<pid>`」——并发造成的假红，根因是零污染口径在十几道门里
 各写一遍；抽成 `tools/gate_pollution.py` 后八道门统一。同一波还修了
 「门红时看不出哪条判据红」和「pid 回收导致自检偶发红」两个真缺陷。）
+
+**跨类型真机复验（同一会话两轮）**
+| 任务 | 判型 | 证据 | 闸退回 |
+|---|---|---|---|
+| 「写一份 README 说明到 README.md，写完读回确认」 | `docs` | write=True · read=3（**读回了**）· cmd_ran=True | 0 |
+| 「统计 data/ 下有多少个 txt 文件，结果写进 out.md」 | `analysis` | write=True · cmd_ran=True（**跑命令数出来的**） | 0 |
+| （上一波）「calc.py 的 add 有 bug，请修好」 | `bugfix` | repro_fail=True · **repro_green=True**（红→绿） | 0 |
+三类任务的「完成证据」各不相同，契约各自认，**都是一次放行**（证据是真的）。
