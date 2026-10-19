@@ -17,6 +17,24 @@
    "notified": true,
    "sig": "tool-fail:gh_repo_view",
    "state": "CANDIDATE"
+  },
+  {
+   "advice": "read_file 失败多为路径不存在或越界：先 list_dir 确认结构再读，路径以项目根为基准",
+   "count": 4,
+   "created": "2026-10-19 18:51:36",
+   "id": "evo-tool-fail-read_file",
+   "notified": true,
+   "sig": "tool-fail:read_file",
+   "state": "CANDIDATE"
+  },
+  {
+   "advice": "run_cmd 失败：命令是否在只读白名单内，长输出先缩小范围",
+   "count": 4,
+   "created": "2026-10-19 18:51:36",
+   "id": "evo-tool-fail-run_cmd",
+   "notified": true,
+   "sig": "tool-fail:run_cmd",
+   "state": "CANDIDATE"
   }
  ],
  "version": 1
