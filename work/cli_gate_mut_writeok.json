@@ -3,9 +3,9 @@
  "ok": false,
  "pre_ok": true,
  "prefail": "",
- "elapsed": 4.18,
+ "elapsed": 4.14,
  "cli": [
-  "/var/folders/3p/m9ntmpmn5z34b3my27hrjdmm0000gn/T/cli_gate_mut-qr4gbvzj/writeok.py"
+  "/var/folders/3p/m9ntmpmn5z34b3my27hrjdmm0000gn/T/cli_gate_mut-qcbvze3y/writeok.py"
  ],
  "dest": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/cli_gate_dest",
  "skip_install": false,
@@ -345,15 +345,15 @@
   {
    "gate": "inst-isolated-port-health",
    "ok": true,
-   "detail": "port=59846 rc=0   code_sha  c10e8cac5f26fcef",
-   "cmd": "env -i PATH=/usr/bin:/bin <shim> --port 59846 health",
+   "detail": "port=65026 rc=0   code_sha  c10e8cac5f26fcef",
+   "cmd": "env -i PATH=/usr/bin:/bin <shim> --port 65026 health",
    "rc": 0
   },
   {
    "gate": "inst-isolated-port-released",
    "ok": true,
-   "detail": "port=59846 仍可连=False",
-   "cmd": "connect 127.0.0.1:59846（服务已停）",
+   "detail": "port=65026 仍可连=False",
+   "cmd": "connect 127.0.0.1:65026（服务已停）",
    "rc": 0
   },
   {

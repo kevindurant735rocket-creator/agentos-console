@@ -239,18 +239,18 @@
   "panel_ax_term_chars" : 60,
   "panel_ax_term_has_result" : true,
   "panel_ax_texts" : [
-    "work/",
-    "progress.md  33566B",
-    "uninstall.sh  5110B",
-    "启动 AgentOS.command  492B",
+    "已拒绝：只接回环地址（收到 host=example.com）",
+    "打开",
     "rollback.sh  531B",
+    "启动 AgentOS.command  492B",
+    "progress.md  34425B",
+    "uninstall.sh  5110B",
+    "tools/",
     "agent_desktop.html  114163B",
     "agents/",
     "a11y_linear_read.md  2305B",
     "bin/",
-    "completions/",
-    "data.json  63224B",
-    "docs/"
+    "completions/"
   ],
   "panel_ax_texts_count" : 26,
   "panel_bounds_now" : "{{0, 265}, {296, 512}}",
@@ -274,14 +274,14 @@
   "panel_shot_bytes_code" : [
     145697,
     145697,
-    143780,
+    143757,
     159160
   ],
   "panel_shot_bytes_panel" : [
-    93134,
-    93134,
-    93943,
-    102584
+    92646,
+    92646,
+    93533,
+    102125
   ],
   "panel_shot_channel_methods" : [
     "layer",
@@ -290,10 +290,10 @@
     "cachedefault"
   ],
   "panel_shot_channels" : [
-    "layer:ok 93134 bytes 592x1024 distinct=198 ink=0.944",
-    "cachewhite:ok 93134 bytes 592x1024 distinct=198 ink=0.944",
-    "pdf:ok 93943 bytes 592x1024 distinct=180 ink=0.947",
-    "cachedefault:ok 102584 bytes 592x1024 distinct=199 ink=0.956"
+    "layer:ok 92646 bytes 592x1024 distinct=198 ink=0.944",
+    "cachewhite:ok 92646 bytes 592x1024 distinct=198 ink=0.944",
+    "pdf:ok 93533 bytes 592x1024 distinct=180 ink=0.947",
+    "cachedefault:ok 102125 bytes 592x1024 distinct=199 ink=0.956"
   ],
   "panel_shot_code" : "ok 159160 bytes 592x1024",
   "panel_shot_distinct_colors_code" : 249,
@@ -302,7 +302,7 @@
   "panel_shot_ink_ratio_panel" : 0.95622895622895621,
   "panel_shot_method_code" : "cachedefault",
   "panel_shot_method_panel" : "cachedefault",
-  "panel_shot_panel" : "ok 102584 bytes 592x1024",
+  "panel_shot_panel" : "ok 102125 bytes 592x1024",
   "panel_shot_path_code" : "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/shot-code-cachedefault.png",
   "panel_shot_path_panel" : "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/shot-panel-cachedefault.png",
   "panel_term_ran" : 1,
@@ -323,7 +323,7 @@
   "preview_truncated" : false,
   "probe_mode" : 1,
   "probe_multi_instance" : 1,
-  "probe_saved_at" : "2026-10-19T18:06:55Z",
+  "probe_saved_at" : "2026-10-19T19:08:32Z",
   "probe_sequence_complete" : 1,
   "probe_sibling_instances" : 0,
   "proj_active_flag" : [
@@ -334,7 +334,7 @@
   "proj_ax_header" : "项目与任务空间",
   "proj_ax_row_count" : 2,
   "proj_ax_rows" : [
-    "● AgentOS 驾驶舱\n1851 文件 · 产品根：台面、门链、账本都在这里",
+    "● AgentOS 驾驶舱\n1874 文件 · 产品根：台面、门链、账本都在这里",
     "○ future agent\n2000 文件 · 证据与企业门真树：轮次/覆盖数据由它抽取"
   ],
   "proj_ax_rows_named" : 2,
@@ -353,7 +353,7 @@
   ],
   "proj_loaded" : 1,
   "proj_nfiles" : [
-    1851,
+    1874,
     2000
   ],
   "proj_roots_absolute" : true,
@@ -366,21 +366,21 @@
   "projects_focus_via_cmdp" : 1,
   "projects_loaded_at" : "loadConsole",
   "recovery_panel_visible" : 0,
-  "shot_back" : "ok 564424 bytes 2442x1552",
-  "shot_cmdk" : "ok 460453 bytes 2442x1552",
-  "shot_distinct_colors_back" : 617,
+  "shot_back" : "ok 564107 bytes 2442x1552",
+  "shot_cmdk" : "ok 460094 bytes 2442x1552",
+  "shot_distinct_colors_back" : 619,
   "shot_distinct_colors_cmdk" : 390,
   "shot_distinct_colors_final" : 460,
-  "shot_distinct_colors_mx" : 527,
-  "shot_distinct_colors_over" : 617,
-  "shot_final" : "ok 456323 bytes 2442x1552",
+  "shot_distinct_colors_mx" : 528,
+  "shot_distinct_colors_over" : 618,
+  "shot_final" : "ok 455944 bytes 2442x1552",
   "shot_ink_ratio_back" : 0.99741125571828793,
   "shot_ink_ratio_cmdk" : 0.99925529274087732,
   "shot_ink_ratio_final" : 0.99925529274087732,
   "shot_ink_ratio_mx" : 0.99617007695308346,
   "shot_ink_ratio_over" : 0.99741125571828793,
-  "shot_mx" : "ok 499494 bytes 2442x1552",
-  "shot_over" : "ok 564424 bytes 2442x1552",
+  "shot_mx" : "ok 499145 bytes 2442x1552",
+  "shot_over" : "ok 564015 bytes 2442x1552",
   "shot_path_back" : "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/shot-back.png",
   "shot_path_cmdk" : "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/shot-cmdk.png",
   "shot_path_final" : "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/shot-final.png",

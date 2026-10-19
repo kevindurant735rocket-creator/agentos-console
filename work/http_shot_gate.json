@@ -1,16 +1,16 @@
 {
  "tool": "http_shot_gate.py",
- "base_url": "http://127.0.0.1:51127/index.html",
+ "base_url": "http://127.0.0.1:55338/index.html",
  "probes": {
   "base": {
    "pjnodes": 2,
    "pjerr": "",
-   "cxexecn": "读 /__health · 10/20 01:54",
+   "cxexecn": "读 /__health · 10/20 02:55",
    "cxact": "当前动作不可判定上次动作不可判定上次 rc不可判定上次耗时不可判定本进程执行数—被用户中止false",
-   "cxinst": "clients1code_shac10e8cac5f26启动时间2026-10-20 01:54:16重建次数0末次构建本次未重建",
+   "cxinst": "clients1code_shac10e8cac5f26启动时间2026-10-20 02:55:55重建次数0末次构建本次未重建",
    "codeSha": "c10e8cac5f26",
    "instUndecidable": 0,
-   "url": "http://127.0.0.1:51127/index.html",
+   "url": "http://127.0.0.1:55338/index.html",
    "scheme": "http:",
    "pageerrors": []
   },
@@ -22,19 +22,19 @@
    "cxinst": "clients不可判定code_sha不可判定启动时间不可判定重建次数不可判定末次构建不可判定",
    "codeSha": "",
    "instUndecidable": 5,
-   "url": "http://127.0.0.1:51127/index.html",
+   "url": "http://127.0.0.1:55338/index.html",
    "scheme": "http:",
    "pageerrors": []
   },
   "m2_projects_blocked": {
    "pjnodes": 0,
    "pjerr": "项目空间读不到：Failed to fetch",
-   "cxexecn": "读 /__health · 10/20 01:54",
+   "cxexecn": "读 /__health · 10/20 02:56",
    "cxact": "当前动作不可判定上次动作不可判定上次 rc不可判定上次耗时不可判定本进程执行数—被用户中止false",
-   "cxinst": "clients2code_shac10e8cac5f26启动时间2026-10-20 01:54:16重建次数0末次构建本次未重建",
+   "cxinst": "clients2code_shac10e8cac5f26启动时间2026-10-20 02:55:55重建次数0末次构建本次未重建",
    "codeSha": "c10e8cac5f26",
    "instUndecidable": 0,
-   "url": "http://127.0.0.1:51127/index.html",
+   "url": "http://127.0.0.1:55338/index.html",
    "scheme": "http:",
    "pageerrors": []
   },
@@ -53,12 +53,12 @@
   "m4_health_500": {
    "pjnodes": 2,
    "pjerr": "",
-   "cxexecn": "读 /__health · 10/20 01:54",
+   "cxexecn": "读 /__health · 10/20 02:56",
    "cxact": "当前动作不可判定上次动作不可判定上次 rc不可判定上次耗时不可判定本进程执行数—被用户中止—",
    "cxinst": "clients—code_sha不可判定启动时间不可判定重建次数—末次构建本次未重建",
    "codeSha": "",
    "instUndecidable": 2,
-   "url": "http://127.0.0.1:51127/index.html",
+   "url": "http://127.0.0.1:55338/index.html",
    "scheme": "http:",
    "pageerrors": []
   }

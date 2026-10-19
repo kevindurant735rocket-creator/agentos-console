@@ -1,7 +1,7 @@
 {
  "tool": "view_dod.py",
  "method": "playwright-cdp-real-viewport",
- "url": "http://127.0.0.1:65287/index.html",
+ "url": "http://127.0.0.1:52945/index.html",
  "transport": "real-http",
  "served_root": "live",
  "views": [
@@ -37,7 +37,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 85132,
+   "png_bytes": 85102,
    "viewport_faked": false,
    "overflow": false
   },
@@ -53,7 +53,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 78540,
+   "png_bytes": 78506,
    "viewport_faked": false,
    "overflow": false
   },
@@ -69,7 +69,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 81582,
+   "png_bytes": 81558,
    "viewport_faked": false,
    "overflow": false
   },
@@ -85,7 +85,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 78658,
+   "png_bytes": 78627,
    "viewport_faked": false,
    "overflow": false
   },
@@ -101,7 +101,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 84367,
+   "png_bytes": 84348,
    "viewport_faked": false,
    "overflow": false
   },
@@ -117,7 +117,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 80804,
+   "png_bytes": 80779,
    "viewport_faked": false,
    "overflow": false
   },
@@ -133,7 +133,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 84735,
+   "png_bytes": 84719,
    "viewport_faked": false,
    "overflow": false
   },
@@ -149,7 +149,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 87287,
+   "png_bytes": 87257,
    "viewport_faked": false,
    "overflow": false
   },
@@ -165,7 +165,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 83320,
+   "png_bytes": 83296,
    "viewport_faked": false,
    "overflow": false
   },
@@ -181,7 +181,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 77998,
+   "png_bytes": 77961,
    "viewport_faked": false,
    "overflow": false
   },
@@ -191,13 +191,13 @@
    "docClientW": 375,
    "visible": true,
    "nodes": 17,
-   "textLen": 2967,
+   "textLen": 2973,
    "tabsSelected": [
     "term"
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 78949,
+   "png_bytes": 78997,
    "viewport_faked": false,
    "overflow": false
   },
@@ -213,7 +213,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 78317,
+   "png_bytes": 78288,
    "viewport_faked": false,
    "overflow": false
   },
@@ -229,7 +229,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 78583,
+   "png_bytes": 78549,
    "viewport_faked": false,
    "overflow": false
   },
@@ -245,7 +245,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 138446,
+   "png_bytes": 138283,
    "viewport_faked": false,
    "overflow": false
   },
@@ -261,7 +261,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 124877,
+   "png_bytes": 124723,
    "viewport_faked": false,
    "overflow": false
   },
@@ -277,7 +277,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 124410,
+   "png_bytes": 124246,
    "viewport_faked": false,
    "overflow": false
   },
@@ -293,7 +293,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 126525,
+   "png_bytes": 126367,
    "viewport_faked": false,
    "overflow": false
   },
@@ -309,7 +309,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 131448,
+   "png_bytes": 131291,
    "viewport_faked": false,
    "overflow": false
   },
@@ -325,7 +325,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 125189,
+   "png_bytes": 125028,
    "viewport_faked": false,
    "overflow": false
   },
@@ -341,7 +341,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 126255,
+   "png_bytes": 126101,
    "viewport_faked": false,
    "overflow": false
   },
@@ -357,7 +357,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 134139,
+   "png_bytes": 133977,
    "viewport_faked": false,
    "overflow": false
   },
@@ -373,7 +373,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 126547,
+   "png_bytes": 126394,
    "viewport_faked": false,
    "overflow": false
   },
@@ -389,7 +389,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 114174,
+   "png_bytes": 114020,
    "viewport_faked": false,
    "overflow": false
   },
@@ -405,7 +405,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 115152,
+   "png_bytes": 114980,
    "viewport_faked": false,
    "overflow": false
   },
@@ -421,7 +421,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 114571,
+   "png_bytes": 114410,
    "viewport_faked": false,
    "overflow": false
   },
@@ -437,7 +437,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 119702,
+   "png_bytes": 119387,
    "viewport_faked": false,
    "overflow": false
   },
@@ -469,7 +469,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 166650,
+   "png_bytes": 166590,
    "viewport_faked": false,
    "overflow": false
   },
@@ -485,7 +485,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 239364,
+   "png_bytes": 239329,
    "viewport_faked": false,
    "overflow": false
   },
@@ -501,7 +501,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 235556,
+   "png_bytes": 235497,
    "viewport_faked": false,
    "overflow": false
   },
@@ -517,7 +517,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 270569,
+   "png_bytes": 270565,
    "viewport_faked": false,
    "overflow": false
   },
@@ -533,7 +533,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 243242,
+   "png_bytes": 243227,
    "viewport_faked": false,
    "overflow": false
   },
@@ -549,7 +549,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 256636,
+   "png_bytes": 256598,
    "viewport_faked": false,
    "overflow": false
   },
@@ -565,7 +565,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 281437,
+   "png_bytes": 281412,
    "viewport_faked": false,
    "overflow": false
   },
@@ -581,7 +581,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 260255,
+   "png_bytes": 260141,
    "viewport_faked": false,
    "overflow": false
   },
@@ -597,7 +597,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 210842,
+   "png_bytes": 210829,
    "viewport_faked": false,
    "overflow": false
   },
@@ -613,7 +613,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 198921,
+   "png_bytes": 198888,
    "viewport_faked": false,
    "overflow": false
   },
@@ -629,7 +629,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 227600,
+   "png_bytes": 227498,
    "viewport_faked": false,
    "overflow": false
   },
@@ -645,7 +645,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 219101,
+   "png_bytes": 219106,
    "viewport_faked": false,
    "overflow": false
   }

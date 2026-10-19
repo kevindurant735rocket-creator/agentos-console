@@ -86,18 +86,18 @@
    "tag": "button",
    "label": "R1已收轮 · AC1",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
    "tag": "button",
    "label": "R2已收轮 · AC2",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -905,27 +905,27 @@
    "tag": "button",
    "label": "打开命令面板（快捷键 Command 加",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
    "tag": "button",
    "label": "R1已收轮 · AC1",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
    "tag": "button",
    "label": "R2已收轮 · AC2",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -1157,9 +1157,9 @@
    "tag": "button",
    "label": "编译计划",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#gdir",
@@ -1193,9 +1193,9 @@
    "tag": "button",
    "label": "下一轮该做什么",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#gcrg",
@@ -1256,9 +1256,9 @@
    "tag": "button",
    "label": "预检这一轮能不能收",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#t-retro",
@@ -1418,9 +1418,9 @@
    "tag": "button",
    "label": "读能力地图",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#t-ws",
@@ -1490,9 +1490,9 @@
    "tag": "button",
    "label": "回到当前项目根",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#wscode",
@@ -1652,18 +1652,18 @@
    "tag": "button",
    "label": "ls tools",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.ws > div.wsp.ws-code > div.wsquick > button.btn",
    "tag": "button",
    "label": "git status",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.ws > div.wsp.ws-code > div.wsquick > button.btn",
@@ -1760,9 +1760,9 @@
    "tag": "button",
    "label": "设置",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#cmdk",
@@ -1823,9 +1823,9 @@
    "tag": "button",
    "label": "重读构建指纹",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#setre-proj",

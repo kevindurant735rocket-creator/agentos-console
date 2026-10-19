@@ -1,7 +1,7 @@
 {
  "tool": "cli_gate_selftest.py",
  "ok": true,
- "elapsed": 181.87,
+ "elapsed": 183.29,
  "mutants": [
   "silent0",
   "hangq",
@@ -37,7 +37,7 @@
   {
    "gate": "BASE·tty-noarg-enters-tui 必须绿",
    "ok": true,
-   "detail": "ok=True | 首行='✻ AgentOS TUI · 02:13:47 · http://127.0.0.1:87' footer='视图 6/13 · 数据源: GET /__health +"
+   "detail": "ok=True | 首行='✻ AgentOS TUI · 03:15:29 · http://127.0.0.1:87' footer='视图 6/13 · 数据源: GET /__health +"
   },
   {
    "gate": "M·silent0 整门 rc=2（有红项）",

@@ -72,7 +72,7 @@
     },
     {
       "check": "ax-target-is-under-test",
-      "detail": "target_pid=93922 sampled_pid=93922",
+      "detail": "target_pid=23431 sampled_pid=23431",
       "ok": true
     },
     {
@@ -322,12 +322,12 @@
     },
     {
       "check": "shot-over-captured",
-      "detail": "ok 564424 bytes 2442x1552",
+      "detail": "ok 564015 bytes 2442x1552",
       "ok": true
     },
     {
       "check": "shot-over-bytes",
-      "detail": "564424",
+      "detail": "564015",
       "ok": true
     },
     {
@@ -337,7 +337,7 @@
     },
     {
       "check": "shot-over-distinct-colors",
-      "detail": "617",
+      "detail": "618",
       "ok": true
     },
     {
@@ -347,12 +347,12 @@
     },
     {
       "check": "shot-mx-captured",
-      "detail": "ok 499494 bytes 2442x1552",
+      "detail": "ok 499145 bytes 2442x1552",
       "ok": true
     },
     {
       "check": "shot-mx-bytes",
-      "detail": "499494",
+      "detail": "499145",
       "ok": true
     },
     {
@@ -362,7 +362,7 @@
     },
     {
       "check": "shot-mx-distinct-colors",
-      "detail": "527",
+      "detail": "528",
       "ok": true
     },
     {
@@ -372,12 +372,12 @@
     },
     {
       "check": "shot-cmdk-captured",
-      "detail": "ok 460453 bytes 2442x1552",
+      "detail": "ok 460094 bytes 2442x1552",
       "ok": true
     },
     {
       "check": "shot-cmdk-bytes",
-      "detail": "460453",
+      "detail": "460094",
       "ok": true
     },
     {
@@ -397,12 +397,12 @@
     },
     {
       "check": "shot-back-captured",
-      "detail": "ok 564424 bytes 2442x1552",
+      "detail": "ok 564107 bytes 2442x1552",
       "ok": true
     },
     {
       "check": "shot-back-bytes",
-      "detail": "564424",
+      "detail": "564107",
       "ok": true
     },
     {
@@ -412,7 +412,7 @@
     },
     {
       "check": "shot-back-distinct-colors",
-      "detail": "617",
+      "detail": "619",
       "ok": true
     },
     {
@@ -422,12 +422,12 @@
     },
     {
       "check": "shot-final-captured",
-      "detail": "ok 456323 bytes 2442x1552",
+      "detail": "ok 455944 bytes 2442x1552",
       "ok": true
     },
     {
       "check": "shot-final-bytes",
-      "detail": "456323",
+      "detail": "455944",
       "ok": true
     },
     {
@@ -447,7 +447,7 @@
     },
     {
       "check": "shot-hashes-distinct",
-      "detail": "4 unique of 5",
+      "detail": "5 unique of 5",
       "ok": true
     },
     {
@@ -567,7 +567,7 @@
     },
     {
       "check": "panel-shot-bytes",
-      "detail": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/shot-panel-cachedefault.png bytes=102584",
+      "detail": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/shot-panel-cachedefault.png bytes=102125",
       "ok": true
     },
     {
@@ -762,7 +762,7 @@
     },
     {
       "check": "projects-file-counts",
-      "detail": "[1851, 2000]",
+      "detail": "[1874, 2000]",
       "ok": true
     },
     {
@@ -902,7 +902,7 @@
     },
     {
       "check": "degraded-service-pid",
-      "detail": "94493",
+      "detail": "24012",
       "ok": true
     },
     {
@@ -927,7 +927,7 @@
     },
     {
       "check": "single-instance-a-in-process-table",
-      "detail": "A=94507 in [94507]",
+      "detail": "A=24025 in [24025]",
       "ok": true
     },
     {
@@ -937,7 +937,7 @@
     },
     {
       "check": "single-instance-second-activated-existing",
-      "detail": "[agentos] 已有实例 94507 在运行，已激活并退出",
+      "detail": "[agentos] 已有实例 24025 在运行，已激活并退出",
       "ok": true
     },
     {
