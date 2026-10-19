@@ -1,0 +1,150 @@
+{
+  "scan": {
+    "files": [
+      {
+        "known": [
+          2
+        ],
+        "path": "a11y_human.py",
+        "unknown": [],
+        "vague_only": false
+      },
+      {
+        "known": [
+          0
+        ],
+        "path": "abort_gate.py",
+        "unknown": [],
+        "vague_only": false
+      },
+      {
+        "known": [
+          0,
+          1
+        ],
+        "path": "autonomy_gate.py",
+        "unknown": [],
+        "vague_only": false
+      },
+      {
+        "known": [
+          2
+        ],
+        "path": "build.py",
+        "unknown": [],
+        "vague_only": false
+      },
+      {
+        "known": [
+          0,
+          1,
+          2
+        ],
+        "path": "cli_gate_selftest.py",
+        "unknown": [],
+        "vague_only": false
+      },
+      {
+        "known": [
+          3
+        ],
+        "path": "env_gate.py",
+        "unknown": [],
+        "vague_only": false
+      },
+      {
+        "known": [
+          1
+        ],
+        "path": "leader_gate.py",
+        "unknown": [],
+        "vague_only": true
+      },
+      {
+        "known": [
+          3
+        ],
+        "path": "mcp_fixture_srv.py",
+        "unknown": [],
+        "vague_only": false
+      },
+      {
+        "known": [
+          3
+        ],
+        "path": "minimize_check.py",
+        "unknown": [],
+        "vague_only": false
+      },
+      {
+        "known": [
+          2
+        ],
+        "path": "native_gate_selftest.py",
+        "unknown": [],
+        "vague_only": false
+      },
+      {
+        "known": [
+          2
+        ],
+        "path": "neg_a11y_human.py",
+        "unknown": [],
+        "vague_only": false
+      },
+      {
+        "known": [
+          2
+        ],
+        "path": "neg_a11y_predicate_teeth.py",
+        "unknown": [],
+        "vague_only": false
+      },
+      {
+        "known": [
+          0
+        ],
+        "path": "variant_pool.py",
+        "unknown": [],
+        "vague_only": false
+      },
+      {
+        "known": [
+          0,
+          75
+        ],
+        "path": "exitcap/exitcap.py",
+        "unknown": [
+          99
+        ],
+        "vague_only": false
+      },
+      {
+        "known": [
+          1
+        ],
+        "path": "selfscan2/selfscan2.py",
+        "unknown": [],
+        "vague_only": true
+      }
+    ],
+    "root": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/tools",
+    "scanned": 112,
+    "unknown_codes": [
+      99
+    ]
+  },
+  "taxonomy": {
+    "0": "ok",
+    "1": "generic",
+    "124": "timeout",
+    "130": "interrupted",
+    "2": "usage",
+    "3": "verify-fail",
+    "4": "need-human",
+    "75": "rate_limit",
+    "76": "auth_error",
+    "77": "model_unavailable"
+  },
+  "tool": "exitcap"
+}
