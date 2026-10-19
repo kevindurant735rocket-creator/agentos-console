@@ -3,9 +3,9 @@
  "ok": false,
  "pre_ok": true,
  "prefail": "",
- "elapsed": 119.79,
+ "elapsed": 120.14,
  "cli": [
-  "/var/folders/3p/m9ntmpmn5z34b3my27hrjdmm0000gn/T/cli_gate_mut-bazwmsm6/hangq.py"
+  "/var/folders/3p/m9ntmpmn5z34b3my27hrjdmm0000gn/T/cli_gate_mut-74j2za5j/hangq.py"
  ],
  "dest": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/cli_gate_dest",
  "skip_install": false,
@@ -282,7 +282,7 @@
   {
    "gate": "tty-noarg-enters-tui",
    "ok": true,
-   "detail": "首行='AgentOS TUI · http://127.0.0.1:8790 · 00:00:00' footer='视图 1/13 · 数据源: GET /__health' elapsed=4.05s",
+   "detail": "首行='AgentOS TUI · http://127.0.0.1:8790 · 00:00:00' footer='视图 1/13 · 数据源: GET /__health' elapsed=4.04s",
    "cmd": "agentos   # 真 PTY、无参数、零送键（门在 boot 后主动终止，故不判 rc）",
    "rc": null
   },
@@ -345,15 +345,15 @@
   {
    "gate": "inst-isolated-port-health",
    "ok": true,
-   "detail": "port=51711 rc=0   code_sha  c10e8cac5f26fcef",
-   "cmd": "env -i PATH=/usr/bin:/bin <shim> --port 51711 health",
+   "detail": "port=65329 rc=0   code_sha  c10e8cac5f26fcef",
+   "cmd": "env -i PATH=/usr/bin:/bin <shim> --port 65329 health",
    "rc": 0
   },
   {
    "gate": "inst-isolated-port-released",
    "ok": true,
-   "detail": "port=51711 仍可连=False",
-   "cmd": "connect 127.0.0.1:51711（服务已停）",
+   "detail": "port=65329 仍可连=False",
+   "cmd": "connect 127.0.0.1:65329（服务已停）",
    "rc": 0
   },
   {

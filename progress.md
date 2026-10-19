@@ -347,3 +347,13 @@ gh_gate W13b 判据同步扩：venv 免扫 + 带默认值模板放行 + ghp_/sk-
 **门与自检**：converge_selftest 37→**58/58** · converge_gate 19→**24/24**
 （含新变异体：命令判据恒真 → 门判红）· verify_cmd_selftest **11/11**（新门项，已上链）
 · agent_core 自检 153（新增「改完盘后核对指令真进 messages」）。
+
+**认证链（2026-10-20 00:xx，75 门一次跑通，期间不碰任何文件）**
+```
+== GATES_SUMMARY 共跑 75 门 / RC=0 计数 75 / 红门=无 ==  墙钟 3226s
+```
+末 6 门：`autonomy_selftest / boss_gate / selfscan_gate / converge_gate /
+verify_cmd_selftest / replay_gate` 全绿。
+（中途两次红门已定位并**真修**：selfscan 的 B324/B602 是我新代码的**真缺陷**，
+不是基线化放水；cli_gate_selftest 的红是「链运行中改文件」造成的扰动，
+单跑 52/52 绿。）

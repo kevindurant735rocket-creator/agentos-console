@@ -7,7 +7,7 @@
   {
    "name": "D65-1 快照在位且时间戳可信",
    "ok": true,
-   "detail": "age=950654s limit=3600.0s captured_at=2026-10-08T22:36:37.201937+08:00"
+   "detail": "age=954278s limit=3600.0s captured_at=2026-10-08T22:36:37.201937+08:00"
   },
   {
    "name": "D65-2 决策面自报快照且非实时",
@@ -90,6 +90,6 @@
   "晋升": 36,
   "蒸馏": 12
  },
- "snapshot_age_s": 950654.130668,
+ "snapshot_age_s": 954278.411183,
  "snapshot_limit_s": 3600.0
 }

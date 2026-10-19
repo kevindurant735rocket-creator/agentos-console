@@ -26,7 +26,7 @@
   {
    "name": "readyz-200",
    "ok": true,
-   "detail": "HTTP=200 {\"service\":\"headroom-proxy\",\"status\":\"healthy\",\"ready\":true, [attempt 1/41 HTTP=200 pid 61263->61263]"
+   "detail": "HTTP=200 {\"service\":\"headroom-proxy\",\"status\":\"healthy\",\"ready\":true, [attempt 1/41 HTTPError attempt 2/41 HTTPError attempt 3/41 HTTPError attempt 4/41 HTTPError attempt 5/41 HTTPError attempt 6/41 HTTPError attempt 7/4"
   },
   {
    "name": "params-no-drift",
@@ -66,7 +66,7 @@
   {
    "name": "readyz-selfheal-noted",
    "ok": true,
-   "detail": "首探即 200，无抖动"
+   "detail": "本轮 readyz 抖动后自愈（settle 预算 60s，守护者=headroom-agent）"
   },
   {
    "name": "readyz-settle-realpath",
@@ -76,7 +76,7 @@
   {
    "name": "readyz-settle-covers-log",
    "ok": true,
-   "detail": "当日 readyz 1785 事件（读 6 个轮转文件）/ 生命周期 0 段 最坏 0.0s / 非生命周期 37 段 最坏 13744.8s（网络出口抖动，不计入预算） · 预算 60s vs 实测最坏 0.0s + 余量 6s = 需 6.0s"
+   "detail": "当日 readyz 2083 事件（读 6 个轮转文件）/ 生命周期 0 段 最坏 0.0s / 非生命周期 44 段 最坏 13744.8s（网络出口抖动，不计入预算） · 预算 60s vs 实测最坏 0.0s + 余量 6s = 需 6.0s"
   },
   {
    "name": "restart-loop-no-flap",

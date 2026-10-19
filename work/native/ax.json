@@ -11,9 +11,9 @@
   "menu_nodes": 0,
   "nodes": 20,
   "ok": true,
-  "pid": 74972,
+  "pid": 15923,
   "pids": [
-    74972
+    15923
   ],
   "proc": "AgentOS",
   "reactivations": 0,
@@ -49,7 +49,7 @@
         "ok": false,
         "texts": 5,
         "web_area": 0,
-        "why": "pid=74972 有 17 节点/5 文本但 AXWebArea=0（网页内容区还没进 AX 树）",
+        "why": "pid=15923 有 17 节点/5 文本但 AXWebArea=0（网页内容区还没进 AX 树）",
         "windows": 1,
         "windows_err": 0
       },
@@ -101,7 +101,7 @@
       "nudge_err": null,
       "retry": null,
       "retry_n": 0,
-      "t": 3.4,
+      "t": 3.3,
       "texts": 7,
       "web_area": 1,
       "why": "",
@@ -165,7 +165,7 @@
       "nudge_err": null,
       "retry": null,
       "retry_n": 0,
-      "t": 8.5,
+      "t": 8.4,
       "texts": 7,
       "web_area": 1,
       "why": "",
@@ -197,7 +197,7 @@
       "nudge_err": null,
       "retry": null,
       "retry_n": 0,
-      "t": 11.0,
+      "t": 10.9,
       "texts": 7,
       "web_area": 1,
       "why": "",
@@ -293,7 +293,7 @@
       "nudge_err": null,
       "retry": null,
       "retry_n": 0,
-      "t": 18.6,
+      "t": 18.5,
       "texts": 7,
       "web_area": 1,
       "why": "",
@@ -357,7 +357,7 @@
       "nudge_err": null,
       "retry": null,
       "retry_n": 0,
-      "t": 23.7,
+      "t": 23.6,
       "texts": 29,
       "web_area": 1,
       "why": "",
@@ -421,7 +421,7 @@
       "nudge_err": null,
       "retry": null,
       "retry_n": 0,
-      "t": 28.8,
+      "t": 28.7,
       "texts": 7,
       "web_area": 1,
       "why": "",
@@ -429,7 +429,7 @@
     }
   ],
   "sustained": true,
-  "target_pid": 74972,
+  "target_pid": 15923,
   "text_samples": [
     "AgentOS",
     "776.0",
@@ -440,7 +440,7 @@
     "覆盖率 57/57 齐"
   ],
   "texts": 7,
-  "waited": 31.3,
+  "waited": 31.2,
   "web_area": 1,
   "window_titles": [
     "AgentOS"

@@ -23,9 +23,9 @@
    "tag": "button",
    "label": "R1已收轮 · AC1",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -86,9 +86,9 @@
    "tag": "button",
    "label": "R1已收轮 · AC1",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -680,9 +680,9 @@
    "tag": "button",
    "label": "打开命令面板（快捷键 Command 加",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -905,9 +905,9 @@
    "tag": "button",
    "label": "打开命令面板（快捷键 Command 加",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -1067,18 +1067,18 @@
    "tag": "button",
    "label": "打开命令面板（快捷键 Command 加",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
    "tag": "button",
    "label": "R1已收轮 · AC1",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -1184,27 +1184,27 @@
    "tag": "button",
    "label": "读轮次台账",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#gcnx",
    "tag": "button",
    "label": "下一轮该做什么",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#gcrg",
    "tag": "button",
    "label": "取本轮目标",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#gpn",
@@ -1328,9 +1328,9 @@
    "tag": "button",
    "label": "读复盘账本",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "#t-cap",
@@ -1436,9 +1436,9 @@
    "tag": "button",
    "label": "打开命令面板（快捷键 Command 加",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -1454,9 +1454,9 @@
    "tag": "button",
    "label": "R2已收轮 · AC2",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -1490,9 +1490,9 @@
    "tag": "button",
    "label": "回到当前项目根",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "#wscode",
@@ -1571,9 +1571,9 @@
    "tag": "button",
    "label": "终端",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#cmdk",
@@ -1760,9 +1760,9 @@
    "tag": "button",
    "label": "设置",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#cmdk",
@@ -1841,18 +1841,18 @@
    "tag": "button",
    "label": "重读运行态",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "#setre-all",
    "tag": "button",
    "label": "全部重读",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   }
  ],
  "contrast": [

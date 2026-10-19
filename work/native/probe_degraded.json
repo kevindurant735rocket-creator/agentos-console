@@ -89,7 +89,7 @@
   "panel_visible_now" : 0,
   "probe_mode" : 1,
   "probe_multi_instance" : 1,
-  "probe_saved_at" : "2026-10-19T14:53:54Z",
+  "probe_saved_at" : "2026-10-19T15:54:11Z",
   "probe_sibling_instances" : 0,
   "proj_active_flag" : [
     "console"
@@ -108,7 +108,7 @@
   ],
   "proj_loaded" : 1,
   "proj_nfiles" : [
-    1776,
+    1803,
     2000
   ],
   "proj_roots_absolute" : true,
@@ -123,7 +123,7 @@
   "recovery_panel_visible" : 0,
   "retry_title" : "重新检测",
   "retry_wired" : true,
-  "service_pid" : 75671,
+  "service_pid" : 16590,
   "service_started_by_app" : 1,
   "start_title" : "启动服务",
   "start_wired" : true,
