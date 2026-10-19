@@ -437,6 +437,14 @@ def cmd_headroom(args):
     ).returncode
 
 
+def cmd_selfscan(args):
+    """转 tools/selfscan.py：bandit 静态安全自检（`--install` 幂等部署）。"""
+    argv = [sys.executable, os.path.join(HERE, "selfscan.py")] + list(
+        getattr(args, "argv", None) or []
+    )
+    return subprocess.run(argv, cwd=ROOT).returncode
+
+
 # ── gh：GitHub 只读面 ────────────────────────────────────────────
 # 数据源只有一个：tools/gh_client.py（标准库，唯一收口 run_gh 先过只读白名单，
 # 写向量在结构上发不出去）。这里不另写一套 HTTP 调用 —— 两套真相迟早漂移，
@@ -2211,6 +2219,7 @@ _AGENTOS_SUBS = (
     ("gates", "转发 tools/gates.sh（门链入口）"),
     ("resident", "常驻真值门：核 launchd 常驻实例"),
     ("headroom", "headroom 8787 契约门"),
+    ("selfscan", "静态安全自检：bandit 扫 tools/，只判新增 MEDIUM/HIGH（--install 部署）"),
     ("term", "服务端只读跑一条命令（转发 POST /__term）"),
     ("gh", "GitHub 读写面（读直连；写默认拒绝：--yes+配置+TTY 三闸+审计链）"),
     ("agent", "内置终端 agent（模型+真实工具循环）"),
@@ -2341,10 +2350,10 @@ _agentos() {
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-  # 这个集合必须与 _AGENTOS_SUBS / argparse 的 17 个子命令逐项相等：
+  # 这个集合必须与 _AGENTOS_SUBS / argparse 的 18 个子命令逐项相等：
   # 2026-10-10 实测这里漏了 gh（用户敲 agentos gh <Tab> 什么都补不出来），
   # 而 --help 里明明有 —— cli_gate 的「补全与真实子命令不漂移」就是抓这个的。
-  local subs="serve health open tui gates resident headroom term gh agent config completion sessions resume steer watch leader"
+  local subs="serve health open tui gates resident headroom selfscan term gh agent config completion sessions resume steer watch leader"
   local globals="-V --version -h --help -p --print --url --port --timeout --no-color --output-format"
   local gates="%(gates)s"
   local shells="zsh bash"
@@ -4461,6 +4470,16 @@ def main(argv=None):
     add("tui", "终端交互主界面（%d 视图走真 8790 数据）" % len(VIEWS), cmd_tui)
     add("resident", "常驻真值门：核 launchd 常驻实例", cmd_resident)
     add("headroom", "headroom 8787 契约门", cmd_headroom)
+    sp = add(
+        "selfscan",
+        "静态安全自检：bandit 扫 tools/，只判新增 MEDIUM/HIGH（--install 部署）",
+        cmd_selfscan,
+    )
+    sp.add_argument(
+        "argv",
+        nargs=argparse.REMAINDER,
+        help="原样转发给 selfscan.py：--install / --rebuild-baseline / --json P",
+    )
 
     sp = add("gates", "转发 tools/gates.sh（门链入口）", cmd_gates)
     sp.add_argument("gates", nargs="*", help="门名，如 resident_gate headroom_gate")

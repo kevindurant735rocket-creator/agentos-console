@@ -4,7 +4,7 @@
 本机开发根：`/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console`
 
 AgentOS 是一个**只用 Python 标准库**的终端 agent 产品：真模型 + 真工具循环（Claude Code 式 REPL）、
-驾驶舱 TUI/Web 13 视图、71 门质量链、老板监督与自进化账本。
+驾驶舱 TUI/Web 13 视图、72 门质量链、老板监督与自进化账本。
 
 ## 新机快速上手
 
@@ -56,6 +56,8 @@ python3 tools/agentos.py serve --watch-tree     # 起服务 + 真树变动自动
 python3 tools/agentos.py gates <门名> [门名…]    # 转发 tools/gates.sh 门链（零参数拒绝=假绿）
 python3 tools/agentos.py resident               # 常驻真值门：核 launchd 常驻实例
 python3 tools/agentos.py headroom               # headroom 8787 契约门
+python3 tools/agentos.py selfscan               # 静态安全自检：bandit 扫 tools/，只判新增 MEDIUM/HIGH
+python3 tools/agentos.py selfscan --install     # 幂等部署 bandit 到 .vendor/（不进运行时，主链路仍纯 stdlib）
 python3 tools/agentos.py open                   # 浏览器打开驾驶舱首页
 python3 tools/agentos.py tui                    # 终端交互主界面：总览/轮次/阶段矩阵/证据账本/引擎/Agent 台/目标台/复盘台/能力地图/工作区/终端/文件/设置 13 视图全走真 8790 数据
 python3 tools/agentos.py agent                  # 内置终端 agent：真模型 + 真工具循环（Claude Code 式 REPL）

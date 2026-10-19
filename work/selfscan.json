@@ -1,0 +1,40 @@
+{
+  "tool": {
+    "name": "bandit",
+    "version": "1.9.4"
+  },
+  "targets": [
+    "tools"
+  ],
+  "ok": true,
+  "checks": [
+    {
+      "name": "D1-loc>0",
+      "ok": true,
+      "detail": "loc=48515"
+    },
+    {
+      "name": "D2-no-HIGH",
+      "ok": true,
+      "detail": "0 条 HIGH"
+    },
+    {
+      "name": "D3-no-new-MEDIUM",
+      "ok": true,
+      "detail": "29 个基线键全在额度内"
+    }
+  ],
+  "totals": {
+    "CONFIDENCE.HIGH": 365,
+    "CONFIDENCE.LOW": 0,
+    "CONFIDENCE.MEDIUM": 24,
+    "CONFIDENCE.UNDEFINED": 0,
+    "SEVERITY.HIGH": 0,
+    "SEVERITY.LOW": 345,
+    "SEVERITY.MEDIUM": 44,
+    "SEVERITY.UNDEFINED": 0,
+    "loc": 48515,
+    "nosec": 0,
+    "skipped_tests": 0
+  }
+}

@@ -4,7 +4,17 @@
 # 顺序：项目 venv -> capvenv -> 系统 python3。
 # 门的执行顺序也有讲究：neg_a11y 会还原 index.html（mtime 变新），
 # 所以它必须排在 shoot 之前，否则 ux_audit 会以「shots.json 早于 index.html」判 FAIL。
-# 正确链：bash tools/gates.sh resident_gate headroom_gate flake_retry_selftest indep_field_gate neg_a11y freshness_gate shoot view_dod view_dod_selftest http_shot_gate snap_gate a11y_walk a11y_human neg_a11y_human ux_audit a11y_served projspace_gate act_gate promo_gate capmap_gate abort_gate abort_e2e intent_gate retro_gate goal_gate round_gate close_gate layout_gate env_gate web_gate native_gate native_gate_selftest agent_core_gate neg_agent_core at_selftest neg_at_selftest minimize_check gh_gate tui_walk_gate cli_gate cli_gate_selftest evolution_gate capability_gate evolution_gate_selftest perf_gate dsp_gate dsp_gate_selftest leader_gate leader_selftest evo_merge_gate evo_merge_selftest kbd_gate_selftest rewind_gate rewind_selftest subagent_gate subagent_selftest mcp_gate mcp_selftest hooks_gate hooks_selftest repl_ux_gate repl_ux_selftest branches_gate branches_selftest supervise_gate supervise_selftest safety_gate safety_selftest autonomy_gate autonomy_selftest boss_gate
+# 正确链：bash tools/gates.sh resident_gate headroom_gate flake_retry_selftest indep_field_gate neg_a11y freshness_gate shoot view_dod view_dod_selftest http_shot_gate snap_gate a11y_walk a11y_human neg_a11y_human ux_audit a11y_served projspace_gate act_gate promo_gate capmap_gate abort_gate abort_e2e intent_gate retro_gate goal_gate round_gate close_gate layout_gate env_gate web_gate native_gate native_gate_selftest agent_core_gate neg_agent_core at_selftest neg_at_selftest minimize_check gh_gate tui_walk_gate cli_gate cli_gate_selftest evolution_gate capability_gate evolution_gate_selftest perf_gate dsp_gate dsp_gate_selftest leader_gate leader_selftest evo_merge_gate evo_merge_selftest kbd_gate_selftest rewind_gate rewind_selftest subagent_gate subagent_selftest mcp_gate mcp_selftest hooks_gate hooks_selftest repl_ux_gate repl_ux_selftest branches_gate branches_selftest supervise_gate supervise_selftest safety_gate safety_selftest autonomy_gate autonomy_selftest boss_gate selfscan_gate
+# selfscan_gate 收尾（2026-10-19 第四波，71→72）：兜的是「源码里有没有埋雷」这层
+# 真空洞 —— 安全此前只有 safety_gate 的 9 条**行为**判据（运行时有没有放行），
+# 没有一条量过源码本身的静态缺陷（硬编码凭据、危险的 urlopen/反序列化/exec）。
+# 它部署真工具 PyCQA/bandit ★8326 到 .vendor/（.gitignore 掉，不进运行时，主链路
+# 仍 100% 纯 stdlib），只判**新增** MEDIUM/HIGH：存量 44 条是逐条审过的误报
+# （B310 urlopen 前置已有 scheme 白名单、B105 是门令牌字面量），进基线
+# work/selfscan_baseline.json；基线外新增才红，HIGH 出现即红。三条反向判据
+# （喂 HIGH / 喂超基线 MEDIUM / 喂 loc=0 空扫）证明它判得红，以及未部署时必须
+# 返回 3 而不是 0（「没扫」不许当「没缺陷」）。纯离线、亚秒级，放链尾不扰动
+# 任何一门的顺序理由。
 # boss_gate 收尾（2026-10-15 第三波，70→71）：人不审、机器审 —— 坏工具/环计划
 # 必拒且说清理由，好计划才 approve；含 run_cmd 无全权拒、有全权放；monitor
 # 报告形状齐。纯离线（无模型调用），放链尾 autonomy_selftest 之后，

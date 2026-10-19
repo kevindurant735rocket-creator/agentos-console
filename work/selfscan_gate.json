@@ -1,0 +1,55 @@
+{
+  "ok": true,
+  "results": [
+    {
+      "gate": "D1-deployed",
+      "ok": true,
+      "detail": "bandit '1.9.4'（期望 1.9.4）@ .vendor/bandit"
+    },
+    {
+      "gate": "D2-baseline-present",
+      "ok": true,
+      "detail": "29 个基线键"
+    },
+    {
+      "gate": "D2-production-green",
+      "ok": true,
+      "detail": "真树 389 条结果：D1-loc>0=绿 D2-no-HIGH=绿 D3-no-new-MEDIUM=绿"
+    },
+    {
+      "gate": "D3-bites-HIGH",
+      "ok": true,
+      "detail": "1 条 HIGH：B999@tools/mut_high.py"
+    },
+    {
+      "gate": "D4-bites-over-baseline",
+      "ok": true,
+      "detail": "新增：tools/a11y_served.py|B310 +1（基线 2）"
+    },
+    {
+      "gate": "D5-bites-empty-scan",
+      "ok": true,
+      "detail": "loc=0"
+    },
+    {
+      "gate": "D6-bites-empty-baseline",
+      "ok": true,
+      "detail": "空基线判 红"
+    },
+    {
+      "gate": "D7-undeployed-not-green",
+      "ok": true,
+      "detail": "deployed_version()=None"
+    },
+    {
+      "gate": "D7-fail-closed-rc",
+      "ok": true,
+      "detail": "未部署 rc=3（期望 3，绝不 0）"
+    },
+    {
+      "gate": "D8-no-residue",
+      "ok": true,
+      "detail": "无 _no_such_vendor_ 残留"
+    }
+  ]
+}

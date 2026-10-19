@@ -73,7 +73,7 @@ CLI_ARGV = [os.path.join(HERE, "agentos.py")]
 
 # 子命令全集。写死在这里是有意的：门存在的意义就是「宣称支持的面」与
 # 「真的能跑的面」逐一对上。漏一个面 = 那个面的 --help 从没被量过。
-SUBS = ("serve", "health", "open", "tui", "resident", "headroom", "gates",
+SUBS = ("serve", "health", "open", "tui", "resident", "headroom", "selfscan", "gates",
         "term", "gh", "agent", "config", "completion", "sessions", "resume",
         "steer", "watch", "leader")
 
