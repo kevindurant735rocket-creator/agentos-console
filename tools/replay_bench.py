@@ -113,18 +113,26 @@ def _seed_files(root, files):
             f.write(content)
 
 
-def _score_with_gate(used, answer, rec):
-    """用交付闸的判据复算这一轮终答：返回 (通过?, 原因)。"""
+def _score_with_gate(used, answer, rec, args_seq=None):
+    """用交付闸的判据复算这一轮终答：返回 (通过?, 原因)。
+
+    args_seq：与 used 一一对应的**真参数**（来自语料的 script）。
+    必须传真参数：引擎判「跑过 pytest」算核对、判「跑过 ls」不算 ——
+    评分若拿不到参数就只能按「rc=0 就算核对」兜底，两侧尺子就不一样了，
+    A/B 的差值就失去意义。
+    """
     try:
         import converge as cv
     except Exception:  # noqa: BLE001
         return True, ""
     c = cv.Converge(task_text=str(rec.get("prompt") or "")[:400])
-    for u in used or []:
+    args_seq = list(args_seq or [])
+    for i, u in enumerate(used or []):
+        a = args_seq[i] if i < len(args_seq) else {}
         try:
             c.observe(
                 u.get("tool") or "",
-                {},
+                a if isinstance(a, dict) else {},
                 ok=bool(u.get("ok")),
                 rc=u.get("rc"),
             )
@@ -176,7 +184,13 @@ def run_record(rec, engine_on=True):
     # 把这一轮真实发生的工具调用喂给一份评分用引擎，再问它同不同意
     # 这条终答。同意 = 有证据；不同意 = 空口完成。
     # 用引擎自己的尺子量，两侧（A/B）才可比。
-    _gate_ok, _gate_why = _score_with_gate(used, res.get("answer") or "", rec)
+    # 语料里的工具项与实际执行顺序一一对应 → 取出真参数给评分用
+    _script_tools = [
+        (it.get("args") or {}) for it in (rec.get("script") or []) if it.get("tool")
+    ]
+    _gate_ok, _gate_why = _score_with_gate(
+        used, res.get("answer") or "", rec, _script_tools
+    )
     return {
         "id": rec.get("id"),
         "delivered": delivered,

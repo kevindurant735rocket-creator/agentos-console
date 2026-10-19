@@ -63,10 +63,36 @@ _VERIFY_TOOLS = frozenset(("run_cmd", "git_diff"))
 # 读回也算核对（write 后 read 是最常见的验证形态，不该被判「无证据」）
 _VERIFY_READBACK = frozenset(("read_file",))
 
-# 交付前的「至少要有一条真证据」判据（按任务字面推断）
-_DELIVER_HINT = (
-    "现在必须收敛到交付：给出最终结论 + 支撑它的真实 rc/文件行号。"
-    "不要再探查。"
+# 「像核对」的单词与形态（整词匹配，避免 latest/greatest 之类误中）
+_VERIFY_WORDS = frozenset(
+    (
+        "pytest",
+        "unittest",
+        "tox",
+        "nox",
+        "mypy",
+        "ruff",
+        "flake8",
+        "pylint",
+        "jest",
+        "vitest",
+        "eslint",
+    )
+)
+_VERIFY_PAIRS = frozenset(
+    (
+        ("npm", "test"),
+        ("yarn", "test"),
+        ("pnpm", "test"),
+        ("go", "test"),
+        ("cargo", "test"),
+        ("make", "test"),
+        ("make", "check"),
+        ("git", "diff"),
+        ("git", "status"),
+        ("git", "log"),
+        ("git", "show"),
+    )
 )
 
 # 终答自称「做完了」——规则 C（零工具却宣称完成）用它。
@@ -97,37 +123,47 @@ def _fingerprint(tool, args):
 
 
 def _is_verify_cmd(args):
-    """run_cmd 的参数像不像「验证」。
+    """这条命令像不像「核对」。
 
-    判据是**命令名关键词**，不是靠模型自述：跑 pytest / ls / cat / git diff
-    这类命令会产出可核对的 rc 事实；跑 ls 也能证明「东西在那儿」。
+    判据是**整词 + runner/verb 形态**，不是子串匹配。踩过的坑：
+    子串匹配 `"test" in joined` 会把 `cat latest.txt`、`grep greatest` 判成
+    验证；`ls -la`、`cat x`、`sh -c "curl …"` 也都曾被算成核对 ——
+    「跑过命令」不等于「核对过改动」。宁可严：判不准就当没验。
+
+    形态一：测试/检查类命令整词出现（pytest / ruff / mypy / jest …）
+    形态二：<runner> <verb>（npm test / go test / make test / git diff …）
+    形态三：python -m pytest（`-m` 后必须跟 pytest/unittest）
     """
     argv = (args or {}).get("argv")
     if isinstance(argv, str):
         argv = argv.split()
     if not isinstance(argv, list) or not argv:
         return False
-    joined = " ".join(str(x) for x in argv).lower()
-    return any(
-        k in joined
-        for k in (
-            "pytest",
-            "unittest",
-            "npm test",
-            "test",
-            "make ",
-            "ls ",
-            "cat ",
-            "git diff",
-            "git status",
-            "git log",
-            "python3 -c",
-            "python -c",
-            "node -e",
-            "sh -c",
-            "bash -c",
-        )
-    )
+    toks = [str(x).lower() for x in argv]
+    # shell 包装：`bash -c "pytest -q"` 里真正的命令在第三个参数里。
+    # 不拆开就会让「包了一层 shell 的核对」被误判成没核对（误伤好行为）。
+    if (
+        len(toks) >= 3
+        and toks[0] in ("sh", "bash", "zsh", "dash")
+        and toks[1] in ("-c", "-lc")
+    ):
+        inner = toks[2].split()
+        if inner and _is_verify_cmd({"argv": inner}):
+            return True
+    for t in toks:
+        if t in _VERIFY_WORDS:
+            return True
+    for i in range(len(toks) - 1):
+        pair = (toks[i], toks[i + 1])
+        if pair not in _VERIFY_PAIRS:
+            continue
+        if toks[i + 1] == "-m":
+            # `python -m <东西>`：只有 -m pytest / -m unittest 算核对
+            if len(toks) > i + 2 and toks[i + 2] in ("pytest", "unittest"):
+                return True
+            continue
+        return True
+    return False
 
 
 class Converge:
@@ -147,12 +183,25 @@ class Converge:
         loop_repeat=3,
         task_text="",
         mode="",
+        verify_info=None,
     ):
         self.max_explore = int(max_explore)
         self.max_stall = int(max_stall)
         self.loop_repeat = int(loop_repeat)
         self.task_text = str(task_text or "")
         self.mode = str(mode or "")
+        # 「这个仓库跑什么命令能证明改动是对的」——由 tools/verify_cmd.py
+        # 探测（本地蒸馏 aider 的 edit→auto-lint/test 设计）。
+        # 探测不到就是 None：宁可不说，也不猜一条必然失败的命令。
+        self.verify_info = dict(verify_info) if verify_info else None
+        # 改了还没核对（verify_pending）与本轮是否已经催过（verify_nagged）。
+        # 催一次就够：连催会把噪声灌进模型，反而不看。
+        self.verify_pending = False
+        self.verify_nagged = False
+        # 最近一次改动的核对结论：""=还没验 / "pass" / "fail"。
+        # 对应上游 aider 的 `self.test_outcome = not test_errors`
+        # ——「这次改动过没过检查」必须是**可查的结论**，不是印象。
+        self.verify_outcome = ""
         self.phase = P_EXPLORE
         self.steps = 0
         self.fps = {}  # 指纹 -> 次数
@@ -219,23 +268,48 @@ class Converge:
             self.repeat_fps = fp
 
         productive = False
+        verified_now = False
         if tool in _WRITE_TOOLS and ok:
             self.write_seen = True
             self.dirty = True
             productive = True
+            # 改了 → 进入「待核对」态。验证要贴着动作发生：
+            # 连改十个文件只在末尾验一次，前九个坏了也不知道
+            # （蒸馏自 aider 的改完自动跑 lint/test）。
+            self.verify_pending = True
+            self.verify_nagged = False
+            self.verify_outcome = ""  # 新改动 → 上一次的结论作废
         elif tool in _VERIFY_TOOLS and ok:
-            self.verify_seen = True
-            if tool == "run_cmd" and rc in (0, None):
+            if tool == "run_cmd":
+                # 「跑过命令」≠「核对过」：curl/wget 这类只是取回东西，
+                # 不构成对本轮改动的核对。有参数就按命令名判；没参数
+                # （离线评分路径只喂工具名）就按 rc=0 兜底。
+                _vc = (rc in (0, None))
+                if _vc and (not args or _is_verify_cmd(args)):
+                    self.verify_seen = True
+                    productive = True
+                    verified_now = True
+                    self.verify_outcome = "pass"
+                elif not _vc and (not args or _is_verify_cmd(args)):
+                    # 跑了检查但没过：这是**结论**（fail），不是「没验」。
+                    # 记下来，别让账本只留下「验过」两个字。
+                    self.verify_outcome = "fail"
+                # rc≠0 的检查**不算**核对通过：它证明的是「还没好」，
+                # 所以既不记证据也不算产出 —— 停滞探测器会因此催它去修。
+            else:  # git_diff
+                self.verify_seen = True
                 productive = True
-            elif tool == "git_diff":
-                productive = True
+                verified_now = True
         elif tool in _VERIFY_READBACK and ok:
             self.verify_seen = True
+            verified_now = True
         if productive:
             self.productive_seen = True
             self.since_productive = 0
         else:
             self.since_productive += 1
+        if verified_now:
+            self.verify_pending = False
 
         # 阶段推进（单向：ACT 之后不回 EXPLORE，避免「改一点又去读」的抖动）
         if self.phase == P_EXPLORE:
@@ -293,6 +367,32 @@ class Converge:
         优先级：停滞 > 循环 > 阶段边界。三者互斥，一次只给一条，避免
         指令噪声把模型淹掉。
         """
+        # 核对指令优先级最高：刚改完还没核对，是所有错误里最值钱的一个
+        # ——其余错误（绕路、停滞）只是慢，错误改动是错。
+        if self.verify_pending and not self.verify_nagged and self.verify_info:
+            self.verify_nagged = True
+            if self.verify_outcome == "fail":
+                msg = (
+                    "[核对指令] 上一次核对**没通过**（rc≠0）。别再改一遍就交差："
+                    "先把刚才那条命令的报错读懂，定位到真正失败的地方再改，"
+                    "改完重新跑 `%s`（%s）直到 rc=0。"
+                    % (
+                        self.verify_info.get("cmdline") or "",
+                        self.verify_info.get("why") or "",
+                    )
+                )
+            else:
+                msg = (
+                    "[核对指令] 你刚改了东西，但还没核对过。这个仓库的验证命令是"
+                    " `%s`（%s）：现在就跑它，rc 决定真假；失败就把报错读懂再改，"
+                    "别把没验过的改动说成做完了。"
+                    % (
+                        self.verify_info.get("cmdline") or "",
+                        self.verify_info.get("why") or "",
+                    )
+                )
+            self.notes.append(msg)
+            return msg
         if self.since_productive >= self.max_stall and self.steps > 2:
             msg = (
                 "[收敛指令] 连续 %d 步没有产出（没有写盘成功，也没有跑出 rc=0）"
@@ -391,6 +491,10 @@ class Converge:
             "notes": len(self.notes),
             "gate_retries": self.gate_retries,
             "stall_hits": self.stall_hits,
+            "verify_pending": bool(self.verify_pending),
+            "verify_nagged": bool(self.verify_nagged),
+            "verify_cmd": (self.verify_info or {}).get("cmdline") or "",
+            "verify_outcome": self.verify_outcome,
             "loop_hits": self.loop_hits,
             "phase_hits": self.phase_hits,
             "max_stall": self.max_stall,

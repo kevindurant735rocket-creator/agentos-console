@@ -3770,8 +3770,20 @@ def run_agent(
         # 没有「关」的一侧就没法证明引擎到底带来了什么。
         if ctx.get("converge") is False:
             raise ImportError("converge disabled by ctx")
+        # 探测「这个仓库跑什么命令能证明改动是对的」（本地蒸馏 aider 的
+        # edit→auto-lint/test）。探测不到就不给建议 —— 猜一条必然失败的
+        # 命令，会把「没找到验证方式」伪装成「验证失败」。
+        _vinfo = None
+        try:
+            import verify_cmd as _vc_mod
+
+            _vinfo = _vc_mod.detect_verify_cmd(ctx.get("root"))
+        except Exception:  # noqa: BLE001  探测失败不许拖垮主链路
+            _vinfo = None
         _conv = _cv_mod.Converge(
-            task_text=str(prompt or "")[:400], mode=str(ctx.get("mode") or "")
+            task_text=str(prompt or "")[:400],
+            mode=str(ctx.get("mode") or ""),
+            verify_info=_vinfo,
         )
         # 自进化调参：ACTIVE 规则真拧旋钮（只允许收紧，由 apply_policy 钳制）
         try:
@@ -9787,6 +9799,35 @@ def _selftest_body(case, jc, tmp):
         "evo 收敛：旋钮在运行期真被拧紧（快照 max_stall=4）",
         _csnap.get("max_stall") == 4 and _csnap.get("max_explore") == 4,
         "snap=%r" % (_csnap,),
+    )
+
+    # (CONVERGE-VERIFY) 动作边界的核对：改完 → 立刻催「跑验证命令」。
+    # 用独立根目录：那里放一个 pyproject.toml，探测器才会认这是 Python
+    # 项目（探测不到就不催 —— 不猜是硬规矩）。
+    _vroot = os.path.join(tmp, "vroot")
+    os.makedirs(_vroot, exist_ok=True)
+    with open(os.path.join(_vroot, "pyproject.toml"), "w", encoding="utf-8") as _vfh:
+        _vfh.write('[project]\nname = "vroot"\nversion = "0.0.0"\n')
+    _vstub = Stub(
+        [
+            jc(tool=("write_file", {"path": "m.py", "content": "x = 1\n"}), cid="v1"),
+            jc(content="改完了。"),
+        ]
+    )
+    try:
+        run_agent(
+            "给这个模块加一个函数",
+            ctx={"root": _vroot, "mode": "full"},
+            provider=_vstub.provider(),
+            max_steps=4,
+        )
+    finally:
+        _vstub.close()
+    _vseen = json.dumps(_vstub.seen, ensure_ascii=False)
+    case(
+        "核对：改完盘后核对指令真进模型可见的 messages",
+        "核对指令" in _vseen and "pytest -q" in _vseen,
+        "seen 里没有核对指令",
     )
 
     _evo_set_state("evo-err-no-provider", "CANDIDATE", rules_path=evo_rules)

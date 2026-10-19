@@ -206,6 +206,107 @@ try:
 finally:
     shutil.rmtree(tmp2, ignore_errors=True)
 
+# D9f 验证类命令才算核对证据（跑过命令 ≠ 核对过）
+_v1 = cv.Converge()
+_v1.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=0)
+_v2 = cv.Converge()
+_v2.observe("run_cmd", {"argv": ["curl", "-O", "x"]}, ok=True, rc=0)
+_v3 = cv.Converge()
+_v3.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=1)
+gate(
+    "命令判据：只有验证类命令（rc=0）算核对证据",
+    _v1.verify_seen is True
+    and _v2.verify_seen is False
+    and _v3.verify_seen is False,
+    "pytest=%s curl=%s failed=%s"
+    % (_v1.verify_seen, _v2.verify_seen, _v3.verify_seen),
+)
+
+# D9g 变异体：把命令判据改成恒真 → 「curl 不算核对」必须翻红
+tmp3 = tempfile.mkdtemp(prefix="converge_mut3_")
+try:
+    s4 = open(os.path.join(HERE, "converge.py"), encoding="utf-8").read()
+    s4 = s4.replace(
+        "if _vc and (not args or _is_verify_cmd(args)):",
+        "if _vc:",
+    )
+    mut3 = os.path.join(tmp3, "converge_mut3.py")
+    open(mut3, "w", encoding="utf-8").write(s4)
+    sys.path.insert(0, tmp3)
+    import importlib
+
+    try:
+        m3 = importlib.import_module("converge_mut3")
+    finally:
+        sys.path.remove(tmp3)
+        sys.modules.pop("converge_mut3", None)
+    cm3 = m3.Converge()
+    cm3.observe("run_cmd", {"argv": ["curl", "-O", "x"]}, ok=True, rc=0)
+    gate(
+        "变异体：命令判据恒真 → curl 也被当核对（门判红）",
+        cm3.verify_seen is True,
+        "变异体没放宽 = 命令判据摘不干净",
+    )
+finally:
+    shutil.rmtree(tmp3, ignore_errors=True)
+
+# D9h 动作边界的核对：改完必核对（蒸馏自 aider 的 edit→auto-lint/test）
+_vi = {"cmdline": "pytest -q", "why": "pyproject.toml 存在", "cmd": ["pytest", "-q"]}
+_k1 = cv.Converge(verify_info=_vi)
+_k1.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+_kd = _k1.directive()
+gate(
+    "核对：改完盘进待核对态并注入核对指令",
+    _k1.verify_pending is True
+    and _kd is not None
+    and "核对指令" in _kd
+    and "pytest -q" in _kd,
+    "pending=%s d=%r" % (_k1.verify_pending, (_kd or "")[:80]),
+)
+_k2 = cv.Converge(verify_info=_vi)
+_k2.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+_k2.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=0)
+gate(
+    "核对：跑过验证命令后待核对清零",
+    _k2.verify_pending is False,
+    "pending=%s" % (_k2.verify_pending,),
+)
+_k3 = cv.Converge()
+_k3.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+gate(
+    "核对：探测不到验证命令就不催（不猜）",
+    _k3.directive() is None,
+    "不该催",
+)
+
+# D9i 变异体：摘掉「改完进待核对」→ 门必须判红
+tmp4 = tempfile.mkdtemp(prefix="converge_mut4_")
+try:
+    s5 = open(os.path.join(HERE, "converge.py"), encoding="utf-8").read()
+    s5 = s5.replace(
+        "            self.verify_pending = True\n            self.verify_nagged = False",
+        "            self.verify_nagged = False",
+    )
+    mut4 = os.path.join(tmp4, "converge_mut4.py")
+    open(mut4, "w", encoding="utf-8").write(s5)
+    sys.path.insert(0, tmp4)
+    import importlib
+
+    try:
+        m4 = importlib.import_module("converge_mut4")
+    finally:
+        sys.path.remove(tmp4)
+        sys.modules.pop("converge_mut4", None)
+    cm4 = m4.Converge(verify_info=_vi)
+    cm4.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+    gate(
+        "变异体：摘掉「改完进待核对」→ 核对指令不再出现（门判红）",
+        cm4.directive() is None,
+        "变异体仍出核对指令 = 判据摘不干净",
+    )
+finally:
+    shutil.rmtree(tmp4, ignore_errors=True)
+
 # D10 零污染：门跑完 work/ 下不留本门专属残留
 gate(
     "零污染：门不写生产账",

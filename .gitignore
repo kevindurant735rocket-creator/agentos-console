@@ -16,6 +16,7 @@ work/superpowers-upstream/
 .vendor/
 work/realex/
 work/distill/cli*/
+work/distill/w*/
 work/distill/cli4/
 work/distill/cli6/
 work/distill/cli7/

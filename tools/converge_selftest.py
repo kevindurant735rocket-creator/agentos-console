@@ -176,7 +176,27 @@ case(
 # ── 6. 验证命令识别 ─────────────────────────────────────────────
 case("验证识别：pytest 算验证", cv._is_verify_cmd({"argv": ["pytest", "-q"]}))
 case("验证识别：git diff 算验证", cv._is_verify_cmd({"argv": ["git", "diff"]}))
-case("验证识别：ls 算验证", cv._is_verify_cmd({"argv": ["ls", "-la"]}))
+case(
+    "验证识别：ls 不算验证（跑过命令≠核对过）",
+    not cv._is_verify_cmd({"argv": ["ls", "-la"]}),
+)
+case(
+    "验证识别：cat 不算验证",
+    not cv._is_verify_cmd({"argv": ["cat", "x.txt"]}),
+)
+case(
+    "验证识别：latest 不含 test（整词匹配，不是子串）",
+    not cv._is_verify_cmd({"argv": ["grep", "latest"]}),
+)
+case(
+    "验证识别：shell 包装里的 pytest 仍算验证",
+    cv._is_verify_cmd({"argv": ["bash", "-c", "pytest -q"]}),
+)
+case(
+    "验证识别：shell 包装里的 curl 不算验证",
+    not cv._is_verify_cmd({"argv": ["sh", "-c", "curl x"]}),
+)
+case("验证识别：npm test 算验证", cv._is_verify_cmd({"argv": ["npm", "test"]}))
 case("验证识别：纯下载不算验证", not cv._is_verify_cmd({"argv": ["curl", "-O", "x"]}))
 case("验证识别：字符串 argv 也能认", cv._is_verify_cmd({"argv": "pytest -q"}))
 case("验证识别：空 argv 不算", not cv._is_verify_cmd({}))
@@ -266,6 +286,116 @@ case(
     "分类计数：诚实报告失败不算退回",
     _h4.snapshot().get("gate_retries") == 0,
     "snap=%r" % (_h4.snapshot(),),
+)
+
+# ── 12. 验证类命令才算核对证据 ────────────────────────────────────
+_v1 = cv.Converge()
+_v1.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=0)
+case("命令判据：pytest 算核对证据", _v1.verify_seen is True, "snap=%r" % (_v1.snapshot(),))
+_v2 = cv.Converge()
+_v2.observe("run_cmd", {"argv": ["curl", "-O", "x"]}, ok=True, rc=0)
+case(
+    "命令判据：curl 跑了但不算核对（没查本轮改动）",
+    _v2.verify_seen is False,
+    "snap=%r" % (_v2.snapshot(),),
+)
+_v3 = cv.Converge()
+_v3.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=1)
+case(
+    "命令判据：检查失败（rc≠0）不算核对通过",
+    _v3.verify_seen is False,
+    "snap=%r" % (_v3.snapshot(),),
+)
+_v4 = cv.Converge()
+_v4.observe("run_cmd", {}, ok=True, rc=0)
+case(
+    "命令判据：无参数（离线评分路径）按 rc=0 兜底",
+    _v4.verify_seen is True,
+    "snap=%r" % (_v4.snapshot(),),
+)
+
+# ── 13. 动作边界的核对（蒸馏自 aider 的 edit→auto-lint/test）─────
+_VINFO = {"cmdline": "pytest -q", "why": "pyproject.toml 存在", "cmd": ["pytest", "-q"]}
+_w1 = cv.Converge(verify_info=_VINFO)
+_w1.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+case(
+    "核对：改完盘进入待核对态",
+    _w1.verify_pending is True and _w1.snapshot().get("verify_pending") is True,
+    "snap=%r" % (_w1.snapshot(),),
+)
+_d1 = _w1.directive()
+case(
+    "核对：改了还没核对 → 注入核对指令",
+    _d1 is not None and "核对指令" in _d1 and "pytest -q" in _d1,
+    repr(_d1)[:120],
+)
+case(
+    "核对：催过一次不连发",
+    _w1.directive() is None,
+    "连发了",
+)
+_w2 = cv.Converge(verify_info=_VINFO)
+_w2.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+_w2.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=0)
+case(
+    "核对：跑过验证命令 → 待核对清零",
+    _w2.verify_pending is False and _w2.snapshot().get("verify_pending") is False,
+    "snap=%r" % (_w2.snapshot(),),
+)
+_w3 = cv.Converge()
+_w3.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+case(
+    "核对：探测不到验证命令就不催（不猜）",
+    _w3.directive() is None,
+    "不该催",
+)
+_w4 = cv.Converge(verify_info=_VINFO)
+_w4.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+_w4.observe("write_file", {"path": "b.py", "content": "y"}, ok=True)
+case(
+    "核对：再改一次会重新武装（第二次改动仍要核）",
+    _w4.verify_pending is True and _w4.verify_nagged is False,
+    "snap=%r" % (_w4.snapshot(),),
+)
+_w5 = cv.Converge(verify_info=_VINFO)
+_w5.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+_w5.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=1)
+case(
+    "核对：检查失败不算核对通过（仍待核对）",
+    _w5.verify_pending is True,
+    "snap=%r" % (_w5.snapshot(),),
+)
+
+# ── 14. 每次改动的核对结论（蒸馏自 aider 的 test_outcome）────────
+_o1 = cv.Converge(verify_info=_VINFO)
+_o1.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+case("结论：刚改完还没验 → 结论为空", _o1.snapshot().get("verify_outcome") == "",
+     "snap=%r" % (_o1.snapshot(),))
+_o2 = cv.Converge(verify_info=_VINFO)
+_o2.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+_o2.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=0)
+case("结论：核对通过 → pass", _o2.snapshot().get("verify_outcome") == "pass",
+     "snap=%r" % (_o2.snapshot(),))
+_o3 = cv.Converge(verify_info=_VINFO)
+_o3.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+_o3.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=1)
+case("结论：核对失败 → fail（且仍待核对）",
+     _o3.snapshot().get("verify_outcome") == "fail" and _o3.verify_pending is True,
+     "snap=%r" % (_o3.snapshot(),))
+_o4 = cv.Converge(verify_info=_VINFO)
+_o4.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+_o4.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=0)
+_o4.observe("write_file", {"path": "b.py", "content": "y"}, ok=True)
+case("结论：新改动让旧结论作废", _o4.snapshot().get("verify_outcome") == "",
+     "snap=%r" % (_o4.snapshot(),))
+_o5 = cv.Converge(verify_info=_VINFO)
+_o5.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+_o5.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=1)
+_d5 = _o5.directive()
+case(
+    "结论：验没过时，核对指令说的是「没通过」而不是「还没验」",
+    _d5 is not None and "没通过" in _d5,
+    repr(_d5)[:120],
 )
 
 bad = [c for c in CASES if not c[1]]

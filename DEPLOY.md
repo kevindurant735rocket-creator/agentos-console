@@ -48,3 +48,44 @@ MEDIUM 判红/喂 loc=0 判红/空基线判红/未部署 rc=3/零残留）、
 
 实测（真树，非桩）：`loc=48515 HIGH=0 MEDIUM=44 LOW=345`，`SELFSCAN OK 3/3`
 （rc=0）；`SELFSCAN_GATE OK 10/10`（rc=0）。
+
+## 第三轮（2026-10-19 W25）：把「验证」从任务末尾前移到**动作边界**
+
+来源（star≥1000，**只读上游源码，蒸馏进本仓，不上传任何自有内容**）：
+- **Aider-AI/aider ★49636**（Apache-2.0）：`aider/coders/base_coder.py:1616-1621`
+  ```python
+  if edited and self.auto_test:
+      test_errors = self.commands.cmd_test(self.test_cmd)
+      self.test_outcome = not test_errors
+      if test_errors:
+          ...
+          self.reflected_message = test_errors
+  ```
+  三个可蒸馏的设计点：① 验证由**编辑事件**触发，不是任务结束时才验一次；
+  ② 失败报错**回灌**下一轮（`reflected_message`）；③ 每次改动的结论被记成
+  布尔量（`test_outcome`）——「这次改动过没过检查」是可查的结论，不是印象。
+- **SWE-agent/SWE-agent ★20597**（MIT）：`sweagent/environment/swe_env.py:226-228`
+  工具失败必须**带 exit code** 回灌：
+  `msg = f"Command {input!r} failed ({r.exit_code=}): {error_msg}"` ——
+  报错是可行动的观察，不是原始异常。
+- **OpenHands/OpenHands ★91270**（MIT）：运行时安全分析器对**每个动作**
+  先评分再决定放不放行（我们已用自己的收敛引擎做同一件事，见 W23/W24）。
+
+蒸馏落地（本仓，**本轮新写**）：
+1. `tools/verify_cmd.py`：探测「这个仓库跑什么命令能证明改动是对的」
+   （Makefile 有 test 目标 / package.json 有 test 脚本 / Cargo.toml / go.mod /
+   Python 项目配置 → `pytest -q`）。**探测不到就返回 None** —— 猜一条必然
+   失败的命令，会把「没找到验证方式」伪装成「验证失败」。
+2. `tools/converge.py`：写盘成功 → 进入**待核对态**；核对指令在步骤边界注入，
+   带上「该跑哪条命令 + 为什么是这条」；每轮只催一次（连催会淹掉模型）。
+3. **核对结论入账**：`verify_outcome` = "" / "pass" / "fail"，新改动让旧结论作废；
+   核对失败（rc≠0）时指令措辞从「还没核对过」改成「上一次核对**没通过**，
+   先读懂报错再改」——这是上游 `reflected_message` 的等价物。
+4. **有意偏离上游**：aider 是**内核自己跑**测试命令；AgentOS 不这么做 ——
+   命令仍由 agent 通过 `run_cmd` 走白名单与留痕（内核代跑会绕过审计链）。
+   引擎只负责**在正确的时机说「现在去核对」**。
+
+门与自检：converge_selftest 37→**53/53** · converge_gate 19→**23/23** ·
+agent_core 自检 152→**153**（新增「改完盘后核对指令真进 messages」内核级判据）。
+
+上游源码副本只落在 `work/distill/w25/`（已 .gitignore），不进仓库。
