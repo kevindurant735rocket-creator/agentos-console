@@ -1,11 +1,11 @@
 {
   "a_in_process_table": true,
-  "a_pid": 16611,
+  "a_pid": 65744,
   "after_pids": [
-    16611
+    65744
   ],
   "before_pids": [
-    16611
+    65744
   ],
   "first_multi_instance": 1,
   "first_probe_fields": 270,
@@ -14,6 +14,6 @@
   "second_probe_exists": false,
   "second_probe_path": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/probe_single_b.json",
   "second_rc": 0,
-  "second_stderr_tail": "[agentos] 已有实例 16611 在运行，已激活并退出",
+  "second_stderr_tail": "[agentos] 已有实例 65744 在运行，已激活并退出",
   "second_takeover_msg": true
 }

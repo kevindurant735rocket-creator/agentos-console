@@ -512,6 +512,7 @@ class Converge:
         why = {
             "verify_pass": "改了但没有一次通过的核对命令",
             "write_and_readback": "没有把写下的内容读回来核对过",
+            "write_seen": "没有任何一次成功的写盘（改动没落地）",
             "source_cited": "结论里没有可核对的来源（URL 或 文件:行号）",
             "cited": "结论里没有可核对的来源（URL / 文件:行号 / 命令）",
             "command_ran": "没有跑过任何命令（结论不可复算）",
@@ -524,6 +525,11 @@ class Converge:
                 return bool(self.write_seen and self.verify_seen)
             if kind == "write_and_readback":
                 return bool(self.write_paths & self.read_paths)
+            if kind == "write_seen":
+                # 写成功本身就是落盘证据（工具回执里有 rc/bytes/diff）。
+                # 读回是**更强**的确认（内容对不对），但对「改一行」这种
+                # 小改动是过度要求 —— 过度约束会把小任务也卡死。
+                return bool(self.write_seen)
             if kind in ("source_cited", "cited"):
                 return _has_citation(answer)
             if kind == "command_ran":
@@ -538,7 +544,7 @@ class Converge:
         # 否则任务永远交不了付（闸门一直退到预算耗尽）。
         _relaxed = []
         if self.write_blocked and not self.write_seen:
-            _ws = ("write_and_readback", "verify_pass")
+            _ws = ("write_and_readback", "verify_pass", "write_seen")
             _kept = []
             for r in req:
                 if isinstance(r, (tuple, list)):

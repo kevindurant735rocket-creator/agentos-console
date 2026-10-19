@@ -22,6 +22,7 @@ import argparse
 import importlib.util
 import json
 import os
+import gate_pollution as _pollution
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -392,7 +393,8 @@ def main():
 
     # B12 零污染
     after = set(os.listdir(work)) if os.path.isdir(work) else set()
-    new = sorted((after - before) - {os.path.basename(args.out)})
+    # 零污染口径共享（tools/gate_pollution.py）：**活着的并发自检**目录不算污染
+    new, _live_poll = _pollution.pollution_diff(after, before, {args.out})
     gate("B12 零污染（work/ 只多 --out；夹具全清）", not new, "新增=%s" % (new or "无"))
     return _finish(args.out)
 

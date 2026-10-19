@@ -1,7 +1,7 @@
 {
  "tool": "view_dod.py",
  "method": "playwright-cdp-real-viewport",
- "url": "http://127.0.0.1:53981/index.html",
+ "url": "http://127.0.0.1:61454/index.html",
  "transport": "real-http",
  "served_root": "live",
  "views": [
@@ -37,7 +37,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 85450,
+   "png_bytes": 84994,
    "viewport_faked": false,
    "overflow": false
   },
@@ -53,7 +53,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 78856,
+   "png_bytes": 78407,
    "viewport_faked": false,
    "overflow": false
   },
@@ -69,7 +69,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 81906,
+   "png_bytes": 81446,
    "viewport_faked": false,
    "overflow": false
   },
@@ -85,7 +85,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 78974,
+   "png_bytes": 78525,
    "viewport_faked": false,
    "overflow": false
   },
@@ -101,7 +101,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 84693,
+   "png_bytes": 84230,
    "viewport_faked": false,
    "overflow": false
   },
@@ -117,7 +117,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 81125,
+   "png_bytes": 80672,
    "viewport_faked": false,
    "overflow": false
   },
@@ -133,7 +133,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 85062,
+   "png_bytes": 84603,
    "viewport_faked": false,
    "overflow": false
   },
@@ -149,7 +149,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 87615,
+   "png_bytes": 87152,
    "viewport_faked": false,
    "overflow": false
   },
@@ -165,7 +165,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 83645,
+   "png_bytes": 83183,
    "viewport_faked": false,
    "overflow": false
   },
@@ -181,7 +181,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 78321,
+   "png_bytes": 77863,
    "viewport_faked": false,
    "overflow": false
   },
@@ -191,13 +191,13 @@
    "docClientW": 375,
    "visible": true,
    "nodes": 17,
-   "textLen": 2885,
+   "textLen": 2928,
    "tabsSelected": [
     "term"
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 79341,
+   "png_bytes": 78891,
    "viewport_faked": false,
    "overflow": false
   },
@@ -213,7 +213,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 78636,
+   "png_bytes": 78183,
    "viewport_faked": false,
    "overflow": false
   },
@@ -229,7 +229,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 78899,
+   "png_bytes": 78447,
    "viewport_faked": false,
    "overflow": false
   },
@@ -245,7 +245,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 138576,
+   "png_bytes": 138287,
    "viewport_faked": false,
    "overflow": false
   },
@@ -261,7 +261,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 125009,
+   "png_bytes": 124719,
    "viewport_faked": false,
    "overflow": false
   },
@@ -277,7 +277,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 124544,
+   "png_bytes": 124244,
    "viewport_faked": false,
    "overflow": false
   },
@@ -293,7 +293,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 126663,
+   "png_bytes": 126368,
    "viewport_faked": false,
    "overflow": false
   },
@@ -309,7 +309,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 131588,
+   "png_bytes": 131291,
    "viewport_faked": false,
    "overflow": false
   },
@@ -325,7 +325,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 125319,
+   "png_bytes": 125031,
    "viewport_faked": false,
    "overflow": false
   },
@@ -341,7 +341,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 126392,
+   "png_bytes": 126098,
    "viewport_faked": false,
    "overflow": false
   },
@@ -357,7 +357,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 134272,
+   "png_bytes": 133975,
    "viewport_faked": false,
    "overflow": false
   },
@@ -373,7 +373,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 126683,
+   "png_bytes": 126393,
    "viewport_faked": false,
    "overflow": false
   },
@@ -389,7 +389,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 114251,
+   "png_bytes": 114018,
    "viewport_faked": false,
    "overflow": false
   },
@@ -399,13 +399,13 @@
    "docClientW": 768,
    "visible": true,
    "nodes": 17,
-   "textLen": 2885,
+   "textLen": 2928,
    "tabsSelected": [
     "term"
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 115361,
+   "png_bytes": 115063,
    "viewport_faked": false,
    "overflow": false
   },
@@ -421,7 +421,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 114647,
+   "png_bytes": 114412,
    "viewport_faked": false,
    "overflow": false
   },
@@ -437,7 +437,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 119825,
+   "png_bytes": 119441,
    "viewport_faked": false,
    "overflow": false
   },
@@ -453,7 +453,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 266786,
+   "png_bytes": 266317,
    "viewport_faked": false,
    "overflow": false
   },
@@ -469,7 +469,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 166980,
+   "png_bytes": 166500,
    "viewport_faked": false,
    "overflow": false
   },
@@ -485,7 +485,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 239719,
+   "png_bytes": 239236,
    "viewport_faked": false,
    "overflow": false
   },
@@ -501,7 +501,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 235895,
+   "png_bytes": 235476,
    "viewport_faked": false,
    "overflow": false
   },
@@ -517,7 +517,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 270947,
+   "png_bytes": 270429,
    "viewport_faked": false,
    "overflow": false
   },
@@ -533,7 +533,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 243579,
+   "png_bytes": 243184,
    "viewport_faked": false,
    "overflow": false
   },
@@ -549,7 +549,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 256991,
+   "png_bytes": 256514,
    "viewport_faked": false,
    "overflow": false
   },
@@ -565,7 +565,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 281764,
+   "png_bytes": 281311,
    "viewport_faked": false,
    "overflow": false
   },
@@ -581,7 +581,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 260518,
+   "png_bytes": 260060,
    "viewport_faked": false,
    "overflow": false
   },
@@ -597,7 +597,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 211056,
+   "png_bytes": 210746,
    "viewport_faked": false,
    "overflow": false
   },
@@ -607,13 +607,13 @@
    "docClientW": 1440,
    "visible": true,
    "nodes": 17,
-   "textLen": 2885,
+   "textLen": 2928,
    "tabsSelected": [
     "term"
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 199295,
+   "png_bytes": 198782,
    "viewport_faked": false,
    "overflow": false
   },
@@ -629,7 +629,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 227874,
+   "png_bytes": 227415,
    "viewport_faked": false,
    "overflow": false
   },
@@ -645,7 +645,7 @@
    ],
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 219627,
+   "png_bytes": 218891,
    "viewport_faked": false,
    "overflow": false
   }

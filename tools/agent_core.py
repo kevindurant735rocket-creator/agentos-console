@@ -7186,6 +7186,27 @@ def _selftest():
     # 的 py_ok.txt / auto.txt，把「文件没落地」这类判据莫名判红（2026-10-11
     # 实测被并发门打出一条 FAIL，单独重跑就绿 —— 典型的假红）。
     tmp = os.path.join(ROOT, "work", "_st_agent_core.%d" % os.getpid())
+    # 先清「上轮崩溃留下的孤儿」：进程被杀（超时/被中断）时 finally 不会跑，
+    # 目录就留在 work/ 里，零污染判据当场抓红。
+    # 只清 **pid 已不在** 的目录：并发自检各自有目录（同名会互相看见对方
+    # 的产物），活着的进程那份不能动。
+    try:
+        _wdir = os.path.join(ROOT, "work")
+        for _e in os.listdir(_wdir):
+            if not _e.startswith("_st_agent_core."):
+                continue
+            try:
+                _opid = int(_e.rsplit(".", 1)[1])
+            except (ValueError, IndexError):
+                continue
+            if _opid == os.getpid():
+                continue
+            try:
+                os.kill(_opid, 0)
+            except OSError:
+                shutil.rmtree(os.path.join(_wdir, _e), ignore_errors=True)
+    except OSError:
+        pass
     try:
         _selftest_body(case, jc, tmp)
     finally:

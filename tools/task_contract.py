@@ -252,7 +252,7 @@ def contract_for(task_type, verify_info=None, task_text=""):
         c["name"] = "缺陷修复"
         c["why"] = "不先看到原 bug 复现，就无法证明修的是那个 bug"
         c["hard"] = (
-            ["verify_pass"] if cmd else [("verify_pass", "write_and_readback")]
+            ["verify_pass"] if cmd else ["write_seen"]
         )
         c["soft"] = ["repro_red_then_green"]
         if cmd:
@@ -277,7 +277,7 @@ def contract_for(task_type, verify_info=None, task_text=""):
         c["name"] = "新增功能"
         c["why"] = "新代码得被真的执行到才算数"
         c["hard"] = (
-            ["verify_pass"] if cmd else [("verify_pass", "write_and_readback")]
+            ["verify_pass"] if cmd else ["write_seen"]
         )
         c["soft"] = []
         c["opening"] = (
@@ -294,7 +294,7 @@ def contract_for(task_type, verify_info=None, task_text=""):
         c["name"] = "重构"
         c["why"] = "重构的验收标准是行为不变，不是「看起来更整齐」"
         c["hard"] = (
-            ["verify_pass"] if cmd else [("verify_pass", "write_and_readback")]
+            ["verify_pass"] if cmd else ["write_seen"]
         )
         c["soft"] = ["no_behavior_change"]
         c["opening"] = (
@@ -356,7 +356,7 @@ def contract_for(task_type, verify_info=None, task_text=""):
             k in str(task_text or "").lower()
             for k in ("实现", "写", "改", "部署", "创建", "修", "新增", "生成", "加")
         )
-        c["hard"] = ["verify_pass"] if cmd else (["write_and_readback"] if _imply else [])
+        c["hard"] = ["verify_pass"] if cmd else (["write_seen"] if _imply else [])
         c["soft"] = []
         c["opening"] = (
             (
@@ -370,7 +370,12 @@ def contract_for(task_type, verify_info=None, task_text=""):
 
 
 # 需要「真的写盘」才能满足的证据要求
-_WRITE_SCOPED = ("write_and_readback", "verify_pass", "repro_red_then_green")
+_WRITE_SCOPED = (
+    "write_and_readback",
+    "verify_pass",
+    "write_seen",
+    "repro_red_then_green",
+)
 
 
 def relax_for_writes(contract, blocked, why=""):

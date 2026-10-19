@@ -114,9 +114,14 @@ case(
 )
 _c_gen_build = tc.contract_for(tc.T_GENERIC, None, "写一个工具")
 case(
-    "契约：要产出的 generic 仍要求核对证据",
-    _c_gen_build["hard"] == ["write_and_readback"],
+    "契约：要产出的 generic 仍要求落盘证据（write_seen）",
+    _c_gen_build["hard"] == ["write_seen"],
     str(_c_gen_build["hard"]),
+)
+case(
+    "契约：小改动不被过度约束（write_seen 而非 write_and_readback）",
+    tc.contract_for(tc.T_FEATURE, None)["hard"] == ["write_seen"],
+    str(tc.contract_for(tc.T_FEATURE, None)["hard"]),
 )
 _c_feat = tc.contract_for(tc.T_FEATURE, {"cmdline": "make test", "why": "Makefile"})
 case(

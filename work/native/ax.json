@@ -11,12 +11,12 @@
   "menu_nodes": 0,
   "nodes": 20,
   "ok": true,
-  "pid": 15923,
+  "pid": 65132,
   "pids": [
-    15923
+    65132
   ],
   "proc": "AgentOS",
-  "reactivations": 0,
+  "reactivations": 1,
   "roles": {
     "AXButton": 3,
     "AXGroup": 6,
@@ -39,9 +39,9 @@
       "cg_onscreen": 1,
       "exposed": true,
       "exposed_first": false,
-      "fg_mechanism": "already-front",
+      "fg_mechanism": "ax-frontmost",
       "fg_ok": true,
-      "fg_reactivated": false,
+      "fg_reactivated": true,
       "fg_why": "",
       "first": {
         "content_nodes": 17,
@@ -49,7 +49,7 @@
         "ok": false,
         "texts": 5,
         "web_area": 0,
-        "why": "pid=15923 有 17 节点/5 文本但 AXWebArea=0（网页内容区还没进 AX 树）",
+        "why": "pid=65132 有 17 节点/5 文本但 AXWebArea=0（网页内容区还没进 AX 树）",
         "windows": 1,
         "windows_err": 0
       },
@@ -429,7 +429,7 @@
     }
   ],
   "sustained": true,
-  "target_pid": 15923,
+  "target_pid": 65132,
   "text_samples": [
     "AgentOS",
     "776.0",

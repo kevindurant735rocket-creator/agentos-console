@@ -1,6 +1,6 @@
 {
   "checks": 194,
-  "elapsed": 131.9,
+  "elapsed": 132.2,
   "gate": "native_gate",
   "live_sha_before": {
     "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/data.json": "6fdf2493fd741696cf67fa5b9b37554ab619d35494b470f0f282710f312feb8b",
@@ -72,7 +72,7 @@
     },
     {
       "check": "ax-target-is-under-test",
-      "detail": "target_pid=15923 sampled_pid=15923",
+      "detail": "target_pid=65132 sampled_pid=65132",
       "ok": true
     },
     {
@@ -322,12 +322,12 @@
     },
     {
       "check": "shot-over-captured",
-      "detail": "ok 564358 bytes 2442x1552",
+      "detail": "ok 564014 bytes 2442x1552",
       "ok": true
     },
     {
       "check": "shot-over-bytes",
-      "detail": "564358",
+      "detail": "564014",
       "ok": true
     },
     {
@@ -347,12 +347,12 @@
     },
     {
       "check": "shot-mx-captured",
-      "detail": "ok 499400 bytes 2442x1552",
+      "detail": "ok 499157 bytes 2442x1552",
       "ok": true
     },
     {
       "check": "shot-mx-bytes",
-      "detail": "499400",
+      "detail": "499157",
       "ok": true
     },
     {
@@ -372,12 +372,12 @@
     },
     {
       "check": "shot-cmdk-captured",
-      "detail": "ok 460114 bytes 2442x1552",
+      "detail": "ok 460226 bytes 2442x1552",
       "ok": true
     },
     {
       "check": "shot-cmdk-bytes",
-      "detail": "460114",
+      "detail": "460226",
       "ok": true
     },
     {
@@ -397,12 +397,12 @@
     },
     {
       "check": "shot-back-captured",
-      "detail": "ok 564358 bytes 2442x1552",
+      "detail": "ok 564014 bytes 2442x1552",
       "ok": true
     },
     {
       "check": "shot-back-bytes",
-      "detail": "564358",
+      "detail": "564014",
       "ok": true
     },
     {
@@ -422,12 +422,12 @@
     },
     {
       "check": "shot-final-captured",
-      "detail": "ok 455970 bytes 2442x1552",
+      "detail": "ok 456083 bytes 2442x1552",
       "ok": true
     },
     {
       "check": "shot-final-bytes",
-      "detail": "455970",
+      "detail": "456083",
       "ok": true
     },
     {
@@ -567,7 +567,7 @@
     },
     {
       "check": "panel-shot-bytes",
-      "detail": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/shot-panel-cachedefault.png bytes=102391",
+      "detail": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/shot-panel-cachedefault.png bytes=101860",
       "ok": true
     },
     {
@@ -762,7 +762,7 @@
     },
     {
       "check": "projects-file-counts",
-      "detail": "[1797, 2000]",
+      "detail": "[1826, 2000]",
       "ok": true
     },
     {
@@ -902,7 +902,7 @@
     },
     {
       "check": "degraded-service-pid",
-      "detail": "16590",
+      "detail": "65729",
       "ok": true
     },
     {
@@ -927,7 +927,7 @@
     },
     {
       "check": "single-instance-a-in-process-table",
-      "detail": "A=16611 in [16611]",
+      "detail": "A=65744 in [65744]",
       "ok": true
     },
     {
@@ -937,7 +937,7 @@
     },
     {
       "check": "single-instance-second-activated-existing",
-      "detail": "[agentos] 已有实例 16611 在运行，已激活并退出",
+      "detail": "[agentos] 已有实例 65744 在运行，已激活并退出",
       "ok": true
     },
     {
