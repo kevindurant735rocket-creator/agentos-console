@@ -12,3 +12,5 @@ work/superpowers-upstream/
 # tools/selfscan.py --install 的部署落点：bandit 及其依赖（约 30MB 第三方代码）。
 # 运行时不依赖它（主链路仍纯 stdlib），只供自检门 ;重装一条命令即可幂等恢复。
 .vendor/
+work/realex/
+work/distill/cli*/
