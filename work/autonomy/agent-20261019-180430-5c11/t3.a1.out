@@ -1,0 +1,30 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+## 做了什么
+
+1. **读 README 前 2 行**（`README.md:1-2`，文件共 162 行 / 53383 字节）：
+   - 第 1 行：`# AgentOS 交付驾驶舱`
+   - 第 2 行：**空行**（原文就是空行，`cat -A` 回显为单独的 `$`）
+
+2. **主改动落盘**：新增 `work/autonomy/t3-readme-head.md`（1044 字节，sha256 `66e0bd59…59ef3`，`before_sha256=null` 即新建），内容是本次回执：README 前两行原样、现状一句话、证据行、以及「本轮派发文字没给具体代码改动点，故未改任何已跟踪源码」这一诚实边界。
+
+3. **明确没做的事**：本轮任务描述里只有「读 README 前 2 行并报告」这一个可操作目标，没有任何具体改动规格（改哪个文件/哪行/什么语义），所以我没有去臆造源码改动——`git diff HEAD` 为空就是证据。若下游确实需要改动源码，需要补一份改动点说明。
+
+## 验证命令真实输出
+
+| 命令 | rc | 关键输出 |
+|---|---|---|
+| `sed -n '1,2p' README.md \| cat -A` | **rc=0** | `# AgentOS 交付驾驶舱$` / `$` |
+| `test -s work/autonomy/t3-readme-head.md` | **artifact_rc=0** | 产物存在且非空 |
+| `git status --porcelain work/autonomy/t3-readme-head.md` | **rc=0** | `?? work/autonomy/t3-readme-head.md`（落盘可见） |
+| `tail -n 30 progress.md` | **rc=0** | 第二十二波收尾正文 |
+| `git_diff HEAD` | **rc=0** | 空输出 → 已跟踪文件零改动 |
+
+证据行：`PASS` 读 README 前 2 行（rc=0）；`PASS` 产物落盘（artifact_rc=0，`??` 可见）；`OK` 无已跟踪改动（git_diff rc=0 空）。
+
+## 还剩什么没做
+
+- 判据里的「主改动」如果指**源码级**改动，本轮没有落地（无规格可依），需要给出具体改动点后再执行；
+- 产物未提交（仍在 work/ 未跟踪区），`git commit/push` 未执行。
+
+--- agent_core：9 步，71.1s，工具调用 12 次（其中 0 次未执行：被拒/参数不对）

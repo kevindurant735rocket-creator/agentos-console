@@ -1,0 +1,78 @@
+{
+ "approved": false,
+ "bind_sha": "42b85a8d490b0477ce8225772c1b1a85359dd54868e638f907b8be4caf763fd9",
+ "created": 1792410223.683,
+ "goal": "用 gh_search 搜 GitHub 上 1000+ star 的 Python 终端 agent 项目，选一个，gh_repo_view 看概况，把 2 条设计点写入 work/distill/study7.md，然后 gh_depl",
+ "tasks": [
+  {
+   "accept": "关键文件已读 + 现状一句话 + rc=0",
+   "depends": [],
+   "evidence": [
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=0 "
+   ],
+   "id": "t1",
+   "status": "done",
+   "steps_used": 15,
+   "title": "侦察：读关键文件、确认现状",
+   "tools": [
+    "list_dir",
+    "read_file",
+    "search",
+    "gh_search",
+    "gh_repo_view",
+    "gh_file_read"
+   ]
+  },
+  {
+   "accept": "改动落盘 + 验证命令 rc=0（证据行）",
+   "depends": [
+    "t1"
+   ],
+   "evidence": [],
+   "id": "t2",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "动手：按判据改代码",
+   "tools": [
+    "read_file",
+    "search",
+    "write_file",
+    "edit_file",
+    "run_cmd",
+    "git_diff"
+   ]
+  },
+  {
+   "accept": "自检 rc=0 + 回执含真实 rc",
+   "depends": [
+    "t2"
+   ],
+   "evidence": [],
+   "id": "t3",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "收尾：自检 + 回执",
+   "tools": [
+    "run_cmd",
+    "git_diff",
+    "git_status",
+    "git_log"
+   ]
+  }
+ ],
+ "version": 1
+}

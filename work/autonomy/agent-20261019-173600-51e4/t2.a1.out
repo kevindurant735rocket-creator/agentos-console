@@ -1,0 +1,37 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+## 收尾报告
+
+**目标（读 README.md 前 3 行）** — 已完成，内容如下（真实读取，`read_file limit=3` → ok:true，全文件 162 行）：
+
+```
+1  # AgentOS 交付驾驶舱
+2
+3  仓库：https://github.com/kevindurant735rocket-creator/agentos-console
+```
+用 `sed -n '1,3p' README.md` 二次复算，rc=0，输出一致。
+
+**t2 定案（圈改动面、每项钉可复算判据）** — 已完成
+
+- 交付物：`work/t2-scope.md`（bytes=1849 → 编辑后 sha256 `40c10275…5fd4b7`）
+- 改动面清单：S0 `README.md` 只读零改动；S1 本文件新增。负改动面明确列出 tools/、README/.bak*、docs/、install.sh、Dockerfile、native/ 不动；并如实注明工作区既有脏面（`work/cli_gate.json`、`work/llm_400_trace.json` 及 work/ 未跟踪运行产物）**非本次引入**。
+
+**证据行（每条 rc 均为本轮真实执行）**
+
+| 判据 | 命令 | rc | 结果 |
+|---|---|---|---|
+| J1 README 前3行可复算 | `sed -n '1,3p' README.md` | 0 | PASS |
+| J2 README 零改动 | `git status --porcelain README.md` | 0（输出空） | PASS |
+| J3 tools/ 零改动 | `git status --porcelain tools/` | 0（输出空） | PASS |
+| J4 定案文件非空 | `test -s work/t2-scope.md` | 0 | PASS |
+| J5 负改动面抽检 | `sh -c "git status --porcelain \| grep -E '^( M\|M \|A ) (README\.md\|tools/)'"` | 1（无匹配，符合期望） | PASS |
+| J6 交付物可追踪 | `git status --porcelain work/t2-scope.md` | 0 → `?? work/t2-scope.md` | PASS |
+
+判据全部可复算（纯命令，重跑同结果），全项 rc 符合期望，**t2 = OK**。
+
+**还没做**
+- t3 未开工（内容未下发，等引擎派发；本步不越界替它定内容）。
+- 未提交/未推送：`work/t2-scope.md` 目前是未跟踪文件，工作区另有本次之外的既有脏面（`work/cli_gate.json`、`work/llm_400_trace.json`），我未触碰也未清理。
+- 一个观察（不改判据，仅记录）：`findings.md` 提到「tools/仅 agent_core.py 默认 full 脏改」，本次 `git status --porcelain tools/` 为空，说明该脏改已不在当前工作区；若这是别人刚提交的，与本任务无关，仅提示陈述需以当前 rc 为准。
+
+--- agent_core：10 步，37.9s，工具调用 14 次（其中 0 次未执行：被拒/参数不对）

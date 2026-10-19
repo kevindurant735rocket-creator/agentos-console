@@ -1,0 +1,28 @@
+[project]
+name = "agentos-study-cli3"
+version = "0.1.0"
+description = "Minimal terminal-agent CLI skeleton distilled from gptme (derived from github.com/gptme/gptme, MIT)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+keywords = ["agent", "terminal", "cli", "tools", "llm"]
+dependencies = []  # 借用点 3：最小核心零重依赖
+
+[project.optional-dependencies]
+# 借用点 3：能力分组，按需装；默认安装不拉任何重依赖
+tui = ["rich>=13"]           # 富文本 TUI 渲染
+server = ["flask>=3.0"]      # HTTP 前端共享同一 core
+sandbox = []                 # 预留：docker / wasm 后端
+all = ["rich>=13", "flask>=3.0"]
+
+[project.scripts]
+# 借用点 2：多个薄前端，全部指向同一 core
+agentos3 = "main:main"
+
+[project.entry-points."agentos3.tools"]
+# 借用点 1：第三方工具通过 entry-point 注册，无需改核心代码
+# 示例：my_tool = "my_pkg.tools:hello"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

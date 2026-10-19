@@ -3715,6 +3715,9 @@ def run_agent(
     except (TypeError, ValueError):
         cap = MAX_STEPS
     cap = max(1, min(MAX_STEPS, cap))
+    # 交付闸的退回轮**不烧用户 step 预算**：那是内核要求补证据，不是
+    # 模型在同一个任务上多试一次。给它独立的 _GATE_BUDGET 额度。
+    _GATE_BUDGET = 2
     if provider is None:
         # resolve_provider 给的是「端点描述」（纯 dict，便于 env 注入与门做
         # 证伪）；这里必须再包一层 Provider：run_agent 后面调的是
@@ -3755,6 +3758,20 @@ def run_agent(
     _SESS_MAX = 3
     step = 0
     _total_steps = 0
+    _gate_retries = 0  # 交付闸退回次数（上限 2 次，防无限打转）
+    # 收敛引擎（W23）：把「探查→动手→验证→交付」做成可判定状态机。
+    # 为什么必须有：实测 2026-10-19 真实终端里，agent 跑 23 步 / 900 秒
+    # / 86 次工具调用原地打转、零交付（read_file×10、run_cmd×7）——不是
+    # 模型笨，是内核没有「该动了」「该验了」「该交了」的强制信号。
+    try:
+        import converge as _cv_mod
+
+        _conv = _cv_mod.Converge(
+            task_text=str(prompt or "")[:400], mode=str(ctx.get("mode") or "")
+        )
+    except Exception:  # noqa: BLE001  收敛层坏不许拖垮主链路
+        _cv_mod = None
+        _conv = None
     while True:
         step += 1
         _total_steps += 1
@@ -4004,12 +4021,37 @@ def run_agent(
                 _outer["history"] = ctx["history"]
             _ans = msg["content"] or ""
             _empty = not _ans.strip()
+            # 交付闸（W23）：终答自称完成却零验证证据 → 退回补证据，别放行。
+            # 形状来自真实事故：900 秒那次它说了「已完成」，全程没跑出一条 rc。
+            if _conv is not None and not _empty and _gate_retries < _GATE_BUDGET:
+                try:
+                    _gok, _gwhy = _conv.gate(_ans)
+                except Exception:  # noqa: BLE001
+                    _gok, _gwhy = True, ""
+                if not _gok:
+                    _gate_retries += 1
+                    try:
+                        _gmsg = _conv.require_evidence()
+                    except Exception:  # noqa: BLE001
+                        _gmsg = "[交付闸] 终答缺证据：%s" % _gwhy
+                    messages.append({"role": "user", "content": _gmsg})
+                    if callable(on_event):
+                        on_event({"type": "note", "text": _gmsg})
+                    # 退回主循环，但**不消耗用户的 step 预算**：
+                    # 这是内核要求补证据，不是任务本身多走一步
+                    # （step -= 1 把那一步还回去；cap 判据照旧生效）。
+                    # 模型这一轮可以直接调工具补证据（跑 pytest / 写文件），
+                    # 走的是和正常轮完全一样的执行路径，不另开一条支线。
+                    step -= 1
+                    _total_steps -= 1
+                    continue
             return {
                 "ok": True,
                 "kind": "ok",
                 "steps": step,
                 "answer": _ans,
                 "empty_answer": _empty,
+                "converge": _conv.snapshot() if _conv is not None else {},
                 "error": (
                     "模型返回空内容（端点抖动/模型卡壳）：本轮没有"
                     "可交付答案，可重试或换端点"
@@ -4161,6 +4203,17 @@ def run_agent(
                         "summary": _tool_summary(name, args, res),
                     }
                 )
+            # 收敛观测：喂一次（工具, 参数, 成败, rc）。产出与否决定停滞计数。
+            if _conv is not None:
+                try:
+                    _conv.observe(
+                        name,
+                        args if isinstance(args, dict) else {},
+                        ok=bool(res.get("ok")) and bool(res.get("executed", True)),
+                        rc=res.get("rc"),
+                    )
+                except Exception:  # noqa: BLE001
+                    pass
             messages.append(
                 {
                     "role": "tool",
@@ -4170,6 +4223,18 @@ def run_agent(
                     "content": json.dumps(_cap_result(res), ensure_ascii=False),
                 }
             )
+
+        # 收敛指令注入（步骤边界）：停滞/循环/阶段越界时给模型一条明确方向。
+        # 注入点是 user 角色 —— 模型能看见但不会当成工具结果，语义更干净。
+        if _conv is not None and step < cap - 1:
+            try:
+                _dir = _conv.directive()
+            except Exception:  # noqa: BLE001
+                _dir = None
+            if _dir:
+                messages.append({"role": "user", "content": _dir})
+                if callable(on_event):
+                    on_event({"type": "note", "text": _dir})
 
 
 def _no_fallback():
@@ -5117,6 +5182,7 @@ def _evo_signal(
     tools_fail=None,
     denied=None,
     denied_reasons=None,
+    converge=None,
 ):
     """每轮一条信号进 signals.jsonl（挖掘的原料）。落盘失败静默——
     进化是增益层，绝不允许它打断对话主循环。被兜底掩盖的主端点失败也记
@@ -5135,6 +5201,10 @@ def _evo_signal(
         "tools_fail": list(tools_fail or []),
         "denied": list(denied or []),
         "denied_reasons": list(denied_reasons or []),
+        # 收敛干预痕迹：注入了几次方向指令、交付闸退回了几次。
+        # 这些是「agent 差点原地打转」的**量化证据**——挖掘器据此生成
+        # 「该收敛」类规则，让进化层能自动调阈值/改提示，而不是只靠人拍。
+        "converge": dict(converge or {}),
     }
     try:
         os.makedirs(os.path.dirname(EVO_SIGNALS_PATH), exist_ok=True)
@@ -6734,6 +6804,9 @@ def _repl(args):
                 for u in res.get("tools_used") or []
                 if not u.get("executed")
             ],
+            # 收敛快照：run_agent 把快照挂在结果里（REPL 与 headless 通用，
+            # 不用在这里重建引擎——REPL 侧没有 _conv 这个局部量）。
+            converge=(res.get("converge") or {}),
         )
         # W13 诚实收尾：零证据完成声明打脸 + 跨轮复读检测（信号入账）
         _n_tools_turn = len(res.get("tools_used") or [])
@@ -9013,7 +9086,18 @@ def _selftest_body(case, jc, tmp):
     _plans_dir = os.path.join(ROOT, "work", "plans")
     try:
         for _stale in os.listdir(_plans_dir):
-            if _stale.startswith(("st-verify-", "st-watch-", "st-safety-")):
+            # 全量清自检孤儿：任何 st-* 前缀的夹具都不该留在生产 plans/ 里
+            # （失败轮残留会让 dsp_gate D12「无自检残留」判红）。
+            if _stale.startswith(
+                (
+                    "st-verify-",
+                    "st-watch-",
+                    "st-safety-",
+                    "st-run-",
+                    "st-auto-",
+                    "st-",
+                )
+            ):
                 try:
                     os.unlink(os.path.join(_plans_dir, _stale))
                 except OSError:
@@ -9885,12 +9969,16 @@ def _selftest_body(case, jc, tmp):
         "ok=%s plan=%s" % (_res0.get("ok"), _pl0 is not None),
     )
     # 清理自检计划残留（plans/ 下 _dsp_sid/_auto_sid/_run_sid 三组全清）。
-    for _sid_c in (_dsp_sid, _auto_sid, _run_sid):
-        for _suf in ("-plan.json", "-chain.jsonl"):
-            try:
-                os.unlink(os.path.join(ROOT, "work", "plans", _sid_c + _suf))
-            except OSError:
-                pass
+    # 放 finally：中途异常退出时也要清，否则 dsp_gate D12「无自检残留」判红。
+    try:
+        for _sid_c in (_dsp_sid, _auto_sid, _run_sid):
+            for _suf in ("-plan.json", "-chain.jsonl"):
+                try:
+                    os.unlink(os.path.join(ROOT, "work", "plans", _sid_c + _suf))
+                except OSError:
+                    pass
+    except Exception:  # noqa: BLE001
+        pass
     case(
         "瞬时词表：认得传输事故不认得 401",
         bool(_TRANSIENT_RE.search("connection reset by peer"))
@@ -10011,6 +10099,61 @@ def _selftest_body(case, jc, tmp):
             os.rmdir(os.path.join(ROOT, "work", "autonomy"))
         except OSError:
             pass
+
+    # (CONVERGE) 收敛层内核级判据：注入真进 messages、交付闸真退回补证据
+    # ────────────────────────────────────────────────────────────────────
+    # 为什么放内核自检而不只放 converge_selftest：那是纯函数层；这里钉的
+    # 是**接线**——收敛引擎与主循环真的连上了（方向指令进了模型看得见的
+    # messages、缺证据的终答真的被退回并拿到第二轮答案）。
+    # 读**真实存在**的文件：读不存在的路径会触发既有「同工具连续失败」护栏
+    # 提前停，那是另一条护栏在起作用，不能拿它当收敛层的判据。
+    for _cf in range(6):
+        with open(os.path.join(tmproot, "c%d.txt" % _cf), "w", encoding="utf-8") as _cfh:
+            _cfh.write("probe %d\n" % _cf)
+    _cs1 = Stub(
+        [
+            jc(("read_file", {"path": "c%d.txt" % _i}), cid="k%d" % _i)
+            for _i in range(6)
+        ]
+        + [jc(content="最终结论如下")]
+    )
+    try:
+        run_agent(
+            "把这个仓库彻底研究一遍并写一份改进方案",
+            ctx={"root": tmproot, "mode": "full"},
+            provider=_cs1.provider(),
+            max_steps=8,
+        )
+    finally:
+        _cs1.close()
+    _cs1_seen = json.dumps(_cs1.seen, ensure_ascii=False)
+    case(
+        "收敛：连续只读无产出 → 方向指令真进模型可见的 messages",
+        "收敛指令" in _cs1_seen,
+        "没进 messages",
+    )
+    _cs2 = Stub(
+        [
+            jc(tool=("read_file", {"path": "x.txt"}), cid="g1"),
+            jc(content="我已经完成部署了，仓库在 GitHub 上。"),
+            jc(content="补充证据：pytest rc=0，文件 tools/y.py 已改。"),
+        ]
+    )
+    try:
+        _cs2_res = run_agent(
+            "写一个新功能并验证",
+            ctx={"root": tmproot, "mode": "accept-edits"},
+            provider=_cs2.provider(),
+            max_steps=6,
+        )
+    finally:
+        _cs2.close()
+    _cs2_seen = json.dumps(_cs2.seen, ensure_ascii=False)
+    case(
+        "交付闸：缺证据的完成宣言被退回并拿到补证据后的终答",
+        "交付闸" in _cs2_seen and bool(_cs2_res.get("ok")),
+        "退回=%s ok=%s" % ("交付闸" in _cs2_seen, _cs2_res.get("ok")),
+    )
 
     # (W0-4) 斜杠补全表防漂：dispatch 里能敲的每条 /cmd 都必须在
     # REPL_SLASH_CMDS 里。2026-10-12 实测漂了 12 条（/evo /undo /plan …

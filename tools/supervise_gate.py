@@ -6,7 +6,7 @@
   监督通道的每一层都能「看起来在工作」：指令可以投了不进、可以重复进、
   可以进错会话；监督面可以永远空着。本门站在外面认这些事实（纯离线）：
     D1  steer 纯面：往返 / 游标只进不退 / 坏 sid 拒（防路径穿越）
-    D2  `--check` 末行逐字 `AGENT_CORE OK 147/147`（数漂移即红）
+    D2  `--check` 末行逐字 `AGENT_CORE OK 149/149`（数漂移即红）
     D3  源码锚点：步骤边界消费 / /steer / /watch / 补全表 / CLI 两子命令 +
         bash 补全字面 各就位
     D4  注入（行为）：指令进本轮消息 [老板指令…]（走真 run_agent）
@@ -34,7 +34,7 @@ ROOT = os.path.dirname(HERE)
 DEFAULT_CORE = os.path.join(HERE, "agent_core.py")
 DEFAULT_AGENTOS = os.path.join(HERE, "agentos.py")
 DEFAULT_OUT = os.path.join(ROOT, "work", "supervise_gate.json")
-EXPECT_CHECK = "AGENT_CORE OK 147/147"
+EXPECT_CHECK = "AGENT_CORE OK 149/149"
 
 results = []
 

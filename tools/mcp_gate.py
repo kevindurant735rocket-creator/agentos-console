@@ -8,7 +8,7 @@
   本门站在外面认这些事实（纯离线：夹具是本地微型 stdio 服务器）：
     D1  mcp_client 可导入 + 纯面（encode/decode 往返、名字净化、
         servers_from_config 非法配置 fail-closed）
-    D2  `--check` 末行逐字 `AGENT_CORE OK 147/147`（数漂移即红）
+    D2  `--check` 末行逐字 `AGENT_CORE OK 149/149`（数漂移即红）
     D3  源码锚点：协议版本 / id 错配 / 降级如实记录 / EOF 区分 各恰 1；
         agent_core 侧 `_mcp_sync` 定义 1 处 + 调用点 ≥2
     D4  良好路径（行为）：握手 ok + list 2 工具 + call 回显
@@ -36,7 +36,7 @@ DEFAULT_CLIENT = os.path.join(HERE, "mcp_client.py")
 DEFAULT_CORE = os.path.join(HERE, "agent_core.py")
 DEFAULT_OUT = os.path.join(ROOT, "work", "mcp_gate.json")
 FIXTURE = os.path.join(HERE, "mcp_fixture_srv.py")
-EXPECT_CHECK = "AGENT_CORE OK 147/147"
+EXPECT_CHECK = "AGENT_CORE OK 149/149"
 
 results = []
 

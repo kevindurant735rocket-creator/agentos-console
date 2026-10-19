@@ -1,0 +1,58 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+## M2 定案（t2）：改动面 + 可复算判据
+
+**目标锚**：读 README 前 2 行并报告 → 产物极小，定案原则是「只加一份报告，代码零改动」。
+
+### 一、改动面清单（圈定）
+
+| # | 面 | 动作 | 说明 |
+|---|---|---|---|
+| 1 | `work/readme-head2-report.md` | **新增**（t3 落盘） | 唯一交付产物，承载前 2 行原文+报告正文 |
+| 2 | `README.md` | **不改** | 只读输入，162 行 |
+| 3 | `tools/**` | **不改** | 零代码改动（本轮目标不涉及门链/运行时） |
+| 4 | `plan.md` / `data.json` / `index.html` 等 | **不改** | 与目标无关，排除 |
+
+改动面 = 1 个新增文件；改动外 = 其余全部。
+
+### 二、每项钉成可复算判据（均已在本次执行，真实 rc）
+
+| 判据 | 复算命令（可直接重跑） | 实测结果 | rc |
+|---|---|---|---|
+| C1 前 2 行内容 = 标题行 + 空行 | `head -2 README.md` | `# AgentOS 交付驾驶舱` + 空行 | **rc=0** |
+| C2 标题行唯一出现 1 次 | `grep -c '^# AgentOS 交付驾驶舱$' README.md` | `1` | **rc=0** |
+| C3 第 2 行是空行 | `sed -n '2p' README.md` | 输出仅换行（空白） | **rc=0** |
+| C4 README 总行数 162 | `wc -l README.md` | `162 README.md` | **rc=0** |
+| C5 代码面零改动 | `git status --porcelain -- tools` | 空输出 | **rc=0** |
+| C6 产物基线：文件尚不存在 | `ls -d work/readme-head2-report.md` | `No such file or directory` | **rc=2（预期为负，非判据失败）** |
+
+C6 说明：第 6 条是**基线探针**（如实记录：现在确实没有该文件），不是 rc=0 判据。t3 落盘后的验收复算命令为：
+`head -2 work/readme-head2-report.md` → 应含两行且 rc=0。
+
+### 三、README 前 2 行原文（本次报告本体）
+
+```
+# AgentOS 交付驾驶舱
+（第 2 行为空行）
+```
+
+### 四、证据行
+
+```
+[PASS] head -2 README.md            rc=0  out="# AgentOS 交付驾驶舱\n\n"
+[PASS] grep -c '^# AgentOS ...$'    rc=0  out="1"
+[PASS] sed -n '2p' README.md        rc=0  out="\n"
+[PASS] wc -l README.md              rc=0  out="162 README.md"
+[PASS] git status --porcelain -- tools rc=0  out=""(空)
+[BASE] ls -d work/readme-head2-report.md rc=2 (文件不存在，符合 t3 前预期)
+[OK]   M2 定案完成：改动面=1 新增文件，其余不动；5 条判据全部 rc=0
+```
+
+### 五、还剩什么没做（交给下游）
+
+- **t3 实施A**：把 `work/readme-head2-report.md` 真正落盘（本任务工具集不含 write_file，未写，故不声称已写）。
+- **t4 配套**：如需在 README/进度台账登记本轮结果，另行定案（当前定案为不改 README）。
+- **t5 收尾**：跑 C1/C5/C6 后置复算 + 回执。
+- 另注：`git status --porcelain` 全局有未跟踪项（均为引擎运行日志 `work/plans/*`、`work/autonomy/*`、`work/realex/`、`work/test_runs/`），非本轮产生；`tools/` 面干净。
+
+--- agent_core：6 步，54.6s，工具调用 13 次（其中 0 次未执行：被拒/参数不对）

@@ -7,7 +7,7 @@
   丢失、⎿ 详情可以永远空、缩进可以静默不生效 —— 屏上手感全在，判据全无。
   本门站在外面认这些事实（纯离线，不碰真模型）：
     D1  纯面：续行奇偶 / 拼接 / @候选 / ⎿对账 / 缩进 五件函数的边界态
-    D2  `--check` 末行逐字 `AGENT_CORE OK 147/147`（数漂移即红）
+    D2  `--check` 末行逐字 `AGENT_CORE OK 149/149`（数漂移即红）
     D3  源码锚点：续行循环 / @ 路由 / 摘要集成 / 缩进两站点 / ⎿ 渲染 各就位
     D4  续行（行为）：奇=续、偶=字面、逐段拼接语义
     D5  @补全（行为）：前缀匹配 / 目录带斜杠 / 隐藏跳过 / 非 @ 不问
@@ -32,7 +32,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 DEFAULT_CORE = os.path.join(HERE, "agent_core.py")
 DEFAULT_OUT = os.path.join(ROOT, "work", "repl_ux_gate.json")
-EXPECT_CHECK = "AGENT_CORE OK 147/147"
+EXPECT_CHECK = "AGENT_CORE OK 149/149"
 
 results = []
 

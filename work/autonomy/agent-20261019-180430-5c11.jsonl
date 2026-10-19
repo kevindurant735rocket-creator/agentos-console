@@ -1,0 +1,5 @@
+{"event": "run_start", "goal": "读 README 前 2 行并报告", "mode": "run", "pid": 27530, "retries": 2, "ts": 1792404274.057}
+{"attempt": 1, "dur": 10.2, "event": "dispatch", "out": "work/autonomy/agent-20261019-180430-5c11/t1.a1.out", "rc": 0, "status": "done", "task": "t1", "ts": 1792404284.274, "verify": ""}
+{"attempt": 1, "dur": 54.7, "event": "dispatch", "out": "work/autonomy/agent-20261019-180430-5c11/t2.a1.out", "rc": 0, "status": "done", "task": "t2", "ts": 1792404339.005, "verify": ""}
+{"attempt": 1, "dur": 71.3, "event": "dispatch", "out": "work/autonomy/agent-20261019-180430-5c11/t3.a1.out", "rc": 0, "status": "done", "task": "t3", "ts": 1792404410.325, "verify": ""}
+{"attempt": 1, "dur": 115.0, "event": "dispatch", "out": "work/autonomy/agent-20261019-180430-5c11/t4.a1.out", "rc": 0, "status": "done", "task": "t4", "ts": 1792404525.367, "verify": ""}

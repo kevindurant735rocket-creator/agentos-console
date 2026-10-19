@@ -1,0 +1,7 @@
+{"event": "run_start", "goal": "读 README.md 前 3 行并报告内容", "mode": "run", "pid": 60974, "retries": 2, "ts": 1792402567.288}
+{"attempt": 1, "dur": 8.7, "event": "dispatch", "out": "work/autonomy/agent-20261019-173600-51e4/t1.a1.out", "rc": 0, "status": "done", "task": "t1", "ts": 1792402575.946, "verify": ""}
+{"attempt": 1, "dur": 38.1, "event": "dispatch", "out": "work/autonomy/agent-20261019-173600-51e4/t2.a1.out", "rc": 0, "status": "done", "task": "t2", "ts": 1792402614.052, "verify": ""}
+{"attempt": 1, "dur": 22.5, "event": "dispatch", "out": "work/autonomy/agent-20261019-173600-51e4/t3.a1.out", "rc": 0, "status": "done", "task": "t3", "ts": 1792402636.576, "verify": ""}
+{"attempt": 1, "dur": 80.3, "event": "dispatch", "out": "work/autonomy/agent-20261019-173600-51e4/t4.a1.out", "rc": 0, "status": "done", "task": "t4", "ts": 1792402716.853, "verify": ""}
+{"attempt": 1, "dur": 31.4, "event": "dispatch", "out": "work/autonomy/agent-20261019-173600-51e4/t5.a1.out", "rc": 0, "status": "done", "task": "t5", "ts": 1792402748.228, "verify": ""}
+{"dur": 180.9, "event": "run_end", "mode": "run", "remain": [], "ts": 1792402748.232}

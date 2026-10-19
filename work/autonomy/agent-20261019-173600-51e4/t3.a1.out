@@ -1,0 +1,37 @@
+[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕 work/destructive_audit.jsonl）
+[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单默认不可关（full_access 除外））
+## 做了什么
+
+**目标交付（任务本体答案）——README.md 前 3 行：**
+
+```
+# AgentOS 交付驾驶舱
+（第 2 行空行）
+仓库：https://github.com/kevindurant735rocket-creator/agentos-console
+```
+
+**改动落盘（t3 实施A）**
+
+| 文件:行 | 动作 |
+|---|---|
+| `work/t3-verify.md:1-56` | 新增：t3 实施记录，含目标输出、改动面清单（A0 新增 / A1 README 只读 / A2 tools 零改动）、V1–V3 可复算命令与真实输出、回滚方式；bytes=1402，sha256=`04f7af50…5869aa` |
+| `README.md` | 零改动（只读） |
+| `tools/**` | 零改动（负改动面未触碰） |
+
+依据 `work/t2-scope.md:11-15` 的定案（只读任务、源码零改动），所以「主改动落盘」= 实施验证记录，没有源码改动。
+
+## 验证证据（本轮实跑，未经修饰）
+
+- V1 `sed -n '1,3p' README.md` → **rc=0**，输出三行与上文一致 —— PASS
+- V2 `sh -c "git status --porcelain README.md tools/ | wc -l"` → **rc=0**，输出 `0` —— PASS
+- V3 `sh -c "test -s work/t3-verify.md; echo rc=$?; wc -c < work/t3-verify.md"` → **rc=0**，输出 `rc=0` / `1402` —— PASS
+- V4 `git status --porcelain work/t3-verify.md` → **rc=0**，输出 `?? work/t3-verify.md`（交付物可追踪）—— PASS
+
+判据「改动落盘 + 验证命令 rc=0」：**OK，rc=0**。
+
+## 还剩什么没做
+
+- `work/t3-verify.md` 未 `git add`/commit（本任务未要求提交；工作区另有大量既有未跟踪运行产物，非本次引入）。
+- 未跑全仓测试套件 —— 本次为零源码改动，无回归面。
+
+--- agent_core：7 步，22.3s，工具调用 10 次（其中 0 次未执行：被拒/参数不对）
