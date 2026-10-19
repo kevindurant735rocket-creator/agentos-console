@@ -214,3 +214,9 @@ gh_gate W13b 判据同步扩：venv 免扫 + 带默认值模板放行 + ghp_/sk-
 - 体验面收口：doctor 7/7（config/key/端点/模型/服务/门锁 + 处方）；/cli_gate 59/59。
 - 产物：tools/evolve.py（提案生成+幂等复用+--fresh/--no-merge/--check 7/7）、
   agentos doctor/evolve 子命令；agent_core 自检 145→147；EXPECT_N 全链 11 文件同步。
+
+## 台账补充（2026-10-19）：autonomy 派发「读 README 前 2 行并报告」收口
+- 结论：README 第 1 行「# AgentOS 交付驾驶舱」，第 2 行为空行（全文 162 行 / 53383 字节）。
+- 产物：`work/readme-head2-report.md`（报告本体）+ `work/readme_head2_check.sh`（C1–C6 回归自检）。
+- 边界：`tools/**`、`README.md` 零改动（C5 复算 `git status --porcelain -- tools` 为空）；本轮只增 work/ 下未跟踪产物 + 本台账 6 行。
+- 复算：`bash work/readme_head2_check.sh`，全过 rc=0。
