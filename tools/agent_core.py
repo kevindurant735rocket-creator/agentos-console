@@ -3309,7 +3309,7 @@ TERM_CANDIDATES = {
 }
 TERM_MAX_OUT = 32768  # 单次工具回灌上限
 TERM_TIMEOUT = 20  # run_cmd 默认超时
-MAX_TOTAL_SECONDS = 900  # 一次任务的墙上时钟预算
+MAX_TOTAL_SECONDS = int(os.environ.get("AGENTOS_MAX_TOTAL_SECONDS", "3600"))  # 一次任务的墙上时钟预算（env 可调；自主进化/蒸馏类任务需要更长窗口）
 MAX_REPEAT = 3  # 同一步原样连做这么多次还没进展 → 判 limit
 TEXT_REPEAT = 3  # 同一句话（非空终稿内容）连说这么多次还没进展 → 判 limit
 TOOL_FAIL_STREAK = 6  # 同一工具连续失败/被拒这么多次还没进展 → 判 limit
@@ -3892,6 +3892,14 @@ def run_agent(
                             }
                         )
                     time.sleep(1.0)
+                    # 会话中毒的真正死因：轮换会话 id 只换头，净荷里还带着上一轮
+                    # 的 tool_call_id 链 → 新会话里找不到那些 call_id → 又 400。
+                    # 所以每次轮换后把消息裁到「system + 最近 8 条」，切掉最老的
+                    # 工具交换对（它们大概率就是中毒源）；保留最近上下文。
+                    if len(messages) > 9:
+                        _sys = [m for m in messages if m.get("role") == "system"][:1]
+                        _tail = messages[-8:]
+                        messages = _sys + _tail
                     try:
                         comp = provider.chat(
                             messages, tools, stream=stream, on_event=on_event,
@@ -3905,26 +3913,36 @@ def run_agent(
                             raise
                         e = e2  # 还是中毒：预算 -1，继续轮换
             else:
-                if (
-                    stream
-                    or not _TRANSIENT_RE.search(str(e))
-                    or _transient_n >= _TRANSIENT_MAX
-                ):
-                    raise
-                _transient_n += 1
-                _tw = min(2.0 * (2 ** (_transient_n - 1)), 12.0)
-                if callable(on_event):
-                    on_event(
-                        {
-                            "type": "note",
-                            "text": "瞬时错误，%.0fs 后重试（第 %d/%d 次）：%s"
-                            % (_tw, _transient_n, _TRANSIENT_MAX, str(e)[:80]),
-                        }
-                    )
-                time.sleep(_tw)
-                comp = provider.chat(
-                    messages, tools, stream=stream, on_event=on_event, cancel=cancel
-                )
+                while True:
+                    if (
+                        stream
+                        or not _TRANSIENT_RE.search(str(e))
+                        or _transient_n >= _TRANSIENT_MAX
+                    ):
+                        raise
+                    _transient_n += 1
+                    _tw = min(2.0 * (2 ** (_transient_n - 1)), 12.0)
+                    if callable(on_event):
+                        on_event(
+                            {
+                                "type": "note",
+                                "text": "瞬时错误，%.0fs 后重试（第 %d/%d 次）：%s"
+                                % (_tw, _transient_n, _TRANSIENT_MAX, str(e)[:80]),
+                            }
+                        )
+                    time.sleep(_tw)
+                    try:
+                        comp = provider.chat(
+                            messages, tools, stream=stream, on_event=on_event,
+                            cancel=cancel,
+                        )
+                        break
+                    except AgentError as e2:
+                        if e2.kind == "interrupted":
+                            raise
+                        if not _TRANSIENT_RE.search(str(e2)):
+                            raise
+                        e = e2
         if isinstance(comp.get("usage"), dict) and comp["usage"]:
             usage = comp["usage"]
         calls = comp.get("tool_calls") or []
