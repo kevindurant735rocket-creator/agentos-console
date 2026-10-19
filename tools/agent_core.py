@@ -10168,7 +10168,13 @@ def _selftest_body(case, jc, tmp):
     _dsp_spec = _ilu.spec_from_file_location("_st_dsp", _dsp_path)
     _dsp_mod = _ilu.module_from_spec(_dsp_spec)
     _dsp_spec.loader.exec_module(_dsp_mod)
-    _dsp_sid = "st-%d" % os.getpid()
+    # sid 唯一：pid 会回收 —— 上一轮自检（被超时杀掉、没跑到清理）留下的
+    # st-<pid>-plan.json 会被下一轮**同 pid** 的自检捡到，计划的链状态
+    # 不同 → 行为不同 → 判据可能莫名翻红（2026-10-20 链内真撞过一次，
+    # 症状是自检子进程 rc=1 但没人看得出哪条判据红）。
+    # 加时间戳：sid 不再可能撞车；撞车这一类问题从根上消失。
+    _run_uid = "%d-%d" % (os.getpid(), int(time.time() * 1000) % 100000000)
+    _dsp_sid = "st-%s" % _run_uid
     _good_tasks = [
         {
             "id": "t1",
@@ -10279,7 +10285,7 @@ def _selftest_body(case, jc, tmp):
         _ana_big["grade"] == "BIG" and _ana_small["grade"] == "SMALL",
         "big=%r small=%r" % (_ana_big["reasons"][:1], _ana_small["reasons"][:1]),
     )
-    _auto_sid = "st-auto-%d" % os.getpid()
+    _auto_sid = "st-auto-%s" % _run_uid
     _ap1, _aa1 = _dsp_mod.auto_plan("重构门链并全量验证", _auto_sid, tmproot)
     _ap2, _aa2 = _dsp_mod.auto_plan("重构门链并全量验证", _auto_sid, tmproot)
     case(
@@ -10296,7 +10302,7 @@ def _selftest_body(case, jc, tmp):
         _directive[:60],
     )
     # 主循环自启：run_agent 跑 BIG 需求（桩端点零工具终答），计划自动落盘。
-    _run_sid = "st-run-%d" % os.getpid()
+    _run_sid = "st-run-%s" % _run_uid
     _stub0 = Stub([_resp_json("自启验证终答", cid=None)])
     try:
         _res0 = run_agent(

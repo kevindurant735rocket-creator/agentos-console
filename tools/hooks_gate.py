@@ -152,11 +152,16 @@ def main():
             text=True,
             timeout=900,
         )
-        tail = [ln for ln in p.stdout.splitlines() if "AGENT_CORE OK" in ln]
+        # 报告**实际末行**（不是只报 OK 那行的 grep 结果）：自检失败时
+        # stdout 末行是 "AGENT_CORE FAIL 154/155"，只 grep "AGENT_CORE OK"
+        # 会得到空串，报告成 tail='' —— 红是红了，但看不出哪条判据红的。
+        _lines = [ln for ln in p.stdout.splitlines() if ln.strip()]
+        _actual = _lines[-1].strip() if _lines else ""
         gate(
             "D2 --check 末行逐字 %s" % EXPECT_CHECK,
-            p.returncode == 0 and bool(tail) and tail[-1].strip() == EXPECT_CHECK,
-            "rc=%s tail=%r" % (p.returncode, (tail[-1] if tail else "")[:44]),
+            p.returncode == 0 and _actual == EXPECT_CHECK,
+            "rc=%s actual=%r expected=%r"
+            % (p.returncode, _actual[:60], EXPECT_CHECK),
         )
     except Exception as e:  # noqa: BLE001
         gate("D2 --check 末行逐字 %s" % EXPECT_CHECK, False, repr(e)[:120])

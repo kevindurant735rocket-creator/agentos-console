@@ -252,7 +252,7 @@
   "preview_truncated" : false,
   "probe_mode" : 1,
   "probe_multi_instance" : 1,
-  "probe_saved_at" : "2026-10-19T17:08:08Z",
+  "probe_saved_at" : "2026-10-19T18:08:19Z",
   "probe_sequence_complete" : 1,
   "probe_sibling_instances" : 1,
   "proj_active_flag" : [
@@ -263,7 +263,7 @@
   "proj_ax_header" : "项目与任务空间",
   "proj_ax_row_count" : 2,
   "proj_ax_rows" : [
-    "● AgentOS 驾驶舱\n1832 文件 · 产品根：台面、门链、账本都在这里",
+    "● AgentOS 驾驶舱\n1857 文件 · 产品根：台面、门链、账本都在这里",
     "○ future agent\n2000 文件 · 证据与企业门真树：轮次/覆盖数据由它抽取"
   ],
   "proj_ax_rows_named" : 2,
@@ -282,7 +282,7 @@
   ],
   "proj_loaded" : 1,
   "proj_nfiles" : [
-    1832,
+    1857,
     2000
   ],
   "proj_roots_absolute" : true,

@@ -10,7 +10,7 @@
   {
    "gate": "D2 --check 末行逐字 AGENT_CORE OK 155/155",
    "ok": true,
-   "detail": "AGENT_CORE OK 155/155"
+   "detail": "actual='AGENT_CORE OK 155/155' expected='AGENT_CORE OK 155/155'"
   },
   {
    "gate": "D3 REPL 命令 /plan 锚点恰好一次",

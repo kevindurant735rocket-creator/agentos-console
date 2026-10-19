@@ -90,11 +90,12 @@ def main():
             text=True,
             timeout=900,
         )
-        tail = [ln for ln in p.stdout.splitlines() if "AGENT_CORE OK" in ln]
+        _lines = [ln for ln in p.stdout.splitlines() if ln.strip()]
+        _actual = _lines[-1].strip() if _lines else ""
         gate(
             "D2 --check 末行逐字 %s" % EXPECT_CHECK,
-            tail and tail[-1].strip() == EXPECT_CHECK,
-            (tail[-1].strip() if tail else "无令牌行")[:80],
+            _actual == EXPECT_CHECK,
+            "actual=%r expected=%r" % (_actual[:70], EXPECT_CHECK),
         )
     except Exception as e:  # noqa: BLE001
         gate("D2 --check 末行逐字 %s" % EXPECT_CHECK, False, repr(e)[:120])

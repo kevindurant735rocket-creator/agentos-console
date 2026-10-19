@@ -3,9 +3,9 @@
  "ok": false,
  "pre_ok": true,
  "prefail": "",
- "elapsed": 8.95,
+ "elapsed": 8.92,
  "cli": [
-  "/var/folders/3p/m9ntmpmn5z34b3my27hrjdmm0000gn/T/cli_gate_mut-z0_mny5u/lyingjson.py"
+  "/var/folders/3p/m9ntmpmn5z34b3my27hrjdmm0000gn/T/cli_gate_mut-qr4gbvzj/lyingjson.py"
  ],
  "dest": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/cli_gate_dest",
  "skip_install": false,
@@ -345,15 +345,15 @@
   {
    "gate": "inst-isolated-port-health",
    "ok": true,
-   "detail": "port=56486 rc=0   code_sha  c10e8cac5f26fcef",
-   "cmd": "env -i PATH=/usr/bin:/bin <shim> --port 56486 health",
+   "detail": "port=59903 rc=0   code_sha  c10e8cac5f26fcef",
+   "cmd": "env -i PATH=/usr/bin:/bin <shim> --port 59903 health",
    "rc": 0
   },
   {
    "gate": "inst-isolated-port-released",
    "ok": true,
-   "detail": "port=56486 仍可连=False",
-   "cmd": "connect 127.0.0.1:56486（服务已停）",
+   "detail": "port=59903 仍可连=False",
+   "cmd": "connect 127.0.0.1:59903（服务已停）",
    "rc": 0
   },
   {
@@ -401,7 +401,7 @@
   {
    "gate": "completion-gates-chain",
    "ok": false,
-   "detail": "got=0 chain=76 差=['a11y_human', 'a11y_served', 'a11y_walk', 'abort_e2e', 'abort_gate', 'act_gate', 'agent_core_gate', 'at_selftest', 'autonomy_gate', 'autonomy_selftest', 'boss_gate', 'branches_gate', 'branches_selftest', 'capability_gate', 'capmap_gate', 'cli_gate', 'cli_gate_selftest', 'close_gate', 'converge_gate', 'dsp_gate', 'dsp_gate_selftest', 'env_gate', 'evo_merge_gate', 'evo_merge_selftest', 'evolution_gate', 'evolution_gate_selftest', 'flake_retry_selftest', 'freshness_gate', 'gh_gate', 'goal_gate', 'headroom_gate', 'hooks_gate', 'hooks_selftest', 'http_shot_gate', 'indep_field_gate', 'intent_gate', 'kbd_gate_selftest', 'layout_gate', 'leader_gate', 'leader_selftest', 'mcp_gate', 'mcp_selftest', 'minimize_check', 'native_gate', 'native_gate_selftest', 'neg_a11y', 'neg_a11y_human', 'neg_agent_core', 'neg_at_selftest', 'perf_gate', 'projspace_gate', 'promo_gate', 'repl_ux_gate', 'repl_ux_selftest', 'replay_gate', 'resident_gate', 'retro_gate', 'rewind_gate', 'rewind_selftest', 'round_gate', 'safety_gate', 'safety_selftest', 'selfscan_gate', 'shoot', 'snap_gate', 'subagent_gate', 'subagent_selftest', 'supervise_gate', 'supervise_selftest', 'task_contract_selftest', 'tui_walk_gate', 'ux_audit', 'verify_cmd_selftest', 'view_dod', 'view_dod_selftest', 'web_gate']",
+   "detail": "got=0 chain=77 差=['a11y_human', 'a11y_served', 'a11y_walk', 'abort_e2e', 'abort_gate', 'act_gate', 'agent_core_gate', 'at_selftest', 'autonomy_gate', 'autonomy_selftest', 'boss_gate', 'branches_gate', 'branches_selftest', 'capability_gate', 'capmap_gate', 'cli_gate', 'cli_gate_selftest', 'close_gate', 'converge_gate', 'dsp_gate', 'dsp_gate_selftest', 'env_gate', 'evo_merge_gate', 'evo_merge_selftest', 'evolution_gate', 'evolution_gate_selftest', 'flake_retry_selftest', 'freshness_gate', 'gate_pollution_selftest', 'gh_gate', 'goal_gate', 'headroom_gate', 'hooks_gate', 'hooks_selftest', 'http_shot_gate', 'indep_field_gate', 'intent_gate', 'kbd_gate_selftest', 'layout_gate', 'leader_gate', 'leader_selftest', 'mcp_gate', 'mcp_selftest', 'minimize_check', 'native_gate', 'native_gate_selftest', 'neg_a11y', 'neg_a11y_human', 'neg_agent_core', 'neg_at_selftest', 'perf_gate', 'projspace_gate', 'promo_gate', 'repl_ux_gate', 'repl_ux_selftest', 'replay_gate', 'resident_gate', 'retro_gate', 'rewind_gate', 'rewind_selftest', 'round_gate', 'safety_gate', 'safety_selftest', 'selfscan_gate', 'shoot', 'snap_gate', 'subagent_gate', 'subagent_selftest', 'supervise_gate', 'supervise_selftest', 'task_contract_selftest', 'tui_walk_gate', 'ux_audit', 'verify_cmd_selftest', 'view_dod', 'view_dod_selftest', 'web_gate']",
    "cmd": "agentos completion bash 的 local gates vs gates.sh 正确链",
    "rc": 1
   },
@@ -604,6 +604,7 @@
     "converge_gate",
     "verify_cmd_selftest",
     "task_contract_selftest",
+    "gate_pollution_selftest",
     "replay_gate"
    ]
   ],

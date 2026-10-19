@@ -1,17 +1,17 @@
 {
   "errors": [],
-  "generated_at": "2026-10-19T17:39:22Z",
+  "generated_at": "2026-10-19T18:39:42Z",
   "metrics": {
     "_totals": {
-      "CONFIDENCE.HIGH": 376,
+      "CONFIDENCE.HIGH": 377,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 31,
       "CONFIDENCE.UNDEFINED": 0,
       "SEVERITY.HIGH": 0,
-      "SEVERITY.LOW": 363,
+      "SEVERITY.LOW": 364,
       "SEVERITY.MEDIUM": 44,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 52048,
+      "loc": 52157,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -245,7 +245,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 353,
+      "loc": 354,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -271,7 +271,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 240,
+      "loc": 241,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -639,6 +639,32 @@
       "nosec": 0,
       "skipped_tests": 0
     },
+    "tools/gate_pollution.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 49,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "tools/gate_pollution_selftest.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 50,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
     "tools/gh_client.py": {
       "CONFIDENCE.HIGH": 9,
       "CONFIDENCE.LOW": 0,
@@ -882,7 +908,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 221,
+      "loc": 222,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1051,7 +1077,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 186,
+      "loc": 189,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1129,7 +1155,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 308,
+      "loc": 309,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1168,7 +1194,7 @@
       "SEVERITY.LOW": 6,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 381,
+      "loc": 382,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1350,7 +1376,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 593,
+      "loc": 594,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1376,7 +1402,7 @@
       "SEVERITY.LOW": 4,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 255,
+      "loc": 256,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -4483,7 +4509,7 @@
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "26 import shutil\n27 import subprocess\n28 import sys\n",
+      "code": "27 import shutil\n28 import subprocess\n29 import sys\n",
       "col_offset": 0,
       "end_col_offset": 17,
       "filename": "tools/branches_gate.py",
@@ -4494,16 +4520,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Consider possible security implications associated with the subprocess module.",
-      "line_number": 27,
+      "line_number": 28,
       "line_range": [
-        27
+        28
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "116     try:\n117         p = subprocess.run(\n118             [sys.executable, args.core, \"--check\"],\n119             capture_output=True,\n120             text=True,\n121             timeout=900,\n122         )\n123         tail = [ln for ln in p.stdout.splitlines() if \"AGENT_CORE OK\" in ln]\n",
+      "code": "117     try:\n118         p = subprocess.run(\n119             [sys.executable, args.core, \"--check\"],\n120             capture_output=True,\n121             text=True,\n122             timeout=900,\n123         )\n124         tail = [ln for ln in p.stdout.splitlines() if \"AGENT_CORE OK\" in ln]\n",
       "col_offset": 12,
       "end_col_offset": 9,
       "filename": "tools/branches_gate.py",
@@ -4514,14 +4540,14 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 117,
+      "line_number": 118,
       "line_range": [
-        117,
         118,
         119,
         120,
         121,
-        122
+        122,
+        123
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
@@ -5879,6 +5905,27 @@
       "test_name": "try_except_pass"
     },
     {
+      "code": "47             continue  # \u8fdb\u7a0b\u6ca1\u4e86 = \u771f\u6b8b\u7559\uff0c\u4e0d\u6392\u9664\n48         except Exception:  # noqa: BLE001  \u5224\u4e0d\u51c6\u5c31\u4e0d\u6392\u9664\uff08\u4ece\u4e25\uff09\n49             continue\n50         live.add(name)\n",
+      "col_offset": 8,
+      "end_col_offset": 20,
+      "filename": "tools/gate_pollution.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Try, Except, Continue detected.",
+      "line_number": 48,
+      "line_range": [
+        48,
+        49
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b112_try_except_continue.html",
+      "test_id": "B112",
+      "test_name": "try_except_continue"
+    },
+    {
       "code": "28 import shutil\n29 import subprocess\n30 import time\n",
       "col_offset": 0,
       "end_col_offset": 17,
@@ -7194,7 +7241,7 @@
       "test_name": "try_except_pass"
     },
     {
-      "code": "29 import shutil\n30 import subprocess\n31 import sys\n",
+      "code": "30 import shutil\n31 import subprocess\n32 import sys\n",
       "col_offset": 0,
       "end_col_offset": 17,
       "filename": "tools/mcp_gate.py",
@@ -7205,16 +7252,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Consider possible security implications associated with the subprocess module.",
-      "line_number": 30,
+      "line_number": 31,
       "line_range": [
-        30
+        31
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "118     try:\n119         p = subprocess.run([sys.executable, args.core, \"--check\"],\n120                            capture_output=True, text=True, timeout=900)\n121         tail = [ln for ln in p.stdout.splitlines() if \"AGENT_CORE OK\" in ln]\n",
+      "code": "119     try:\n120         p = subprocess.run([sys.executable, args.core, \"--check\"],\n121                            capture_output=True, text=True, timeout=900)\n122         tail = [ln for ln in p.stdout.splitlines() if \"AGENT_CORE OK\" in ln]\n",
       "col_offset": 12,
       "end_col_offset": 71,
       "filename": "tools/mcp_gate.py",
@@ -7225,10 +7272,10 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 119,
+      "line_number": 120,
       "line_range": [
-        119,
-        120
+        120,
+        121
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
@@ -8195,7 +8242,7 @@
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "26 import shutil\n27 import subprocess\n28 import sys\n",
+      "code": "27 import shutil\n28 import subprocess\n29 import sys\n",
       "col_offset": 0,
       "end_col_offset": 17,
       "filename": "tools/repl_ux_gate.py",
@@ -8206,16 +8253,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Consider possible security implications associated with the subprocess module.",
-      "line_number": 27,
+      "line_number": 28,
       "line_range": [
-        27
+        28
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "117     try:\n118         p = subprocess.run([sys.executable, args.core, \"--check\"],\n119                            capture_output=True, text=True, timeout=900)\n120         tail = [ln for ln in p.stdout.splitlines() if \"AGENT_CORE OK\" in ln]\n",
+      "code": "118     try:\n119         p = subprocess.run([sys.executable, args.core, \"--check\"],\n120                            capture_output=True, text=True, timeout=900)\n121         tail = [ln for ln in p.stdout.splitlines() if \"AGENT_CORE OK\" in ln]\n",
       "col_offset": 12,
       "end_col_offset": 71,
       "filename": "tools/repl_ux_gate.py",
@@ -8226,10 +8273,10 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 118,
+      "line_number": 119,
       "line_range": [
-        118,
-        119
+        119,
+        120
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
@@ -8526,7 +8573,7 @@
       "test_name": "assert_used"
     },
     {
-      "code": "30 import shutil\n31 import subprocess\n32 import sys\n",
+      "code": "31 import shutil\n32 import subprocess\n33 import sys\n",
       "col_offset": 0,
       "end_col_offset": 17,
       "filename": "tools/rewind_gate.py",
@@ -8537,16 +8584,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Consider possible security implications associated with the subprocess module.",
-      "line_number": 31,
+      "line_number": 32,
       "line_range": [
-        31
+        32
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "174     try:\n175         p = subprocess.run(\n176             [sys.executable, core_path, \"--check\"],\n177             capture_output=True,\n178             text=True,\n179             timeout=900,\n180         )\n181         tail = [ln for ln in p.stdout.splitlines() if \"AGENT_CORE OK\" in ln]\n",
+      "code": "175     try:\n176         p = subprocess.run(\n177             [sys.executable, core_path, \"--check\"],\n178             capture_output=True,\n179             text=True,\n180             timeout=900,\n181         )\n182         tail = [ln for ln in p.stdout.splitlines() if \"AGENT_CORE OK\" in ln]\n",
       "col_offset": 12,
       "end_col_offset": 9,
       "filename": "tools/rewind_gate.py",
@@ -8557,14 +8604,14 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 175,
+      "line_number": 176,
       "line_range": [
-        175,
         176,
         177,
         178,
         179,
-        180
+        180,
+        181
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
@@ -8674,7 +8721,7 @@
       "test_name": "blacklist"
     },
     {
-      "code": "30 import shutil\n31 import subprocess\n32 import sys\n",
+      "code": "31 import shutil\n32 import subprocess\n33 import sys\n",
       "col_offset": 0,
       "end_col_offset": 17,
       "filename": "tools/safety_gate.py",
@@ -8685,16 +8732,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Consider possible security implications associated with the subprocess module.",
-      "line_number": 31,
+      "line_number": 32,
       "line_range": [
-        31
+        32
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "134     try:\n135         p = subprocess.run(\n136             [sys.executable, args.core, \"--check\"],\n137             capture_output=True,\n138             text=True,\n139             timeout=900,\n140         )\n141         tail = [ln for ln in p.stdout.splitlines() if \"AGENT_CORE OK\" in ln]\n",
+      "code": "135     try:\n136         p = subprocess.run(\n137             [sys.executable, args.core, \"--check\"],\n138             capture_output=True,\n139             text=True,\n140             timeout=900,\n141         )\n142         tail = [ln for ln in p.stdout.splitlines() if \"AGENT_CORE OK\" in ln]\n",
       "col_offset": 12,
       "end_col_offset": 9,
       "filename": "tools/safety_gate.py",
@@ -8705,21 +8752,21 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 135,
+      "line_number": 136,
       "line_range": [
-        135,
         136,
         137,
         138,
         139,
-        140
+        140,
+        141
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "348         env = dict(os.environ, HOME=iso)\n349         p1 = subprocess.run(\n350             [sys.executable, args.agentos, \"config\", \"set\", \"agent.plan_lock\", \"true\"],\n351             capture_output=True,\n352             text=True,\n353             timeout=60,\n354             env=env,\n355         )\n356         p2 = subprocess.run(\n",
+      "code": "349         env = dict(os.environ, HOME=iso)\n350         p1 = subprocess.run(\n351             [sys.executable, args.agentos, \"config\", \"set\", \"agent.plan_lock\", \"true\"],\n352             capture_output=True,\n353             text=True,\n354             timeout=60,\n355             env=env,\n356         )\n357         p2 = subprocess.run(\n",
       "col_offset": 13,
       "end_col_offset": 9,
       "filename": "tools/safety_gate.py",
@@ -8730,22 +8777,22 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 349,
+      "line_number": 350,
       "line_range": [
-        349,
         350,
         351,
         352,
         353,
         354,
-        355
+        355,
+        356
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "355         )\n356         p2 = subprocess.run(\n357             [sys.executable, args.agentos, \"config\", \"set\", \"agent.cmd_gate\", \"false\"],\n358             capture_output=True,\n359             text=True,\n360             timeout=60,\n361             env=env,\n362         )\n363         p3 = subprocess.run(\n",
+      "code": "356         )\n357         p2 = subprocess.run(\n358             [sys.executable, args.agentos, \"config\", \"set\", \"agent.cmd_gate\", \"false\"],\n359             capture_output=True,\n360             text=True,\n361             timeout=60,\n362             env=env,\n363         )\n364         p3 = subprocess.run(\n",
       "col_offset": 13,
       "end_col_offset": 9,
       "filename": "tools/safety_gate.py",
@@ -8756,22 +8803,22 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 356,
+      "line_number": 357,
       "line_range": [
-        356,
         357,
         358,
         359,
         360,
         361,
-        362
+        362,
+        363
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "362         )\n363         p3 = subprocess.run(\n364             [sys.executable, args.agentos, \"config\", \"set\", \"agent.plan_lock\", \"yes\"],\n365             capture_output=True,\n366             text=True,\n367             timeout=60,\n368             env=env,\n369         )\n370         p4 = subprocess.run(\n",
+      "code": "363         )\n364         p3 = subprocess.run(\n365             [sys.executable, args.agentos, \"config\", \"set\", \"agent.plan_lock\", \"yes\"],\n366             capture_output=True,\n367             text=True,\n368             timeout=60,\n369             env=env,\n370         )\n371         p4 = subprocess.run(\n",
       "col_offset": 13,
       "end_col_offset": 9,
       "filename": "tools/safety_gate.py",
@@ -8782,22 +8829,22 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 363,
+      "line_number": 364,
       "line_range": [
-        363,
         364,
         365,
         366,
         367,
         368,
-        369
+        369,
+        370
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "369         )\n370         p4 = subprocess.run(\n371             [sys.executable, args.agentos, \"config\", \"set\", \"agent.bogus\", \"false\"],\n372             capture_output=True,\n373             text=True,\n374             timeout=60,\n375             env=env,\n376         )\n377         cfgtxt = \"\"\n",
+      "code": "370         )\n371         p4 = subprocess.run(\n372             [sys.executable, args.agentos, \"config\", \"set\", \"agent.bogus\", \"false\"],\n373             capture_output=True,\n374             text=True,\n375             timeout=60,\n376             env=env,\n377         )\n378         cfgtxt = \"\"\n",
       "col_offset": 13,
       "end_col_offset": 9,
       "filename": "tools/safety_gate.py",
@@ -8808,15 +8855,15 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 370,
+      "line_number": 371,
       "line_range": [
-        370,
         371,
         372,
         373,
         374,
         375,
-        376
+        376,
+        377
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
@@ -9456,7 +9503,7 @@
       "test_name": "hardcoded_password_string"
     },
     {
-      "code": "28 import shutil\n29 import subprocess\n30 import sys\n",
+      "code": "29 import shutil\n30 import subprocess\n31 import sys\n",
       "col_offset": 0,
       "end_col_offset": 17,
       "filename": "tools/subagent_gate.py",
@@ -9467,16 +9514,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Consider possible security implications associated with the subprocess module.",
-      "line_number": 29,
+      "line_number": 30,
       "line_range": [
-        29
+        30
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "171     try:\n172         p = subprocess.run(\n173             [sys.executable, core_path, \"--check\"],\n174             capture_output=True,\n175             text=True,\n176             timeout=900,\n177         )\n178         tail = [ln for ln in p.stdout.splitlines() if \"AGENT_CORE OK\" in ln]\n",
+      "code": "172     try:\n173         p = subprocess.run(\n174             [sys.executable, core_path, \"--check\"],\n175             capture_output=True,\n176             text=True,\n177             timeout=900,\n178         )\n179         tail = [ln for ln in p.stdout.splitlines() if \"AGENT_CORE OK\" in ln]\n",
       "col_offset": 12,
       "end_col_offset": 9,
       "filename": "tools/subagent_gate.py",
@@ -9487,14 +9534,14 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 172,
+      "line_number": 173,
       "line_range": [
-        172,
         173,
         174,
         175,
         176,
-        177
+        177,
+        178
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
@@ -9546,7 +9593,7 @@
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "27 import shutil\n28 import subprocess\n29 import sys\n",
+      "code": "28 import shutil\n29 import subprocess\n30 import sys\n",
       "col_offset": 0,
       "end_col_offset": 17,
       "filename": "tools/supervise_gate.py",
@@ -9557,16 +9604,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Consider possible security implications associated with the subprocess module.",
-      "line_number": 28,
+      "line_number": 29,
       "line_range": [
-        28
+        29
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "139     try:\n140         p = subprocess.run(\n141             [sys.executable, args.core, \"--check\"],\n142             capture_output=True,\n143             text=True,\n144             timeout=900,\n145         )\n146         tail = [ln for ln in p.stdout.splitlines() if \"AGENT_CORE OK\" in ln]\n",
+      "code": "140     try:\n141         p = subprocess.run(\n142             [sys.executable, args.core, \"--check\"],\n143             capture_output=True,\n144             text=True,\n145             timeout=900,\n146         )\n147         tail = [ln for ln in p.stdout.splitlines() if \"AGENT_CORE OK\" in ln]\n",
       "col_offset": 12,
       "end_col_offset": 9,
       "filename": "tools/supervise_gate.py",
@@ -9577,21 +9624,21 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 140,
+      "line_number": 141,
       "line_range": [
-        140,
         141,
         142,
         143,
         144,
-        145
+        145,
+        146
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "253     try:\n254         pw = subprocess.run(\n255             [sys.executable, args.agentos, \"watch\", \"--once\", \"--sid\", \"st-none\"],\n256             capture_output=True,\n257             text=True,\n258             timeout=60,\n259         )\n260         ps = subprocess.run(\n",
+      "code": "254     try:\n255         pw = subprocess.run(\n256             [sys.executable, args.agentos, \"watch\", \"--once\", \"--sid\", \"st-none\"],\n257             capture_output=True,\n258             text=True,\n259             timeout=60,\n260         )\n261         ps = subprocess.run(\n",
       "col_offset": 13,
       "end_col_offset": 9,
       "filename": "tools/supervise_gate.py",
@@ -9602,21 +9649,21 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 254,
+      "line_number": 255,
       "line_range": [
-        254,
         255,
         256,
         257,
         258,
-        259
+        259,
+        260
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "259         )\n260         ps = subprocess.run(\n261             [sys.executable, args.agentos, \"steer\", \"../evil\", \"x\"],\n262             capture_output=True,\n263             text=True,\n264             timeout=60,\n265         )\n266         real_steer = os.path.join(ROOT, \"work\", \"steer\")\n",
+      "code": "260         )\n261         ps = subprocess.run(\n262             [sys.executable, args.agentos, \"steer\", \"../evil\", \"x\"],\n263             capture_output=True,\n264             text=True,\n265             timeout=60,\n266         )\n267         real_steer = os.path.join(ROOT, \"work\", \"steer\")\n",
       "col_offset": 13,
       "end_col_offset": 9,
       "filename": "tools/supervise_gate.py",
@@ -9627,14 +9674,14 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 260,
+      "line_number": 261,
       "line_range": [
-        260,
         261,
         262,
         263,
         264,
-        265
+        265,
+        266
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",

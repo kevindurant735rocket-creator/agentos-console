@@ -1,6 +1,6 @@
 {
  "tool": "act_gate.py",
- "port": 49376,
+ "port": 52816,
  "gates": [
   {
    "name": "数字反漂移：台面标签的 livecheck 项数 == 引擎 ck 项数（不许各处写死）",
@@ -100,7 +100,7 @@
   {
    "name": "流式：动作跑的过程中逐行推，不是跑完才一次性给",
    "ok": true,
-   "detail": "HTTP=200 实收到 4 行内容，终局=['__RC__ 0']，err=[]，前 3 行=['__RUN__ r9a7bb99a9c', '$ bash /Users/zhangfengrui/.codex/global-background/company-delivery/company.sh doc-drift …', 'DOC_DRIFT 实测 部门=14 DoD=122 门=167 kind=35 断言=146（负向=133）livecheck=48 项']"
+   "detail": "HTTP=200 实收到 4 行内容，终局=['__RC__ 0']，err=[]，前 3 行=['__RUN__ r4f8cbe6cf5', '$ bash /Users/zhangfengrui/.codex/global-background/company-delivery/company.sh doc-drift …', 'DOC_DRIFT 实测 部门=14 DoD=122 门=167 kind=35 断言=146（负向=133）livecheck=48 项']"
   },
   {
    "name": "决策：推荐动作必须真在 allowlist 里，且都带证据",
@@ -110,7 +110,7 @@
   {
    "name": "真浏览器：建议按钮可聚焦、有可访问名、且真能驱动执行",
    "ok": true,
-   "detail": "建议 2 条，无名 0，可聚焦 2，点后结果区='EGATE | rc=0 | 0.68S | __RUN__ r9ad2d6b442 | $ bash /Users/zhangfengru'"
+   "detail": "建议 2 条，无名 0，可聚焦 2，点后结果区='EGATE | rc=0 | 0.69S | __RUN__ rb440870a21 | $ bash /Users/zhangfengru'"
   },
   {
    "name": "判据自证：反馈判据 4 条负控都能变红 + 「旧规则误诊」反证",
@@ -120,7 +120,7 @@
   {
    "name": "真浏览器：点一下，aria-live 区真出现 rc（反馈不是画出来的）",
    "ok": true,
-   "detail": "基线='' 禁用态=True 结果区='DOC-DRIFT | rc=0 | 0.94S | __RUN__ r865663485d | $ bash /Users/zhangfengrui/.codex/global-background'"
+   "detail": "基线='' 禁用态=True 结果区='DOC-DRIFT | rc=0 | 0.91S | __RUN__ r0003cd9da0 | $ bash /Users/zhangfengrui/.codex/global-background'"
   }
  ],
  "passed": 24,
