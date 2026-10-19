@@ -3309,7 +3309,7 @@ TERM_CANDIDATES = {
 }
 TERM_MAX_OUT = 32768  # 单次工具回灌上限
 TERM_TIMEOUT = 20  # run_cmd 默认超时
-MAX_TOTAL_SECONDS = int(os.environ.get("AGENTOS_MAX_TOTAL_SECONDS", "3600"))  # 一次任务的墙上时钟预算（env 可调；自主进化/蒸馏类任务需要更长窗口）
+MAX_TOTAL_SECONDS = int(os.environ.get("AGENTOS_MAX_TOTAL_SECONDS", "0"))  # 0=无上限（用户要求不设工作时间上线）
 MAX_REPEAT = 3  # 同一步原样连做这么多次还没进展 → 判 limit
 TEXT_REPEAT = 3  # 同一句话（非空终稿内容）连说这么多次还没进展 → 判 limit
 TOOL_FAIL_STREAK = 6  # 同一工具连续失败/被拒这么多次还没进展 → 判 limit
@@ -3827,7 +3827,7 @@ def run_agent(
                         "text": "收到老板指令 %d 条（已注入本步骤边界）" % len(_stq),
                     }
                 )
-        if time.time() - t0 > MAX_TOTAL_SECONDS:
+        if MAX_TOTAL_SECONDS > 0 and time.time() - t0 > MAX_TOTAL_SECONDS:
             return {
                 "ok": False,
                 "kind": "limit",
