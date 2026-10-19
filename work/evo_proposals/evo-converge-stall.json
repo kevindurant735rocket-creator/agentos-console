@@ -1,0 +1,9 @@
+{
+ "advice": "本机历史：连续多步没有产出（只读/只查不动手）。先动手改一处再继续，别把时间花在读完再读上",
+ "count": 6,
+ "created": "2026-10-20 00:45:43",
+ "id": "evo-converge-stall",
+ "kind": "memory",
+ "sig": "converge:stall",
+ "status": "pending-human"
+}

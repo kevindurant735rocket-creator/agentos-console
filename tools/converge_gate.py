@@ -59,6 +59,19 @@ gate(
     (pv.stdout or pv.stderr)[-160:],
 )
 
+# D1c task_contract 探测器自检（判错类型 / 判太宽 都要判红）
+pt = subprocess.run(
+    [sys.executable, os.path.join(HERE, "task_contract_selftest.py")],
+    capture_output=True,
+    text=True,
+    timeout=300,
+)
+gate(
+    "task_contract_selftest 逐字绿（类型判定与契约要求不漂）",
+    pt.returncode == 0 and "TASK_CONTRACT_SELFTEST_OK" in pt.stdout,
+    (pt.stdout or pt.stderr)[-160:],
+)
+
 # D2 内核真的接了收敛层（不是只有一个孤立模块）
 src = open(os.path.join(HERE, "agent_core.py"), encoding="utf-8").read()
 gate(
@@ -319,6 +332,82 @@ try:
     )
 finally:
     shutil.rmtree(tmp4, ignore_errors=True)
+
+# D9j 任务契约：类型化证据 + bugfix 的「先复现」纪律
+try:
+    import task_contract as tcm
+except Exception:  # noqa: BLE001
+    tcm = None
+if tcm is None:
+    gate("任务契约模块可导入", False, "import task_contract 失败")
+else:
+    gate("任务契约模块可导入", True, "")
+    _bug_c = tcm.contract_for(
+        tcm.T_BUGFIX, {"cmdline": "make test", "why": "Makefile 存在"}
+    )
+    # 契约本身
+    gate(
+        "契约：bugfix 要求通过核对 + 软要求红→绿",
+        "verify_pass" in _bug_c["hard"] and "repro_red_then_green" in _bug_c["soft"],
+        "hard=%r soft=%r" % (_bug_c["hard"], _bug_c["soft"]),
+    )
+    # 盲改提醒：动手改了却没见过「红」
+    _c1 = cv.Converge(contract=_bug_c)
+    _c1.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+    _c1d = _c1.directive()
+    gate(
+        "契约：缺陷修复盲改 → 注入复现指令",
+        _c1d is not None and "复现指令" in _c1d,
+        repr(_c1d)[:90],
+    )
+    # 红→改→绿成立后不再催
+    _c2 = cv.Converge(contract=_bug_c)
+    _c2.observe("run_cmd", {"argv": ["make", "test"]}, ok=True, rc=1)
+    _c2.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+    _c2.observe("run_cmd", {"argv": ["make", "test"]}, ok=True, rc=0)
+    gate(
+        "契约：红→改→绿闭环成立（repro_green）",
+        _c2.repro_green is True and _c2.snapshot().get("repro_green") is True,
+        "snap=%r" % (_c2.snapshot(),),
+    )
+    # 写被环境锁住 → 不逼模型写它写不了的
+    _c3 = cv.Converge(contract=_bug_c)
+    _c3.observe("write_file", {"path": "a.py", "content": "x"}, ok=False)
+    _ok3, _miss3, _why3 = _c3.evidence_ok("做完了")
+    gate(
+        "契约：写被锁 → 撤掉写类要求（不逼模型写够不着的东西）",
+        _ok3 is True,
+        "missing=%r why=%r" % (_miss3, _why3),
+    )
+
+# D9k 变异体：摘掉契约检查 → 门必须判红
+tmp5 = tempfile.mkdtemp(prefix="converge_mut5_")
+try:
+    s6 = open(os.path.join(HERE, "converge.py"), encoding="utf-8").read()
+    s6 = s6.replace(
+        "        _ev_ok, _ev_missing, _ev_why = self.evidence_ok(text)",
+        "        _ev_ok, _ev_missing, _ev_why = (True, [], [])",
+    )
+    mut5 = os.path.join(tmp5, "converge_mut5.py")
+    open(mut5, "w", encoding="utf-8").write(s6)
+    sys.path.insert(0, tmp5)
+    import importlib
+
+    try:
+        m5 = importlib.import_module("converge_mut5")
+    finally:
+        sys.path.remove(tmp5)
+        sys.modules.pop("converge_mut5", None)
+    _mc = m5.Converge(contract={"type": "bugfix", "hard": ["verify_pass"]})
+    _mc.observe("read_file", {"path": "a"}, ok=True)
+    _mgate = _mc.gate("已经修好了。")
+    gate(
+        "变异体：摘掉契约检查 → 缺证据的完成宣言被放行（门判红）",
+        _mgate[0] is True,
+        "变异体仍判红 = 契约检查摘不干净",
+    )
+finally:
+    shutil.rmtree(tmp5, ignore_errors=True)
 
 # D10 零污染：门跑完 work/ 下不留本门专属残留
 gate(

@@ -24,6 +24,6 @@ def check_claim(text):
 if __name__ == "__main__":
     assert check_claim("随便聊聊").get("verdict") == "PASS"
     assert check_claim("已完成，无证据").get("verdict") == "BLOCK"
-    assert check_claim("已完成 AGENT_CORE OK 153/153 rc=0").get("verdict") == "PASS"
+    assert check_claim("已完成 AGENT_CORE OK 155/155 rc=0").get("verdict") == "PASS"
     # M2 变异: verdict 写死 true 必红 -> 自检拒绝
     print("VERIFY_GATE_OK 3/3")

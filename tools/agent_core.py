@@ -3552,6 +3552,13 @@ def build_system_prompt(ctx):
         ]
     )
     extra = _evo_prompt_lines(ctx.get("evo_rules_path")) + _memory_prompt_lines(ctx)
+    # 任务契约段（不同任务类型的「完成证据」不一样，W26）：
+    # 把「这类任务怎么算完成」在开工时就说死，模型不用自己猜标准。
+    _tc = ctx.get("task_contract")
+    if isinstance(_tc, dict) and _tc.get("opening"):
+        extra = extra + [
+            "任务契约（%s）：%s" % (_tc.get("name") or _tc.get("type") or "", _tc["opening"])
+        ]
     # DSP 计划摘要行：有计划才注入（无则零改动）；超长截断，绝不撑爆上下文。
     # 自启指令行：本轮刚自启（ctx["dsp_auto"] 有值）才追加一次，防历史回灌叠加。
     try:
@@ -3727,6 +3734,20 @@ def run_agent(
         provider = Provider(resolve_provider(ctx.get("env")))
     ctx["_provider"] = provider  # subagent 工具复用它派子代理（在副本内，不外泄）
     _sauto = _skills_auto(text)
+    # 任务契约：分类 → 契约 → 写进 ctx。
+    # 位置很讲究：**在 DSP 自启之后**（计划未审批会锁写，契约必须知道）、
+    # **在 system prompt 之前**（契约要写进 prompt，模型开工前就该知道
+    # 「这类任务怎么算完成」）。
+    _vinfo = None
+    try:
+        import verify_cmd as _vc_mod
+
+        _vinfo = _vc_mod.detect_verify_cmd(ctx.get("root"))
+    except Exception:  # noqa: BLE001  探测失败不许拖垮主链路
+        _vinfo = None
+    _contract = _build_task_contract(prompt, ctx, _vinfo)
+    if _contract:
+        ctx["task_contract"] = _contract
     if _sauto:
         sysmsg = {
             "role": "system",
@@ -3770,20 +3791,13 @@ def run_agent(
         # 没有「关」的一侧就没法证明引擎到底带来了什么。
         if ctx.get("converge") is False:
             raise ImportError("converge disabled by ctx")
-        # 探测「这个仓库跑什么命令能证明改动是对的」（本地蒸馏 aider 的
-        # edit→auto-lint/test）。探测不到就不给建议 —— 猜一条必然失败的
-        # 命令，会把「没找到验证方式」伪装成「验证失败」。
-        _vinfo = None
-        try:
-            import verify_cmd as _vc_mod
-
-            _vinfo = _vc_mod.detect_verify_cmd(ctx.get("root"))
-        except Exception:  # noqa: BLE001  探测失败不许拖垮主链路
-            _vinfo = None
+        # 验证命令探测与任务契约已在上面建好（必须早于 system prompt：
+        # 契约要写进 prompt，模型开工前就得知道这类任务怎么算完成）。
         _conv = _cv_mod.Converge(
             task_text=str(prompt or "")[:400],
             mode=str(ctx.get("mode") or ""),
             verify_info=_vinfo,
+            contract=_contract,
         )
         # 自进化调参：ACTIVE 规则真拧旋钮（只允许收紧，由 apply_policy 钳制）
         try:
@@ -3851,6 +3865,7 @@ def run_agent(
                 "steps": step - 1,
                 "messages": messages,
                 "tools_used": used,
+                "converge": (_conv.snapshot() if _conv is not None else {}),
                 "elapsed": round(time.time() - t0, 2),
             }
         # 老板监督通道：步骤边界收指令（有则注入本轮、注明来源、只进一次）。
@@ -3877,6 +3892,7 @@ def run_agent(
                 "steps": step - 1,
                 "messages": messages,
                 "tools_used": used,
+                "converge": (_conv.snapshot() if _conv is not None else {}),
                 "elapsed": round(time.time() - t0, 2),
             }
         if callable(on_event):
@@ -4010,7 +4026,12 @@ def run_agent(
                     "steps": step,
                     "messages": messages,
                     "tools_used": used,
+                    "converge": (_conv.snapshot() if _conv is not None else {}),
                     "elapsed": round(time.time() - t0, 2),
+                    # 收敛状态**任何结局都要带**：限速/闸失败也是账本素材
+                    "converge": (
+                        _conv.snapshot() if _conv is not None else {}
+                    ),
                 }
         if not calls:
             if len(messages) <= 41:
@@ -4138,6 +4159,7 @@ def run_agent(
                         "steps": step,
                         "messages": messages,
                         "tools_used": used,
+                        "converge": (_conv.snapshot() if _conv is not None else {}),
                         "elapsed": round(time.time() - t0, 2),
                     }
                 # DSP doom 升级：有计划+当前任务时，归一化同参第 3 次不判
@@ -4202,6 +4224,7 @@ def run_agent(
                     "steps": step,
                     "messages": messages,
                     "tools_used": used,
+                    "converge": (_conv.snapshot() if _conv is not None else {}),
                     "elapsed": round(time.time() - t0, 2),
                 }
             # DSP 任务记账：有计划+当前任务时，每步写回 steps_used/evidence，
@@ -4276,6 +4299,56 @@ def run_agent(
                 messages.append({"role": "user", "content": _dir})
                 if callable(on_event):
                     on_event({"type": "note", "text": _dir})
+
+
+def _writes_blocked(ctx):
+    """当前上下文里写操作是不是被环境锁住了。
+
+    两种锁：
+    ① plan 模式（只读）—— 写工具本来就拒；
+    ② DSP 计划存在但**未审批**—— 写锁死（见 dsp_gate D7）。
+
+    契约要知道这件事：要求一份「够不着的证据」（写盘）会让任务永远
+    交不了付 —— 闸门会一直退到预算耗尽。契约必须服从环境现实。
+    """
+    if str((ctx or {}).get("mode") or "") == "plan":
+        return True, "plan 模式（只读）"
+    sid = str((ctx or {}).get("sid") or "")
+    if not sid:
+        return False, ""
+    try:
+        _d = _dsp()
+        _pl, _e = _d.load_plan(sid)
+        if _pl is not None and not _pl.get("approved"):
+            return True, "DSP 计划未审批（写锁死）"
+    except Exception:  # noqa: BLE001  查不到就当没锁
+        pass
+    return False, ""
+
+
+def _build_task_contract(prompt, ctx, verify_info=None):
+    """按任务字面判定任务类型 → 生成完成契约。
+
+    为什么要有：不同任务类型的「完成证据」根本不一样（缺陷修复要红→绿，
+    文档要写下并读回，调研要可核对来源）。一份通用要求对每种都太松或太紧。
+
+    判不出来就返回 None（不硬套）：宁可没契约，也不要给一份错的契约 ——
+    错的契约会逼模型去做它不该做的事。
+    """
+    try:
+        import task_contract as tcm
+    except Exception:  # noqa: BLE001
+        return None
+    try:
+        _kind, _why = tcm.classify(str(prompt or "")[:400])
+        _c = tcm.contract_for(_kind, verify_info, str(prompt or "")[:400])
+        _c["reasons"] = _why
+        _blk, _blk_why = _writes_blocked(ctx)
+        if _blk:
+            _c = tcm.relax_for_writes(_c, True, _blk_why)
+        return _c
+    except Exception:  # noqa: BLE001  契约坏不许拖垮主链路
+        return None
 
 
 def _no_fallback():
@@ -5220,6 +5293,20 @@ _EVO_ADVICE.update(
         "命令拿到真实 rc，再交付",
         "converge:gate-reject": "本机历史：终答缺证据被交付闸退回过。"
         "终答必须附真实 rc / 文件行号，别只说「已完成」",
+        # 契约类签名：按任务类型统计的失败形状
+        "contract:bugfix-blind": "本机历史：缺陷修复类任务多次是**盲改**"
+        "（动手改了却从没看到原 bug 失败的样子）。先跑一次能触发该 bug 的"
+        "命令看到失败，再改；改完再跑一次看到通过。",
+        "contract:bugfix": "本机历史：缺陷修复类任务在这里出过错。"
+        "按「先复现 → 再改 → 再验」的顺序走，别直接改。",
+        "contract:docs": "本机历史：文档类任务出过「写了但没读回」的错。"
+        "写完读回一遍确认落盘且内容对。",
+        "contract:ops": "本机历史：操作/部署类任务出过「做完没确认状态」的错。"
+        "做完后跑一次确认命令把状态打出来。",
+        "contract:analysis": "本机历史：分析类任务出过「凭印象报数」的错。"
+        "结论必须来自跑出来的命令 + rc。",
+        "contract:research": "本机历史：调研类任务出过「结论没来源」的错。"
+        "每条结论都要有能核对的来源（路径:行号 / URL）。",
     }
 )
 
@@ -5366,6 +5453,22 @@ def _evo_mine(rules_path=None, signals_path=None, min_count=None):
                     if _cv.get("gate_retries"):
                         counts["converge:gate-reject"] = (
                             counts.get("converge:gate-reject", 0) + 1
+                        )
+                    # 契约类：按任务类型统计失败形状。
+                    # 最有价值的一条是 bugfix-blind：动手改了却从没见��
+                    # 原 bug 失败的样子 —— 这正是「盲改」，改对改错都说不清。
+                    _ctype = _cv.get("contract_type") or ""
+                    if _ctype:
+                        counts["contract:%s" % _ctype] = (
+                            counts.get("contract:%s" % _ctype, 0) + 1
+                        )
+                    if (
+                        _ctype == "bugfix"
+                        and _cv.get("write_seen")
+                        and not _cv.get("repro_fail_seen")
+                    ):
+                        counts["contract:bugfix-blind"] = (
+                            counts.get("contract:bugfix-blind", 0) + 1
                         )
     except OSError:
         counts = {}
@@ -10355,8 +10458,10 @@ def _selftest_body(case, jc, tmp):
         "收敛指令" in _cs1_seen,
         "没进 messages",
     )
-    # 被退回后模型要**真的**去写+跑命令才算补上证据——
-    # 文本里写「pytest rc=0」不算证据（判据只认证据不认措辞）。
+    # 被退回后模型要**真的**去补证据。任务类型是「新增功能」→ 契约要求
+    # 「跑过验证」或「写下并读回」二者其一。这里走「写+读回」这条路：
+    # 空目录里跑 pytest 会 rc=5（没有测试可收集），那不是「验证通过」，
+    # 桩要是照抄成 pytest 就等于在测一个假场景。
     with open(os.path.join(tmproot, "x.txt"), "w", encoding="utf-8") as _xfh:
         _xfh.write("x\n")
     _cs2 = Stub(
@@ -10364,8 +10469,8 @@ def _selftest_body(case, jc, tmp):
             jc(tool=("read_file", {"path": "x.txt"}), cid="g1"),
             jc(content="我已经完成部署了，仓库在 GitHub 上。"),
             jc(tool=("write_file", {"path": "y.txt", "content": "y\n"}), cid="g2"),
-            jc(tool=("run_cmd", {"argv": ["pytest", "-q"]}), cid="g3"),
-            jc(content="写完了，pytest 跑过，y.txt 已落盘。"),
+            jc(tool=("read_file", {"path": "y.txt"}), cid="g3"),
+            jc(content="写完了，y.txt 已落盘并读回确认。"),
         ]
     )
     try:
@@ -10382,6 +10487,34 @@ def _selftest_body(case, jc, tmp):
         "交付闸：缺证据的完成宣言被退回并拿到补证据后的终答",
         "交付闸" in _cs2_seen and bool(_cs2_res.get("ok")),
         "退回=%s ok=%s" % ("交付闸" in _cs2_seen, _cs2_res.get("ok")),
+    )
+
+    # (CONTRACT) 任务契约内核级判据：类型判定 → 契约进 prompt → 类型进账
+    # ────────────────────────────────────────────────────────────────────
+    # 「完成各种任务」的关键：不同类型的「完成证据」不一样。钉三件事：
+    # ① 分类判对（缺陷修复类任务不能判成调研）；② 契约段真进 system prompt
+    # （模型开工前就知道这类任务怎么算完成）；③ 类型真进收敛快照（可被挖掘）。
+    _ct_stub = Stub([jc(content="结论")])
+    try:
+        _ct_res = run_agent(
+            "calc.py 里的 add 函数有 bug，请修好它",
+            ctx={"root": tmproot, "mode": "full"},
+            provider=_ct_stub.provider(),
+            max_steps=2,
+        )
+    finally:
+        _ct_stub.close()
+    _ct_snap = _ct_res.get("converge") or {}
+    _ct_seen = json.dumps(_ct_stub.seen, ensure_ascii=False)
+    case(
+        "契约：缺陷修复任务判型正确（bugfix）且类型进账",
+        _ct_snap.get("contract_type") == "bugfix",
+        "type=%r" % (_ct_snap.get("contract_type"),),
+    )
+    case(
+        "契约：完成契约真进模型可见的 messages（含「先复现」）",
+        "任务契约" in _ct_seen and "复现" in _ct_seen,
+        "seen 里没有契约段",
     )
 
     # (W0-4) 斜杠补全表防漂：dispatch 里能敲的每条 /cmd 都必须在

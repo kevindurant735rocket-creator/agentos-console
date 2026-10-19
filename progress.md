@@ -357,3 +357,41 @@ verify_cmd_selftest / replay_gate` 全绿。
 （中途两次红门已定位并**真修**：selfscan 的 B324/B602 是我新代码的**真缺陷**，
 不是基线化放水；cli_gate_selftest 的红是「链运行中改文件」造成的扰动，
 单跑 52/52 绿。）
+
+## 第二十六波（2026-10-20）：任务契约 —— 让 agent「完成各种任务」而不是只会一种
+
+**缺口**：收敛引擎（W23）解决「别绕路、别空口交付」，但它认的证据是通用的
+（任意一条 rc=0）。而**不同任务类型的「完成证据」根本不一样**：
+缺陷修复要红→绿、文档要写下并读回、调研要可核对来源、运维要状态可见。
+一份通用要求对每种都太松或太紧 —— 这就是「只能完成一种任务」的根本原因。
+
+**落地**
+1. `tools/task_contract.py`：类型判定（bugfix/feature/refactor/docs/research/
+   analysis/ops/generic）+ 契约表（硬要求 / 软要求 / 开工指令）。
+   - 判定规则：**最先出现的动作主导**；词表保守（宁可 generic 也不给错契约）；
+     判定**必带理由**（可复查）。
+   - 契约必须**服从环境现实**：写被锁（plan 只读 / DSP 计划未审批）时撤掉
+     写类要求 —— 要求一份够不着的证据会让任务永远交不了付。
+2. `tools/converge.py`：契约判据进闸门（支持 any-of）；红→绿证据账；
+   **盲改提醒**（改了却没见了原 bug 失败的样子 → 注入「先复现」，软提醒）。
+3. `tools/agent_core.py`：契约段进 **system prompt**；任务类型进收敛快照
+   → 挖掘器能统计「contract:bugfix-blind」（盲改型缺陷修复）并自动生成
+   自进化规则。
+
+**真机实测（缺陷修复）**：真实终端跑出
+`ls → 读 calc.py → 读 Makefile → make test（红）→ 改 → make test（绿）`；
+账本 `contract_type=bugfix / repro_fail_seen=True / repro_green=True /
+verify_outcome=pass / gate_retries=0`。
+
+**门与自检**：task_contract_selftest **25/25**（新门项已上链）·
+converge_gate 24→**31/31**（含契约判据 + 变异体）· agent_core 153→**155**
+（新增 2 例：缺陷修复判型正确且类型进账 / 契约真进 system prompt）·
+计数钉 11 文件同步 155 口径。
+
+**同波修的真缺陷**（都是这一波自己撞出来的）
+- 契约建得比 system prompt 晚 → 契约段进不了 prompt（模型看不到「这类任务
+  怎么算完成」）。已挪到 **DSP 自启之后、system prompt 之前**。
+- 收敛快照只在**成功路径**带出 → 限速/闸失败这些结局在账本里是空的。
+  已补齐：**任何结局都要带收敛状态**（账本素材不能只在成功时才有）。
+- 契约与 DSP 计划锁死**死锁**：写被锁时契约要求写盘证据 → 闸门一直退到
+  预算耗尽。已加 `relax_for_writes`（写类要求可撤）。

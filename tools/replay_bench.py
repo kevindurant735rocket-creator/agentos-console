@@ -125,7 +125,19 @@ def _score_with_gate(used, answer, rec, args_seq=None):
         import converge as cv
     except Exception:  # noqa: BLE001
         return True, ""
-    c = cv.Converge(task_text=str(rec.get("prompt") or "")[:400])
+    # 评分要用**与引擎同一份契约**：引擎按任务类型要求不同证据，
+    # 评分若用通用尺子，两侧（A/B）量的就不是同一个东西。
+    _contract = None
+    try:
+        import task_contract as tcm
+
+        _kind, _why = tcm.classify(str(rec.get("prompt") or "")[:400])
+        _contract = tcm.contract_for(_kind, None, str(rec.get("prompt") or "")[:400])
+    except Exception:  # noqa: BLE001
+        _contract = None
+    c = cv.Converge(
+        task_text=str(rec.get("prompt") or "")[:400], contract=_contract
+    )
     args_seq = list(args_seq or [])
     for i, u in enumerate(used or []):
         a = args_seq[i] if i < len(args_seq) else {}

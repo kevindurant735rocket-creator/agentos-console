@@ -95,6 +95,17 @@ _VERIFY_PAIRS = frozenset(
     )
 )
 
+# 「可核对的来源」：URL 或 带行号的文件路径。
+# 调研类任务的完成证据就是它 —— 核对不上的结论不算结论。
+_CITATION = re.compile(
+    r"https?://\S+|[\w./-]+\.[A-Za-z]{1,5}:\d+|`[^`]+/[^`]+`|`[^`]+\.[A-Za-z]{1,5}`"
+)
+
+
+def _has_citation(answer):
+    return bool(_CITATION.search(str(answer or "")))
+
+
 # 终答自称「做完了」——规则 C（零工具却宣称完成）用它。
 _CLAIMS_DONE = re.compile(
     r"已完成|已经完成|完成了|已部署|部署完成|已实现|已修复|已新增|已加上|"
@@ -189,6 +200,7 @@ class Converge:
         task_text="",
         mode="",
         verify_info=None,
+        contract=None,
     ):
         self.max_explore = int(max_explore)
         self.max_stall = int(max_stall)
@@ -207,6 +219,20 @@ class Converge:
         # 对应上游 aider 的 `self.test_outcome = not test_errors`
         # ——「这次改动过没过检查」必须是**可查的结论**，不是印象。
         self.verify_outcome = ""
+        # ── 任务契约（W26）：不同任务类型的「完成证据」不一样 ──────────
+        # 契约只做两件事：① 决定闸门要哪几类证据；② 在动作边界提醒
+        # 「这类任务该怎么干」（比如缺陷修复要先复现）。
+        self.contract = dict(contract) if contract else None
+        # 证据账：写过/读过的路径、复现红绿、跑过的命令
+        self.write_paths = set()
+        self.read_paths = set()
+        self.repro_fail_seen = False      # 见过「红」：某次验证命令失败
+        self.fix_after_repro = False      # 红之后动过手（改过）
+        self.repro_green = False          # 红→改→绿，闭环成立
+        self.cmd_ran = False              # 跑过成功的命令（可复算证据）
+        self.n_reads = 0                  # 读过的文件数（查证类证据）
+        self.write_blocked = False        # 写过但没落地（被环境锁住/写失败）
+        self._repro_nagged = False        # 复现提醒只发一次（不轰炸模型）
         self.phase = P_EXPLORE
         self.steps = 0
         self.fps = {}  # 指纹 -> 次数
@@ -274,6 +300,13 @@ class Converge:
 
         productive = False
         verified_now = False
+        _path = ""
+        if isinstance(args, dict):
+            _path = str(args.get("path") or "")
+        if tool in _WRITE_TOOLS and not ok:
+            # 写没落地（被拒/越界/参数错）：环境不让写或写不成。
+            # 记下来 —— 契约不能要求一份**够不着**的证据。
+            self.write_blocked = True
         if tool in _WRITE_TOOLS and ok:
             self.write_seen = True
             self.dirty = True
@@ -284,21 +317,32 @@ class Converge:
             self.verify_pending = True
             self.verify_nagged = False
             self.verify_outcome = ""  # 新改动 → 上一次的结论作废
+            if _path:
+                self.write_paths.add(_path)
+            if self.repro_fail_seen:
+                # 「红」之后动过手 —— 这是红→绿链的中间一环
+                self.fix_after_repro = True
         elif tool in _VERIFY_TOOLS and ok:
             if tool == "run_cmd":
                 # 「跑过命令」≠「核对过」：curl/wget 这类只是取回东西，
                 # 不构成对本轮改动的核对。有参数就按命令名判；没参数
                 # （离线评分路径只喂工具名）就按 rc=0 兜底。
+                # 跑起来了就是「可复算」的证据（分析/运维类任务的硬要求）：
+                # 结论引用的 rc 与输出，别人能照着再跑一遍。
+                self.cmd_ran = True
                 _vc = (rc in (0, None))
                 if _vc and (not args or _is_verify_cmd(args)):
                     self.verify_seen = True
                     productive = True
                     verified_now = True
                     self.verify_outcome = "pass"
+                    if self.fix_after_repro:
+                        self.repro_green = True  # 红→改→绿，闭环成立
                 elif not _vc and (not args or _is_verify_cmd(args)):
                     # 跑了检查但没过：这是**结论**（fail），不是「没验」。
                     # 记下来，别让账本只留下「验过」两个字。
                     self.verify_outcome = "fail"
+                    self.repro_fail_seen = True  # 这就是「红」
                 # rc≠0 的检查**不算**核对通过：它证明的是「还没好」，
                 # 所以既不记证据也不算产出 —— 停滞探测器会因此催它去修。
             else:  # git_diff
@@ -308,6 +352,9 @@ class Converge:
         elif tool in _VERIFY_READBACK and ok:
             self.verify_seen = True
             verified_now = True
+            self.n_reads += 1
+            if _path:
+                self.read_paths.add(_path)
         if productive:
             self.productive_seen = True
             self.since_productive = 0
@@ -398,6 +445,23 @@ class Converge:
                 )
             self.notes.append(msg)
             return msg
+        # 缺陷修复的中途提醒：已经动手改了，但全程没看到过原 bug 失败的样子。
+        # 这时最该做的是**回退到复现**——盲改没法定向。软提醒（不硬拦），
+        # 因为有些 bug 确实复现不了，硬拦只会逼模型编一个假复现。
+        if (
+            (self.contract or {}).get("type") == "bugfix"
+            and self.write_seen
+            and not self.repro_fail_seen
+            and not self._repro_nagged
+        ):
+            self._repro_nagged = True
+            msg = (
+                "[复现指令] 你已经动手改了，但**从头到尾没看到过原 bug 失败的样子**。"
+                "先停一下：跑一次能触发这个 bug 的命令/测试，把失败的样子留好，"
+                "再确认你的改动确实让那个失败消失了。没复现过的修改，没法证明修对了。"
+            )
+            self.notes.append(msg)
+            return msg
         if self.since_productive >= self.max_stall and self.steps > 2:
             msg = (
                 "[收敛指令] 连续 %d 步没有产出（没有写盘成功，也没有跑出 rc=0）"
@@ -437,6 +501,70 @@ class Converge:
         return None
 
     # ── 交付闸 ──────────────────────────────────────────────────────
+    def evidence_ok(self, answer=""):
+        """按契约的**硬要求**判证据齐不齐。返回 (齐?, 缺什么, 缺的原因)。
+
+        硬要求只认「真的发生过的事」：写盘记录、读回记录、命令 rc、
+        红→绿链。**不认终答里的措辞** —— 措辞会说「已修复」，事实不会。
+        """
+        req = (self.contract or {}).get("hard") or []
+        missing = []
+        why = {
+            "verify_pass": "改了但没有一次通过的核对命令",
+            "write_and_readback": "没有把写下的内容读回来核对过",
+            "source_cited": "结论里没有可核对的来源（URL 或 文件:行号）",
+            "cited": "结论里没有可核对的来源（URL / 文件:行号 / 命令）",
+            "command_ran": "没有跑过任何命令（结论不可复算）",
+            "any_read": "没有读过任何东西（结论无从谈起）",
+            "repro_red_then_green": "没有「先复现失败 → 再改 → 再通过」的完整链",
+        }
+
+        def _has(kind):
+            if kind == "verify_pass":
+                return bool(self.write_seen and self.verify_seen)
+            if kind == "write_and_readback":
+                return bool(self.write_paths & self.read_paths)
+            if kind in ("source_cited", "cited"):
+                return _has_citation(answer)
+            if kind == "command_ran":
+                return bool(self.cmd_ran)
+            if kind == "any_read":
+                return bool(self.read_paths or self.n_reads)
+            if kind == "repro_red_then_green":
+                return bool(self.repro_green)
+            return False
+
+        # 写够不着（被环境锁住）时，撤掉「必须写盘」的要求 ——
+        # 否则任务永远交不了付（闸门一直退到预算耗尽）。
+        _relaxed = []
+        if self.write_blocked and not self.write_seen:
+            _ws = ("write_and_readback", "verify_pass")
+            _kept = []
+            for r in req:
+                if isinstance(r, (tuple, list)):
+                    _rest = [k for k in r if k not in _ws]
+                    if _rest:
+                        _kept.append(tuple(_rest) if len(_rest) > 1 else _rest[0])
+                    continue
+                if r in _ws:
+                    continue
+                _kept.append(r)
+            req = _kept
+            _relaxed = ["写操作被环境锁住，契约的写类要求已撤"]
+        for r in req:
+            # 元组 = any-of（这一类证据拿到其中一种就算齐）
+            if isinstance(r, (tuple, list)):
+                if not any(_has(k) for k in r):
+                    missing.append("/".join(r))
+                continue
+            if not _has(r):
+                missing.append(r)
+        return (
+            (not missing),
+            missing,
+            [why.get(m, m) for m in missing] + _relaxed,
+        )
+
     def gate(self, answer):
         """交付前判定。返回 (ok, 原因)。
 
@@ -454,6 +582,13 @@ class Converge:
         # 诚实报告失败是**真交付**（说清了没做成 + 原因），不退回。
         if _REPORTS_FAILURE.search(text):
             return True, ""
+        # 任务契约的硬要求（W26）：不同类型的「完成证据」不一样。
+        _ev_ok, _ev_missing, _ev_why = self.evidence_ok(text)
+        if not _ev_ok:
+            return False, "任务契约（%s）要求的证据缺：%s" % (
+                (self.contract or {}).get("name") or "通用",
+                "；".join(_ev_why),
+            )
         # 规则 A：像是要产出、动过工具、却什么都没写 → 只探查不动手，退回。
         # 这正是 900 秒那次事故的形状（探查 86 次、一步没落地）。
         if self.implies_build and self.steps > 0:
@@ -500,6 +635,14 @@ class Converge:
             "verify_nagged": bool(self.verify_nagged),
             "verify_cmd": (self.verify_info or {}).get("cmdline") or "",
             "verify_outcome": self.verify_outcome,
+            "contract_type": (self.contract or {}).get("type") or "",
+            "contract_name": (self.contract or {}).get("name") or "",
+            "repro_fail_seen": bool(self.repro_fail_seen),
+            "repro_green": bool(self.repro_green),
+            "cmd_ran": bool(self.cmd_ran),
+            "write_paths": len(self.write_paths),
+            "read_paths": len(self.read_paths),
+            "write_blocked": bool(self.write_blocked),
             "loop_hits": self.loop_hits,
             "phase_hits": self.phase_hits,
             "max_stall": self.max_stall,

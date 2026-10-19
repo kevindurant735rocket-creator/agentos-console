@@ -89,3 +89,54 @@ MEDIUM 判红/喂 loc=0 判红/空基线判红/未部署 rc=3/零残留）、
 agent_core 自检 152→**153**（新增「改完盘后核对指令真进 messages」内核级判据）。
 
 上游源码副本只落在 `work/distill/w25/`（已 .gitignore），不进仓库。
+
+## 第四轮（2026-10-20 W26）：任务契约 —— 不同类型的任务，要不同的「完成证据」
+
+来源（star≥1000，**只读上游源码，蒸馏进本仓**）：
+- **SWE-bench/SWE-bench ★6057**（MIT）`swebench/harness/constants/__init__.py:30-33`：
+  ```python
+  FAIL_TO_PASS = "FAIL_TO_PASS"
+  FAIL_TO_FAIL = "FAIL_TO_FAIL"
+  PASS_TO_PASS = "PASS_TO_PASS"
+  PASS_TO_FAIL = "PASS_TO_FAIL"
+  ```
+  这个四分类就是本波的核心思想：**一个修复算不算数，由「改前失败的测试
+  改后是否通过」判定**（fail→pass），而不是由「补丁看起来对不对」判定。
+  这也说明「红→绿」不是我的发明，是这个领域的验收标准本身。
+- 沿用 W25 的 **aider ★49636**（改完自动跑 lint/test）与
+  **SWE-agent ★20597**（工具失败带 exit code 回灌），本波把它们和
+  SWE-bench 的验收标准合成**一张按任务类型的完成契约表**。
+
+蒸馏落地（本仓，**本轮新写**）：
+1. `tools/task_contract.py`：
+   - **类型判定**：bugfix / feature / refactor / docs / research / analysis /
+     ops / generic。判定规则 =「**最先出现的动作主导**」（「把服务部署到
+     8790 并写好说明文档」是 ops 不是 docs），命中词保守（宁可判 generic，
+     也不给错契约——错契约会逼模型做它不该做的事）；判定**必带理由**，可复查。
+   - **契约表**：每种类型给「硬要求（缺了就退回交付）+ 软要求（缺了只记账）
+     + 开工指令（这类任务该怎么做）」。
+   - **写操作被环境锁住时撤掉写类要求**（`relax_for_writes`）：plan 只读 /
+     DSP 计划未审批时，写盘证据是**够不着**的证据，硬要它会让任务永远交不了
+     付（闸门一直退到预算耗尽）。**契约必须服从环境现实。**
+2. `tools/converge.py`：契约判据进闸门（`evidence_ok`，支持 any-of 组合）；
+   新增红→绿证据账（`repro_fail_seen` / `fix_after_repro` / `repro_green`）；
+   **盲改提醒**（缺陷修复类任务动手改了却从没看到原 bug 失败的样子 → 注入
+   「先复现」指令，软提醒不硬拦：有些 bug 确实复现不了，硬拦只会逼模型
+   编一个假复现）。
+3. `tools/agent_core.py`：契约段写进 **system prompt**（模型开工前就知道
+   「这类任务怎么算完成」）；任务类型进收敛快照 → 可被挖掘器统计
+   （`contract:bugfix-blind` = 盲改型缺陷修复 → 自动生成自进化规则）。
+
+**真机实测（缺陷修复任务，真实终端）**：
+```
+1. run_cmd ls -la → 2. read_file calc.py → 3. read_file Makefile
+4. run_cmd make test      ← 复现：看到失败（红）
+5. edit_file calc.py      ← 改
+6. run_cmd make test      ← 再验：通过（绿）
+```
+账本：`contract_type=bugfix`、`repro_fail_seen=True`、`repro_green=True`、
+`verify_outcome=pass`、`gate_retries=0`（交付闸一次放行——因为证据是真的）。
+
+**门与自检**：task_contract_selftest **25/25**（新门项，已上链）·
+converge_selftest 58 · converge_gate 24→**31/31**（含契约判据 + 变异体：
+摘掉契约检查必红）· agent_core 自检 153→**155**。

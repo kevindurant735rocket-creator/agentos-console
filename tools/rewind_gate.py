@@ -7,7 +7,7 @@
   错位一轮、越界可以默默截断 —— 屏上都有话说。本门站在外面认这些事实，纯离线
   不碰真模型（摘要路径用回环 HTTP 桩真跑）：
     D1  agent_core 可 import + 七符号齐（v2/replay/DIGEST 前缀/补全表/run_agent/Stub）
-    D2  `--check` 末行逐字 `AGENT_CORE OK 153/153`（数漂移即红）
+    D2  `--check` 末行逐字 `AGENT_CORE OK 155/155`（数漂移即红）
     D3  源码锚点六元：v2/replay 各恰 1；v2 函数体内 provider.chat 恰 1、回退
         调用恰 1；/rewind 分支恰 1；补全表含 /rewind
     D4  重放对齐（行为）：3 轮夹具 n=1/2/3 → 2/4/6 条；n=0/4 越界 fail-closed
@@ -36,7 +36,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 DEFAULT_CORE = os.path.join(HERE, "agent_core.py")
 DEFAULT_OUT = os.path.join(ROOT, "work", "rewind_gate.json")
-EXPECT_CHECK = "AGENT_CORE OK 153/153"
+EXPECT_CHECK = "AGENT_CORE OK 155/155"
 
 results = []
 
