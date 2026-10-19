@@ -3,7 +3,7 @@
   "bundle_id" : "com.zhangfengrui.agentos-console",
   "bundle_is_app" : 1,
   "bundle_path" : "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/AgentOS.app",
-  "degraded_console_wait_steps" : 2,
+  "degraded_console_wait_steps" : 1,
   "degraded_health_after_tap" : 1,
   "degraded_health_before_tap" : 0,
   "degraded_health_samples" : [
@@ -89,7 +89,7 @@
   "panel_visible_now" : 0,
   "probe_mode" : 1,
   "probe_multi_instance" : 1,
-  "probe_saved_at" : "2026-10-19T13:57:49Z",
+  "probe_saved_at" : "2026-10-19T14:53:54Z",
   "probe_sibling_instances" : 0,
   "proj_active_flag" : [
     "console"
@@ -108,7 +108,7 @@
   ],
   "proj_loaded" : 1,
   "proj_nfiles" : [
-    1743,
+    1776,
     2000
   ],
   "proj_roots_absolute" : true,
@@ -123,7 +123,7 @@
   "recovery_panel_visible" : 0,
   "retry_title" : "重新检测",
   "retry_wired" : true,
-  "service_pid" : 7681,
+  "service_pid" : 75671,
   "service_started_by_app" : 1,
   "start_title" : "启动服务",
   "start_wired" : true,

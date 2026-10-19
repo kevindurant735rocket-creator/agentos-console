@@ -46,6 +46,19 @@ gate(
     (p.stdout or p.stderr)[-160:],
 )
 
+# D1b verify_cmd 探测器自检（猜/建议跑不动的命令 → 判红）
+pv = subprocess.run(
+    [sys.executable, os.path.join(HERE, "verify_cmd_selftest.py")],
+    capture_output=True,
+    text=True,
+    timeout=300,
+)
+gate(
+    "verify_cmd_selftest 逐字绿（探测器不猜、不建议跑不动的命令）",
+    pv.returncode == 0 and "VERIFY_CMD_SELFTEST_OK" in pv.stdout,
+    (pv.stdout or pv.stderr)[-160:],
+)
+
 # D2 内核真的接了收敛层（不是只有一个孤立模块）
 src = open(os.path.join(HERE, "agent_core.py"), encoding="utf-8").read()
 gate(

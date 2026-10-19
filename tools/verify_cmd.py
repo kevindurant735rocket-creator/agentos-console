@@ -17,8 +17,10 @@ run_cmd 走白名单与留痕（内核不替模型跑命令——那会绕过审
 不存在的测试，比不提示更坏 —— 它会把「跑失败」误当成「改动坏了」。
 """
 
+import importlib.util
 import json
 import os
+import shutil
 
 # 探测顺序：从「最明确的声明」到「最通用的约定」。
 # 每项都要求仓库里**真的有那个文件**，否则不猜。
@@ -56,14 +58,56 @@ def _has_npm_test(root):
     return bool((d.get("scripts") or {}).get("test"))
 
 
+def _cmd_available(cmd):
+    """这条命令在**本机**真能跑吗？
+
+    为什么要查：2026-10-19 实测——本机 PATH 里没有 pytest（只有
+    /opt/homebrew/.../3.13 那套），而仓库是 Python 项目。若照直建议
+    `pytest -q`，agent 会去跑一条**必然失败**的命令，rc≠0 会被读成
+    「改动坏了」——把「验证工具没装」伪装成「验证失败」，是最坏的误导。
+    """
+    if not cmd:
+        return False
+    exe = cmd[0]
+    if exe in ("python", "python3"):
+        # python -m X：查模块在不在（不启子进程，亚秒级）
+        if len(cmd) >= 3 and cmd[1] == "-m":
+            try:
+                return importlib.util.find_spec(cmd[2]) is not None
+            except (ImportError, ValueError):
+                return False
+        return True
+    return shutil.which(exe) is not None
+
+
+def _pytest_cmd():
+    """Python 项目的验证命令：优先 pytest 可执行文件，其次 python -m pytest。"""
+    if shutil.which("pytest"):
+        return ["pytest", "-q"], "pytest 在 PATH"
+    for py in ("python3", "python"):
+        if shutil.which(py):
+            try:
+                if importlib.util.find_spec("pytest") is not None:
+                    return [py, "-m", "pytest", "-q"], "pytest 模块可导入（%s）" % py
+            except (ImportError, ValueError):
+                continue
+    return None, ""
+
+
 def detect_verify_cmd(root):
     """返回 {"cmd": [...], "why": "..."} 或 None（探测不到就 honest 地说没有）。
 
-    为什么不猜「pytest -q」作为兜底：仓库里没有 Python 项目时猜它，
-    agent 会去跑一条必然失败的命令，而 rc≠0 会被读成「改动坏了」——
-    把「没找到验证方式」伪装成「验证失败」，是最坏的一种误导。
+    两条硬规矩：
+    1. 仓库里没有对应文件就不猜（Makefile 没 test 目标就不建议 make test）；
+    2. 建议出来的命令**本机真能跑**（见 _cmd_available 的坑）——
+       跑不动的命令比没有建议更坏。
     """
     if not root:
+        return None
+    # 逃生阀：AGENTOS_NO_VERIFY=1 时不给建议。
+    # 为什么需要：有些仓库的 test 目标是几十分钟级的集成套件，
+    # 每次改完都催一遍会烧时间；用户要能一句话关掉。
+    if str(os.environ.get("AGENTOS_NO_VERIFY") or "").lower() in ("1", "true", "yes"):
         return None
     root = os.path.realpath(str(root))
     for kind, names, cmd, why in _RULES:
@@ -74,10 +118,18 @@ def detect_verify_cmd(root):
                 continue
             if kind == "npm" and not _has_npm_test(root):
                 continue
+            if kind == "pytest":
+                real, why2 = _pytest_cmd()
+                if not real:
+                    continue
+                cmd = " ".join(real)
+                why = "%s（%s）" % (why2, name)
+            if not _cmd_available(cmd.split()):
+                continue
             return {
                 "cmd": cmd.split(),
                 "cmdline": cmd,
-                "why": "%s（%s）" % (why, name),
+                "why": why,
                 "kind": kind,
             }
     return None

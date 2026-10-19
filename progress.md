@@ -306,3 +306,44 @@ gh_gate W13b 判据同步扩：venv 免扫 + 带默认值模板放行 + ghp_/sk-
 **GitHub 止血**：`agentos-study-cli` + `cli2..cli8` 共 8 个误部署的 public 仓库，
 当前 token 无 `delete_repo` scope（403），**已先全部转 PRIVATE 止血**（`repo` scope 足够）；
 删除脚本 `tools/cleanup_study_repos.sh` 就绪，授权后一条命令收尾并逐个验 404。
+
+## 第二十五波（2026-10-19）：把「验证」从任务末尾前移到**动作边界**（本地蒸馏 aider/SWE-agent）
+
+**要蒸馏的东西**（只读上游源码，蒸馏进本仓，**不上传任何自有内容**）：
+- **aider ★49636**（Apache-2.0）`aider/coders/base_coder.py:1616-1621`：
+  ```python
+  if edited and self.auto_test:
+      test_errors = self.commands.cmd_test(self.test_cmd)
+      self.test_outcome = not test_errors
+      if test_errors:
+          self.reflected_message = test_errors
+  ```
+  三个可蒸馏点：验证由**编辑事件**触发；失败报错**回灌**下一轮；每次改动的
+  结论被记成可查的量（`test_outcome`）。
+- **SWE-agent ★20597**（MIT）`sweagent/environment/swe_env.py:226-228`：
+  工具失败必须带 exit code 回灌（`Command … failed (r.exit_code=…)`）——
+  报错是可行动的观察，不是原始异常。
+- **OpenHands ★91270**（MIT）：运行时对**每个动作**先评分再决定放不放行
+  （我们用自己的收敛引擎做同一件事，W23/W24）。
+
+**蒸馏落地**
+1. `tools/verify_cmd.py`：探测「这个仓库跑什么命令能证明改动是对的」。
+   两条硬规矩——**不猜**（Makefile 没 test 目标就不建议 `make test`）、
+   **建议跑得动**（本机 PATH 里没有 pytest 就不建议 `pytest -q`：跑不动的
+   命令会把「验证工具没装」伪装成「验证失败」）。逃生阀 `AGENTOS_NO_VERIFY=1`。
+2. `tools/converge.py`：写盘成功 → **待核对态**；步骤边界注入核对指令
+   （带「该跑哪条 + 为什么是这条」），每轮只催一次；核对失败（rc≠0）时措辞
+   从「还没核对过」改成「上次核对**没通过**，先读懂报错再改」。
+3. **核对结论入账**：`verify_outcome` = "" / "pass" / "fail"，新改动让旧结论作废。
+4. **有意偏离上游**：aider 是内核自己跑测试；AgentOS 不这么做——命令仍由
+   agent 通过 `run_cmd` 走白名单与留痕（内核代跑会绕过审计链）。
+
+**同波修的真缺陷**：`验证命令识别` 原先是**子串匹配**——`"test" in cmd` 会把
+`cat latest.txt`、`grep greatest` 判成验证；`ls -la` / `cat x` / `sh -c …`
+也曾被算成核对。改成**整词 + runner/verb 形态**（pytest/ruff/jest…；
+`npm test`/`go test`/`make test`/`git diff`…；`python -m pytest` 特判），
+并把 shell 包装（`bash -c "pytest -q"`）拆开看内层。
+
+**门与自检**：converge_selftest 37→**58/58** · converge_gate 19→**24/24**
+（含新变异体：命令判据恒真 → 门判红）· verify_cmd_selftest **11/11**（新门项，已上链）
+· agent_core 自检 153（新增「改完盘后核对指令真进 messages」）。

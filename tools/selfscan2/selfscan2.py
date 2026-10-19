@@ -93,10 +93,16 @@ def run_checks(cand_dir, cmds, timeout=20.0, sandbox_root=None):
     rows = []
     for cmd in cmds:
         try:
+            # 命令永远是 argv 列表（parse_cmd_args 走 shlex.split），
+            # 所以**不走 shell**：动态 shell 是死代码，却会在静态安全扫描里
+            # 留一条 B602。删掉它，既让面干净，也让「命令不经 shell 解析」
+            # 成为代码里写死的事实而不是约定。
+            if isinstance(cmd, str):
+                cmd = shlex.split(cmd)
             p = subprocess.run(
                 cmd,
                 cwd=work,
-                shell=isinstance(cmd, str),
+                shell=False,
                 capture_output=True,
                 text=True,
                 timeout=timeout,

@@ -1,6 +1,6 @@
 {
   "checks": 194,
-  "elapsed": 153.4,
+  "elapsed": 132.4,
   "gate": "native_gate",
   "live_sha_before": {
     "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/data.json": "6fdf2493fd741696cf67fa5b9b37554ab619d35494b470f0f282710f312feb8b",
@@ -72,7 +72,7 @@
     },
     {
       "check": "ax-target-is-under-test",
-      "detail": "target_pid=71485 sampled_pid=71485",
+      "detail": "target_pid=74972 sampled_pid=74972",
       "ok": true
     },
     {
@@ -152,7 +152,7 @@
     },
     {
       "check": "window-frame-nonzero",
-      "detail": "{{0, 65}, {1352, 783}}",
+      "detail": "{{0, 71}, {1352, 777}}",
       "ok": true
     },
     {
@@ -242,12 +242,12 @@
     },
     {
       "check": "page-buttons",
-      "detail": "124",
+      "detail": "126",
       "ok": true
     },
     {
       "check": "page-body-text",
-      "detail": "2408",
+      "detail": "2579",
       "ok": true
     },
     {
@@ -322,12 +322,12 @@
     },
     {
       "check": "shot-over-captured",
-      "detail": "ok 564881 bytes 2442x1552",
+      "detail": "ok 563850 bytes 2442x1552",
       "ok": true
     },
     {
       "check": "shot-over-bytes",
-      "detail": "564881",
+      "detail": "563850",
       "ok": true
     },
     {
@@ -337,7 +337,7 @@
     },
     {
       "check": "shot-over-distinct-colors",
-      "detail": "617",
+      "detail": "614",
       "ok": true
     },
     {
@@ -347,12 +347,12 @@
     },
     {
       "check": "shot-mx-captured",
-      "detail": "ok 499854 bytes 2442x1552",
+      "detail": "ok 498931 bytes 2442x1552",
       "ok": true
     },
     {
       "check": "shot-mx-bytes",
-      "detail": "499854",
+      "detail": "498931",
       "ok": true
     },
     {
@@ -372,12 +372,12 @@
     },
     {
       "check": "shot-cmdk-captured",
-      "detail": "ok 460687 bytes 2442x1552",
+      "detail": "ok 459879 bytes 2442x1552",
       "ok": true
     },
     {
       "check": "shot-cmdk-bytes",
-      "detail": "460687",
+      "detail": "459879",
       "ok": true
     },
     {
@@ -397,12 +397,12 @@
     },
     {
       "check": "shot-back-captured",
-      "detail": "ok 564881 bytes 2442x1552",
+      "detail": "ok 563850 bytes 2442x1552",
       "ok": true
     },
     {
       "check": "shot-back-bytes",
-      "detail": "564881",
+      "detail": "563850",
       "ok": true
     },
     {
@@ -412,7 +412,7 @@
     },
     {
       "check": "shot-back-distinct-colors",
-      "detail": "617",
+      "detail": "614",
       "ok": true
     },
     {
@@ -422,12 +422,12 @@
     },
     {
       "check": "shot-final-captured",
-      "detail": "ok 456553 bytes 2442x1552",
+      "detail": "ok 455745 bytes 2442x1552",
       "ok": true
     },
     {
       "check": "shot-final-bytes",
-      "detail": "456553",
+      "detail": "455745",
       "ok": true
     },
     {
@@ -437,7 +437,7 @@
     },
     {
       "check": "shot-final-distinct-colors",
-      "detail": "460",
+      "detail": "461",
       "ok": true
     },
     {
@@ -567,7 +567,7 @@
     },
     {
       "check": "panel-shot-bytes",
-      "detail": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/shot-panel-cachedefault.png bytes=102464",
+      "detail": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/shot-panel-cachedefault.png bytes=102391",
       "ok": true
     },
     {
@@ -762,7 +762,7 @@
     },
     {
       "check": "projects-file-counts",
-      "detail": "[1737, 2000]",
+      "detail": "[1770, 2000]",
       "ok": true
     },
     {
@@ -902,7 +902,7 @@
     },
     {
       "check": "degraded-service-pid",
-      "detail": "7681",
+      "detail": "75671",
       "ok": true
     },
     {
@@ -927,7 +927,7 @@
     },
     {
       "check": "single-instance-a-in-process-table",
-      "detail": "A=7912 in [7912]",
+      "detail": "A=75685 in [75685]",
       "ok": true
     },
     {
@@ -937,12 +937,12 @@
     },
     {
       "check": "single-instance-second-activated-existing",
-      "detail": "[agentos] 已有实例 7912 在运行，已激活并退出",
+      "detail": "[agentos] 已有实例 75685 在运行，已激活并退出",
       "ok": true
     },
     {
       "check": "single-instance-second-exited-fast",
-      "detail": "0.7 (sequence needs ~36s)",
+      "detail": "0.4 (sequence needs ~36s)",
       "ok": true
     },
     {

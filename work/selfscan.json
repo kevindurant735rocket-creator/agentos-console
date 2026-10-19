@@ -6,34 +6,34 @@
   "targets": [
     "tools"
   ],
-  "ok": true,
+  "ok": false,
   "checks": [
     {
       "name": "D1-loc>0",
       "ok": true,
-      "detail": "loc=48515"
+      "detail": "loc=51181"
     },
     {
       "name": "D2-no-HIGH",
-      "ok": true,
-      "detail": "0 条 HIGH"
+      "ok": false,
+      "detail": "2 条 HIGH：B324@tools/converge.py"
     },
     {
       "name": "D3-no-new-MEDIUM",
-      "ok": true,
-      "detail": "29 个基线键全在额度内"
+      "ok": false,
+      "detail": "新增：tools/converge.py|B324 +1（基线 0）；tools/selfscan2/selfscan2.py|B602 +1（基线 0）"
     }
   ],
   "totals": {
-    "CONFIDENCE.HIGH": 365,
+    "CONFIDENCE.HIGH": 375,
     "CONFIDENCE.LOW": 0,
-    "CONFIDENCE.MEDIUM": 24,
+    "CONFIDENCE.MEDIUM": 30,
     "CONFIDENCE.UNDEFINED": 0,
-    "SEVERITY.HIGH": 0,
-    "SEVERITY.LOW": 345,
+    "SEVERITY.HIGH": 2,
+    "SEVERITY.LOW": 359,
     "SEVERITY.MEDIUM": 44,
     "SEVERITY.UNDEFINED": 0,
-    "loc": 48515,
+    "loc": 51181,
     "nosec": 0,
     "skipped_tests": 0
   }

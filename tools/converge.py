@@ -118,7 +118,12 @@ def _fingerprint(tool, args):
         blob = json.dumps(args, sort_keys=True, ensure_ascii=False, default=str)
     except (TypeError, ValueError):
         blob = repr(args)
-    h = hashlib.sha1(("%s|%s" % (tool, blob)).encode("utf-8")).hexdigest()[:12]
+    # usedforsecurity=False：这是**指纹**（判「是不是同一次调用」），
+    # 不是口令/签名，不需要抗碰撞。显式标出来，静态安全扫描也就不会
+    # 把它当成「用了弱哈希做安全用途」而报警。
+    h = hashlib.sha1(
+        ("%s|%s" % (tool, blob)).encode("utf-8"), usedforsecurity=False
+    ).hexdigest()[:12]
     return "%s:%s" % (tool, h)
 
 

@@ -3,7 +3,7 @@
  "views_const": 13,
  "gates": [
   {
-   "gate": "BASE 生产调用（本门新起服务 http://127.0.0.1:62883）rc=0 且汇总行 OK",
+   "gate": "BASE 生产调用（本门新起服务 http://127.0.0.1:64859）rc=0 且汇总行 OK",
    "ok": true,
    "detail": "rc=0 keys=35/35 views=13/13 child_rc=0"
   },
@@ -50,7 +50,7 @@
   {
    "gate": "活 work/tui_walk.json 本轮由 BASE 写过（mtime 新鲜）",
    "ok": true,
-   "detail": "mtime=22:02:43 门起始=22:02:34"
+   "detail": "mtime=22:58:46 门起始=22:58:38"
   },
   {
    "gate": "tools/ 下无 _tuiwalkmut_* 残留（桩只落临时目录）",

@@ -1,5 +1,5 @@
 {
-  "ok": false,
+  "ok": true,
   "results": [
     {
       "gate": "D1-deployed",
@@ -13,8 +13,8 @@
     },
     {
       "gate": "D2-production-green",
-      "ok": false,
-      "detail": "真树 404 条结果：D1-loc>0=绿 D2-no-HIGH=红 D3-no-new-MEDIUM=红"
+      "ok": true,
+      "detail": "真树 404 条结果：D1-loc>0=绿 D2-no-HIGH=绿 D3-no-new-MEDIUM=绿"
     },
     {
       "gate": "D3-bites-HIGH",
