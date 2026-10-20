@@ -51,7 +51,7 @@ PLAN_RECON_TOOLS = ("list_dir", "read_file", "search", "gh_search",
 KNOWN_TOOLS = ("list_dir", "read_file", "search", "run_cmd", "write_file",
                "edit_file", "git_status", "git_diff", "git_log", "gh_read",
                "health", "gh_search", "gh_repo_view", "gh_file_read",
-               "gh_deploy", "web_fetch")
+                "web_fetch")
 
 
 def _sha_hex(b):
