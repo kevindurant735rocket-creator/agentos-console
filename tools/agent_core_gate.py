@@ -78,7 +78,7 @@ CORE = os.path.join(ROOT, "tools", "agent_core.py")
 # 142 → 147：W22 会话中毒双预算 5 例（RemoteDisconnected/429/IncompleteRead
 # 词表补齐在词表本身；中毒 400 词表外也轮换重试 / 轮换独立预算 3 次到顶 /
 # 分层退避循环 reroll / 提案复用幂等 / 真圆闭环四圈教训五例——见 progress.md）。
-EXPECT_N = 162
+EXPECT_N = 166
 TOKEN = "AGENT_CORE OK %d/%d" % (EXPECT_N, EXPECT_N)
 # 自检临时目录带 pid（并发安全），所以残留判据用 glob，别去猜具体名字。
 STRAY_GLOB = os.path.join(ROOT, "work", "_st_agent_core*")

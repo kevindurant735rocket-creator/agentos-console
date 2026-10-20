@@ -64,8 +64,15 @@ _VERIFY_TOOLS = frozenset(("run_cmd", "git_diff"))
 _VERIFY_READBACK = frozenset(("read_file",))
 
 # 「像核对」的单词与形态（整词匹配，避免 latest/greatest 之类误中）
+# 「核对类」命令：要么是测试/静态检查，要么是**看一眼文件真实内容/大小/哈希**。
+# 第二类不能漏：2026-10-20 真机实测，agent 写完文件后跑的是
+# `cat -n notes.md` / `wc -c notes.md` / `sha256sum notes.md`（三条 rc=0，
+# 内容、字节数、哈希都核过了）—— 交付闸却因为词表里没有 cat/sha256sum
+# 而判「没有跑命令也没有读回任何证据」，把**真核对过**的交付误拒了。
+# 假红比漏红更坏：它教会 agent「核对了也不算」，于是下一次就干脆不核了。
 _VERIFY_WORDS = frozenset(
     (
+        # 测试 / 静态检查
         "pytest",
         "unittest",
         "tox",
@@ -77,6 +84,21 @@ _VERIFY_WORDS = frozenset(
         "jest",
         "vitest",
         "eslint",
+        # 文件核对（内容 / 大小 / 哈希 / 存在性）
+        "cat",
+        "head",
+        "tail",
+        "wc",
+        "sha256sum",
+        "shasum",
+        "md5",
+        "stat",
+        "ls",
+        "grep",
+        "diff",
+        "cmp",
+        "file",
+        "du",
     )
 )
 _VERIFY_PAIRS = frozenset(
@@ -606,7 +628,11 @@ class Converge:
         # 否则「把第二行改掉」这种小事会被无端卡住。
         if self.demands_verify and self.steps > 0 and not self.verify_seen:
             self.gate_retries += 1
-            return False, "需求要求验证，但没有跑命令也没有读回任何证据"
+            return False, (
+                "需求要求验证，但本轮没有**核对类**命令"
+                "（cat/wc/sha256sum/pytest/git diff 这类才算核对；"
+                "只跑了别的命令不算）"
+            )
         # 规则 C：一次工具都没调，却宣称做完了 → 空口交付，退回。
         if self.steps == 0 and _CLAIMS_DONE.search(text):
             self.gate_retries += 1

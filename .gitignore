@@ -8,6 +8,9 @@ work/gates.lockd/
 work/gates_*.log
 work/agent_sessions/
 work/agent_snapshots/
+# DSP 运行态计划（每轮一个 sid 的落盘账）：运行态，不是仓库内容
+work/plans/agent-*
+work/plans/st-*
 *.bak*
 *.bak-*
 work/superpowers-upstream/

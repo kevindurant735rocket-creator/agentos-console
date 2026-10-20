@@ -118,7 +118,7 @@
     "op": "converge_tune"
    },
    "advice": "本机历史：连续多步没有产出（只读/只查不动手）。先动手改一处再继续，别把时间花在读完再读上",
-   "count": 8,
+   "count": 10,
    "created": "2026-10-19 21:26:38",
    "id": "evo-converge-stall",
    "notified": true,
@@ -134,6 +134,15 @@
    "notified": true,
    "proposed": true,
    "sig": "contract:generic",
+   "state": "CANDIDATE"
+  },
+  {
+   "advice": "本机历史：文档类任务出过「写了但没读回」的错。写完读回一遍确认落盘且内容对。",
+   "count": 3,
+   "created": "2026-10-20 23:41:43",
+   "id": "evo-contract-docs",
+   "notified": true,
+   "sig": "contract:docs",
    "state": "CANDIDATE"
   }
  ],

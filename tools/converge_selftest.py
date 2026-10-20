@@ -177,16 +177,17 @@ case(
 case("验证识别：pytest 算验证", cv._is_verify_cmd({"argv": ["pytest", "-q"]}))
 case("验证识别：git diff 算验证", cv._is_verify_cmd({"argv": ["git", "diff"]}))
 case(
-    "验证识别：ls 不算验证（跑过命令≠核对过）",
-    not cv._is_verify_cmd({"argv": ["ls", "-la"]}),
-)
-case(
-    "验证识别：cat 不算验证",
-    not cv._is_verify_cmd({"argv": ["cat", "x.txt"]}),
+    "验证识别：ls/cat/wc/sha256sum 算核对（文件核对也是证据）",
+    cv._is_verify_cmd({"argv": ["ls", "-la"]})
+    and cv._is_verify_cmd({"argv": ["cat", "x.txt"]})
+    and cv._is_verify_cmd({"argv": ["wc", "-c", "x.txt"]})
+    and cv._is_verify_cmd({"argv": ["sha256sum", "x.txt"]}),
 )
 case(
     "验证识别：latest 不含 test（整词匹配，不是子串）",
-    not cv._is_verify_cmd({"argv": ["grep", "latest"]}),
+    # echo 不是核对命令；「latest」里含 "test" 也不该被误判成核对
+    not cv._is_verify_cmd({"argv": ["echo", "latest"]})
+    and not cv._is_verify_cmd({"argv": ["run", "fastest"]}),
 )
 case(
     "验证识别：shell 包装里的 pytest 仍算验证",

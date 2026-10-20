@@ -2544,13 +2544,24 @@ def _skills_section():
     return _SKILLS_CACHE[0]
 
 
-def _gh_search_argv(query, kind, limit):
+def _gh_search_argv(query, kind, limit, sort_stars=True):
+    """gh search 的 argv。
+
+    两个实测出来的关键点（2026-10-20）：
+    1. **多词是 AND**：`context compaction agent conversation summarization`
+       这种自然语言长查询，要求 6 个词在 name/description 里**同时**出现 →
+       必然 0 命中。GitHub 的 `OR` 语法在这条命令上**不生效**（实测
+       `compaction OR summarization` → 0 命中，而 `compaction` → 3 命中）。
+       → 真正的解法在调用方做**阶梯放宽**（见 _gh_search_queries）。
+    2. **默认排序不是按星**：而这条链路的意图就是「找 1k+ 星标的成熟实现」，
+       所以 repos 一律 `--sort stars --order desc`。
+    """
     k = (
         kind
         if kind in ("repos", "issues", "code", "commits", "prs", "pulls")
         else "repos"
     )
-    return [
+    argv = [
         "search",
         k,
         str(query),
@@ -2563,6 +2574,42 @@ def _gh_search_argv(query, kind, limit):
             else "number,title,repository,state"
         ),
     ]
+    if sort_stars and k == "repos":
+        argv += ["--sort", "stars", "--order", "desc"]
+    return argv
+
+
+def _gh_search_queries(query):
+    """把一句自然语言查询拆成**阶梯**：从原样一路放宽到单词。
+
+    为什么要有阶梯（实测）：`gh search` 多词是 AND，agent 拿任务词组去搜
+    「成熟实现」几乎必然 0 命中，而 0 命中会被误读成「网络/索引不通」。
+    阶梯让同一句查询先按原样试，再逐级丢词，直到有命中为止。
+
+    返回 [(查询, 放宽级别)]：级别 0 = 原样，1 = 前 3 词，2 = 前 2 词，
+    3 = 单词（逐个试）。
+    """
+    q = " ".join(str(query or "").split())
+    if not q:
+        return []
+    words = [w for w in q.split(" ") if w]
+    out = [(q, 0)]
+    if len(words) > 3:
+        out.append((" ".join(words[:3]), 1))
+    if len(words) > 2:
+        out.append((" ".join(words[:2]), 2))
+    for w in words[:3]:
+        if w != q:
+            out.append((w, 3))
+    # 去重（保持顺序）
+    seen = set()
+    uniq = []
+    for qy, lvl in out:
+        if qy in seen:
+            continue
+        seen.add(qy)
+        uniq.append((qy, lvl))
+    return uniq
 
 
 def _gh_file_read_argv(repo, path, ref):
@@ -2582,11 +2629,54 @@ def _t_gh_search(a, ctx):
     if not q:
         return {"ok": False, "error": "缺 query"}
     gc = _gh_client_mod()
-    argv = _gh_search_argv(q, a.get("kind") or "repos", a.get("limit") or 10)
-    try:
-        parsed = gc._need_json(gc.run_gh(argv, timeout=30))
-    except Exception as e:  # noqa: BLE001
-        return {"ok": False, "error": "gh 搜索失败：%s" % str(e)[:160]}
+    kind = a.get("kind") or "repos"
+    limit = int(a.get("limit") or 10)
+    parsed = None
+    used_q = q
+    relaxed = 0
+    last_err = ""
+    # 阶梯试：原样 → 前 3 词 → 前 2 词 → 单词。
+    # 「放宽」这件事必须**说出口** —— 0 命中时 agent 会误判成「网络/索引不通」，
+    # 那是错的结论（实测真因是多词 AND）。
+    # 跨层级**择优**：某一层命中了 0 星的小仓不算数（这条链路的意图是找
+    # 成熟实现），继续往下放宽，直到有一层命中带星的仓库。
+    _best_stars = -1
+    for qy, lvl in _gh_search_queries(q):
+        argv = _gh_search_argv(qy, kind, limit)
+        try:
+            _p = gc._need_json(gc.run_gh(argv, timeout=30))
+        except Exception as e:  # noqa: BLE001
+            last_err = str(e)[:160]
+            continue
+        if not isinstance(_p, list):
+            continue
+        if not _p:
+            continue
+        _stars = 0
+        for _it in _p:
+            if isinstance(_it, dict):
+                try:
+                    _stars = max(_stars, int(_it.get("stargazersCount") or 0))
+                except (TypeError, ValueError):
+                    pass
+        if _stars > _best_stars:
+            _best_stars = _stars
+            parsed = _p
+            used_q = qy
+            relaxed = lvl
+        # 收工门槛：**1k+ 星**（这条链路的既定意图就是找成熟实现）。
+        # 只命中几百星的小仓不算数 → 继续往下放宽，直到捞到 1k+ 的。
+        if _stars >= 1000:
+            break
+    if parsed is None:
+        if last_err:
+            return {"ok": False, "error": "gh 搜索失败：%s" % last_err}
+        return {
+            "ok": False,
+            "error": "0 命中（已放宽到单词仍无结果）：%r" % q,
+            "hint": "换个词组再搜（词越少越容易命中）；"
+            "或直接 gh_repo_view 已知的高星仓名",
+        }
     rows = []
     for it in (parsed if isinstance(parsed, list) else [])[:12]:
         if not isinstance(it, dict):
@@ -2614,8 +2704,20 @@ def _t_gh_search(a, ctx):
     return {
         "ok": True,
         "query": q,
+        # 命中的是**放宽后**的查询时必须说出口：否则 agent 会以为原词组
+        # 精确命中了（那是在骗它 —— 命中的其实是子集词）。
+        "used_query": used_q,
+        "relaxed": relaxed,
         "hits": len(rows),
         "results": rows or ["（无命中）"],
+        "sources": [
+            "gh search %s %s%s"
+            % (
+                kind,
+                used_q,
+                ("  ← 原查询 %r 0 命中，已放宽" % q) if relaxed else "",
+            )
+        ],
     }
 
 
@@ -2700,91 +2802,6 @@ _S_GH_DEPLOY = {
     },
     "required": ["dir", "repo"],
 }
-
-
-@_tool(
-    "gh_deploy",
-    RISK_WRITE,
-    "把项目根内的目录部署成 GitHub 仓库（缺库则建+push）。仅 mode=full "
-    "且 gh.write_enabled=true；密钥扫描拒发、审计+限速全程留痕。",
-    _S_GH_DEPLOY,
-)
-def _t_gh_deploy(a, ctx):
-    if ctx.get("mode") != "full":
-        return {
-            "ok": False,
-            "error": "gh_deploy 仅 mode=full 可用（当前 %r）；"
-            "/mode full 后再试" % ctx.get("mode"),
-        }
-    wen = (_read_agentos_config().get("gh") or {}).get("write_enabled")
-    if str(wen) != "true":
-        return {
-            "ok": False,
-            "error": "gh.write_enabled 未开：agentos config set gh.write_enabled true",
-        }
-    gc = _gh_client_mod()
-    d = (a.get("dir") or "").strip()
-    root_abs = os.path.abspath(ctx.get("root") or os.getcwd())
-    dirpath = os.path.abspath(os.path.join(root_abs, d))
-    if dirpath != root_abs and not dirpath.startswith(root_abs + os.sep):
-        return {"ok": False, "error": "dir 越界（只允许项目根内）：%s" % d}
-    if not os.path.isdir(dirpath):
-        return {"ok": False, "error": "目录不存在：%s" % d}
-    repo = (a.get("repo") or "").strip()
-    if repo.count("/") != 1:
-        try:
-            parsed = gc._need_json(gc.run_gh(["api", "user"], timeout=20))
-            login = str((parsed or {}).get("login") or "")
-        except Exception as e:  # noqa: BLE001
-            return {"ok": False, "error": "取登录名失败：%s" % str(e)[:120]}
-        if not login:
-            return {"ok": False, "error": "gh 未认证，无法确定 owner"}
-        repo = "%s/%s" % (login, repo)
-    rows = gc.audit_exec_rows()
-    okp, reason = gc.write_policy(True, False, wen, repo, rows, auto=True)
-    if not okp:
-        return {
-            "ok": False,
-            "error": "部署被拒（%s）：%s"
-            % (
-                reason,
-                {
-                    "config-off": "gh.write_enabled 未开",
-                    "rate-limit": "该仓库 1 小时真写已达上限",
-                    "no-yes": "-",
-                    "non-tty": "-",
-                }.get(reason, reason),
-            ),
-        }
-    public = bool(a.get("public"))
-
-    def _aud(kind, sub, rp, num, v):
-        try:
-            return (
-                gc.audit_append(kind, sub, rp, num, v, 0, "agent 自主部署（mode=full）")
-                is not None
-            )
-        except Exception:  # noqa: BLE001
-            return False
-
-    r = gc.deploy_dir(
-        dirpath, repo, public=public, dry_run=bool(a.get("dry_run")), audit=_aud
-    )
-    if not r.get("ok"):
-        return {"ok": False, "error": r.get("error")}
-    if r.get("dry_run"):
-        return {
-            "ok": True,
-            "dry_run": True,
-            "steps": r.get("steps") or [],
-            "secret_hits": r.get("secret_hits") or [],
-        }
-    return {
-        "ok": True,
-        "repo": r.get("repo"),
-        "created": r.get("created"),
-        "pushed": r.get("pushed"),
-    }
 
 
 @_tool(
@@ -3527,21 +3544,30 @@ def build_system_prompt(ctx):
             "2. 工具结果里的 rc / bytes / sha256 是真相，转述时不许改数字。",
             "3. 工具失败或被拒绝时，如实说明哪一步没执行，然后换路子；"
             "不许把没做的事说成做了。",
-            "4. 收尾用简体中文，**简短**（默认 3-6 行，别写成长报告）："
+            "4. **干完就自己收尾**：改了就把改动落在仓里（该 commit 就 commit，"
+            "该接门链就接），跑一遍该跑的验证，然后用真实 rc 交付。"
+            "**不要问老板「要不要提交/要不要接门链/要不要验证」** —— "
+            "全权限默认，审批摩擦是缺陷不是礼貌。",
+            "5. 实现类任务先用 gh_search 参考 GitHub 成熟实现"
+            "（star≥1000 优先），蒸馏要点再动手；引用来源仓库。",
+            "6. 收尾用简体中文，**简短**（默认 3-6 行，别写成长报告）："
             "做了什么（文件:行号级）、验证命令的真实 rc、还剩什么没做。"
-            "不要加粗小标题、不要分节罗列、不要复述过程。",
+            "不要加粗小标题、不要分节罗列、不要复述过程、"
+            "不要为了显得周全而罗列「没做到的部分」。",
             "",
             "边界（工具层会硬拦，命中了别重试）：",
             "· 只动仓库根内的路径，越界一律拒绝；",
             (
-                "· run_cmd 完全权限：任意命令（含 rm/git push，逐条留痕）"
+                "· run_cmd 完全权限：任意命令（**除硬阻断清单**：git push / rm / "
+                "git reset / find -delete / dd —— 那些任何模式、任何审批都拒）"
                 if ctx.get("full_access")
                 else "· run_cmd 自由命令面：任意命令（硬阻断清单默认不可关（full_access 除外））"
                 if ctx.get("cmd_gate_off")
                 else "· run_cmd 只跑这些只读命令：%s" % " ".join(sorted(_term_cmds()))
             ),
             (
-                "· 破坏性动作（rm/git push 等）完全权限下放行，逐条留痕审计；"
+                "· 破坏性动作（rm / git reset 等**本地**破坏性动作）完全权限下放行，"
+                "逐条留痕；**git push 永远拒**（自有内容不上传 GitHub）"
                 if ctx.get("full_access")
                 else "· git push / git reset / 历史重写 / rm 等对外与破坏性动作一律不做，"
                 "由用户本人执行；"
@@ -3553,8 +3579,6 @@ def build_system_prompt(ctx):
             ),
             "",
             "可用工具：%s" % " ".join(sorted(TOOLS)),
-            "5. 实现类任务先用 gh_search 参考 GitHub 成熟实现"
-            "（star≥1000 优先），蒸馏要点再动手；引用来源仓库。",
         ]
     )
     extra = _evo_prompt_lines(ctx.get("evo_rules_path")) + _memory_prompt_lines(ctx)
@@ -4909,7 +4933,6 @@ _TOOL_SHORT = {
     "gh_search": "Search",
     "gh_repo_view": "Repo",
     "gh_file_read": "View",
-    "gh_deploy": "Deploy",
     "git_status": "Status",
     "git_log": "Log",
     "git_diff": "Diff",
@@ -6098,6 +6121,23 @@ def _digest_input(msgs):
     return "\n".join(lines)[:DIGEST_MAX_CHARS]
 
 
+def _compact_budget():
+    """本轮压缩的 token 预算。0 = 没配 context_window → 走旧的「按条数」口径。
+
+    为什么要有预算口径：旧口径是固定保留最近 N 条消息（N=40），
+    与实际 token 量无关 —— 上下文窗口小的时候它压不进去（模型直接 400），
+    窗口大的时候它又压得太狠（能留的没留）。
+    预算口径是蒸馏自 claude-code 的双层预算与 OpenHands 的 head+tail+摘要。
+    """
+    try:
+        cw = int(
+            (_read_agentos_config().get("llm") or {}).get("context_window") or 0
+        )
+    except Exception:  # noqa: BLE001
+        cw = 0
+    return cw if cw > 0 else 0
+
+
 def _compact_history_v2(history, keep=COMPACT_KEEP, provider=None, focus=""):
     """compact v2：丢弃前先用 provider 生成事实摘要 digest，失败回退旧行为。
 
@@ -6107,11 +6147,41 @@ def _compact_history_v2(history, keep=COMPACT_KEEP, provider=None, focus=""):
     """
     if not isinstance(history, list):
         return [], 0, False
+    # 预算感知（配了 context_window 才有）：保住**用户的 ask**（R1）+
+    # 连续的尾巴（R2）；连这两样都装不下就**拒绝压缩**（R3，如实说，
+    # 不谎报 fit —— 悄悄截断历史是 agent 开始幻觉连续性的起点）。
+    # 没配 context_window 时走旧口径（逐字不变，--check/rewind_gate 拿它当基准）。
+    _plan = None
+    _budget = _compact_budget()
+    if _budget > 0:
+        try:
+            import ctx_compact as _cc
+
+            _plan = _cc.plan(list(history), _budget)
+        except Exception:  # noqa: BLE001  规划失败就退回旧口径，不阻断
+            _plan = None
+    if _plan is not None and not _plan.fits:
+        return list(history), 0, False
+    if _plan is not None:
+        _keep_idx = set(_plan.keep_idx)
+        dropped_msgs = [m for i, m in enumerate(history) if i not in _keep_idx]
+        if not dropped_msgs:
+            return list(history), 0, False
+        _sys_head = [
+            m for i, m in enumerate(history) if i in _keep_idx and m.get("role") == "system"
+        ]
+        _rest_kept = [
+            m for i, m in enumerate(history) if i in _keep_idx and m.get("role") != "system"
+        ]
+    else:
+        _sys_head = []
+        _rest_kept = []
     head = [history[0]] if (history and history[0].get("role") == "system") else []
     rest = history[1:] if head else list(history)
-    if len(rest) <= keep:
+    if _plan is None and len(rest) <= keep:
         return list(history), 0, False
-    dropped_msgs = rest[: len(rest) - keep]
+    if _plan is None:
+        dropped_msgs = rest[: len(rest) - keep]
     digest = ""
     if provider is not None:
         try:
@@ -6132,9 +6202,23 @@ def _compact_history_v2(history, keep=COMPACT_KEEP, provider=None, focus=""):
         except Exception:  # noqa: BLE001
             digest = ""
     if not digest:
+        if _plan is not None:
+            # 计划已定（保住 ask + 连续尾巴）→ 回退也**按计划**来，
+            # 不许退回旧口径（旧口径会把用户的 ask 丢掉 —— 那正是
+            # ctx_compact 的 R1 要防的事）。摘要用「省略了多少」的自述。
+            try:
+                import ctx_compact as _cc
+
+                _new = _cc.compact(list(history), _plan)
+                return _new, len(dropped_msgs), False
+            except Exception:  # noqa: BLE001
+                pass
         new_hist, dropped = _compact_history(history, keep)
         return new_hist, dropped, False
     digest_msg = {"role": "user", "content": DIGEST_PREFIX + "\n" + digest}
+    if _plan is not None:
+        # 形状：系统头 + digest + （用户的 ask + 连续尾巴）
+        return _sys_head + [digest_msg] + _rest_kept, len(dropped_msgs), True
     return head + [digest_msg] + rest[-keep:], len(dropped_msgs), True
 
 
@@ -10716,6 +10800,56 @@ def _selftest_body(case, jc, tmp):
         len(_tool_label("mystery_tool", {"a": "v1", "b": "v2", "c": "v3"})) <= 60,
         _tool_label("mystery_tool", {"a": "v1", "b": "v2", "c": "v3"}),
     )
+
+    # (GH-SEARCH) 检索阶梯：多词是 AND → 自然语言查询必然 0 命中
+    # ────────────────────────────────────────────────────────────────────
+    # 2026-10-20 实测：`gh search repos "context compaction agent conversation
+    # summarization"` → 0 命中（6 个词要同时出现），而 `compaction` → 3 命中；
+    # GitHub 的 `OR` 语法在这条命令上**不生效**。而 0 命中会被 agent 误读成
+    # 「网络/索引不通」——那是错的结论。所以：阶梯放宽 + 按星排序 + 说清放宽。
+    _qs = _gh_search_queries("context compaction agent conversation summarization")
+    case(
+        "检索：查询被拆成阶梯（原样→3词→2词→单词）",
+        bool(_qs)
+        and _qs[0][0] == "context compaction agent conversation summarization"
+        and _qs[0][1] == 0
+        and any(q == "compaction" for q, _l in _qs),
+        repr(_qs[:5]),
+    )
+    _argv = _gh_search_argv("x", "repos", 5)
+    case(
+        "检索：repos 一律按星排序（这条链路要找的是 1k+ 成熟实现）",
+        "--sort" in _argv and "stars" in _argv and "desc" in _argv,
+        repr(_argv),
+    )
+
+    # (COMPACT) 压缩要保住用户的 ask（旧口径会把它丢掉）
+    _chist = [{"role": "system", "content": "S" * 50}]
+    _chist.append({"role": "user", "content": "ASK: 把上下文压缩做好"})
+    _chist += [{"role": "assistant", "content": "A" * 400} for _ in range(20)]
+    _chist += [{"role": "user", "content": "U" * 400} for _ in range(20)]
+    _g = globals()
+    _ob = _g["_compact_budget"]
+    try:
+        _g["_compact_budget"] = lambda: 8000
+        _cn, _cd, _cu = _compact_history_v2(_chist, keep=10, provider=None)
+        _ask_in = any(
+            "ASK" in str(m.get("content")) for m in _cn if isinstance(m, dict)
+        )
+        case(
+            "压缩：预算口径下用户的 ask 必须在（R1）",
+            _ask_in,
+            "dropped=%s 保留=%d" % (_cd, len(_cn)),
+        )
+        _g["_compact_budget"] = lambda: 2000
+        _rn, _rd, _ru = _compact_history_v2(_chist, keep=10, provider=None)
+        case(
+            "压缩：连保底都装不下时**拒绝压缩**（R3，不谎报 fit）",
+            _rd == 0 and _ru is False and len(_rn) == len(_chist),
+            "dropped=%s used=%s" % (_rd, _ru),
+        )
+    finally:
+        _g["_compact_budget"] = _ob
 
     # (ENDPOINT) 端点连不上 → 一直等（用户要求：不放弃、不换本地模型）
     # ────────────────────────────────────────────────────────────────────
