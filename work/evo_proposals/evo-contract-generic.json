@@ -1,0 +1,9 @@
+{
+ "advice": "查 stderr 里 [失败 kind] 的原文；同类失败连续出现会在此聚成经验规则",
+ "count": 6,
+ "created": "2026-10-20 23:15:31",
+ "id": "evo-contract-generic",
+ "kind": "memory",
+ "sig": "contract:generic",
+ "status": "pending-human"
+}

@@ -3,7 +3,7 @@
  "ok": true,
  "pre_ok": true,
  "prefail": "",
- "elapsed": 6.26,
+ "elapsed": 7.78,
  "cli": [
   "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/tools/agentos.py"
  ],
@@ -155,7 +155,7 @@
   {
    "gate": "tty-noarg-enters-agent",
    "ok": true,
-   "detail": "首行='Traceback (most recent call last):' elapsed=0.09s",
+   "detail": "首行='Traceback (most recent call last):' elapsed=0.13s",
    "cmd": "agentos   # 真 PTY、无参数、零送键",
    "rc": null
   },

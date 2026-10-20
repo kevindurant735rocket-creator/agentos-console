@@ -612,3 +612,10 @@ W28 认证链里 `native_gate` 反复红。逐层查下来是**三件事叠在�
   launchd、不起常驻服务、不开浏览器）。
 - `~/.agent-os/keeper.sh` → 空操作；两个 launchd plist 挪到
   `~/.agent-os/disabled-*`（下次登录/重载不会再被 launchd 拉起）。
+
+**W29 终态验收**
+- 门链 **40 门全绿**：`== GATES_SUMMARY 共跑 40 门 / RC=0 计数 40 / 红门=无 ==`
+  墙钟 1928s（一次跑通、期间不碰任何文件）。
+- 真机终端 agent：写 `hello.txt` → 读回 → 交付，**3 步 6.3s / 工具 2/2 /
+  gate_retries=0**，产物落盘正确；过程显示仍是 CC 式紧凑形态。
+- 用户 PATH 上的 `agentos` 仍可用（`--version` → AgentOS 0.2.0；13 个终端子命令）。

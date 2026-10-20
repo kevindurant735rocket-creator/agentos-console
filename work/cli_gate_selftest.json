@@ -1,7 +1,7 @@
 {
  "tool": "cli_gate_selftest.py",
  "ok": true,
- "elapsed": 16.32,
+ "elapsed": 17.73,
  "mutants": [
   "silent0",
   "writeok"
@@ -30,7 +30,7 @@
   {
    "gate": "BASE·tty-noarg-enters-agent 必须绿",
    "ok": true,
-   "detail": "ok=True | 首行='Traceback (most recent call last):' elapsed=0.09s"
+   "detail": "ok=True | 首行='Traceback (most recent call last):' elapsed=0.13s"
   },
   {
    "gate": "M·silent0 整门 rc=2（有红项）",
