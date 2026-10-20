@@ -77,18 +77,18 @@
    "tag": "button",
    "label": "打开命令面板（快捷键 Command 加",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
    "tag": "button",
    "label": "R1已收轮 · AC1",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -140,9 +140,9 @@
    "tag": "button",
    "label": "打开命令面板（快捷键 Command 加",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -347,9 +347,9 @@
    "tag": "button",
    "label": "phase13-kernel 实测 PA",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "main.mn > section.vw.on > div.mx > button.cell",
@@ -500,9 +500,9 @@
    "tag": "button",
    "label": "phase23-self-improve",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "main.mn > section.vw.on > div.mx > button.cell",
@@ -689,9 +689,9 @@
    "tag": "button",
    "label": "R1已收轮 · AC1",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -752,9 +752,9 @@
    "tag": "button",
    "label": "R1已收轮 · AC1",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -1193,9 +1193,9 @@
    "tag": "button",
    "label": "下一轮该做什么",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#gcrg",
@@ -1274,9 +1274,9 @@
    "tag": "button",
    "label": "打开命令面板（快捷键 Command 加",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -1328,9 +1328,9 @@
    "tag": "button",
    "label": "读复盘账本",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#t-cap",
@@ -1346,9 +1346,9 @@
    "tag": "button",
    "label": "打开命令面板（快捷键 Command 加",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -1445,18 +1445,18 @@
    "tag": "button",
    "label": "R1已收轮 · AC1",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
    "tag": "button",
    "label": "R2已收轮 · AC2",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -1526,18 +1526,18 @@
    "tag": "button",
    "label": "ls tools",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.ws > div.wsp.ws-term > div.wsquick > button.btn",
    "tag": "button",
    "label": "git status",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.ws > div.wsp.ws-term > div.wsquick > button.btn",
@@ -1589,9 +1589,9 @@
    "tag": "button",
    "label": "R1已收轮 · AC1",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -1706,9 +1706,9 @@
    "tag": "button",
    "label": "R2已收轮 · AC2",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -1742,9 +1742,9 @@
    "tag": "button",
    "label": "回到当前项目根",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#fcode",
@@ -1778,9 +1778,9 @@
    "tag": "button",
    "label": "R1已收轮 · AC1",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "div.app > aside.sp > nav.spl > button.node",
@@ -1823,18 +1823,18 @@
    "tag": "button",
    "label": "重读构建指纹",
    "why": [
-    "outline solid 3px"
+    "outline solid 2px"
    ],
-   "detail": "outline solid 3px"
+   "detail": "outline solid 2px"
   },
   {
    "sel": "#setre-proj",
    "tag": "button",
    "label": "重读项目",
    "why": [
-    "outline solid 2px"
+    "outline solid 3px"
    ],
-   "detail": "outline solid 2px"
+   "detail": "outline solid 3px"
   },
   {
    "sel": "#setre-health",
@@ -17689,7 +17689,7 @@
   {
    "name": "真读屏 OS 层状态显式记录（AT-VERIFIED / AT-UNVERIFIED，不静默）",
    "ok": true,
-   "detail": "AT-UNVERIFIED · AX 层可读（Finder pid=91306 树 nodes=241 环=0 菜单节点=0 非菜单=241 文本=74 => AX 层可读（非菜单内容树））但读不到交付物 'AgentOS' 的内容树：对照进程 'AgentOS' 不在运行，无法取对照 AX 树 ⇒ 先启动 AgentOS.app 并等窗口注册（实测需 >7s）再重跑；注意「0 窗口」也可能只是它在后台，不能据此断定没开。人工项同 AT-UNVERIFIED 常规口径：① Cmd+F5 开 VoiceOver 实机走焦点顺序与朗读；② 系统设置→键盘→「全键盘访问」设为「所有控件」后重跑 kbd（.venv-pw/bin/python tools/a11y_walk.py --url <地址>）确认 Tab 走通全部控件"
+   "detail": "AT-UNVERIFIED · AX 层不可读 ⇒ OS 读屏层无法验证（与页面开没开无关）：AXIsProcessTrusted()=True 但 Finder pid=91306 树 nodes=5 环=0 菜单节点=0 非菜单=5 文本=3（非菜单内容不足 8 节点 / 3 文本 ⇒ 读不到界面内容）；要真验证需：OS 层读屏在本机无法自动验证，原因是平台限制而非本门缺陷：辅助功能权限按**进程**授予，本门进程不是 AT 客户端，所以拿不到VoiceOver 的实际焦点序列（旧文案说的是 Chromium web 子树，D105 已实测推翻：AgentOS.app 原生树的 AXWebArea=1、内容节点 305、文本 160，AX 层对交付物本身是**可读**的）。本机 **VoiceOver 已安装**（/System/Library/CoreServices/VoiceOver.app，open rc=0 可拉起），所以人工验证是可行的。辅助功能权限本身是好的（AXIsProcessTrusted=True）。要真确认请：① 按 Cmd+F5 打开 VoiceOver；② 启动 AgentOS.app 并置于前台；③ 人工用 VO 键（Ctrl+F3）逐控件走一遍焦点顺序与朗读；④ 系统设置→键盘→「全键盘访问」设为「所有控件」后重跑kbd（.venv-pw/bin/python tools/a11y_walk.py --url <地址>），确认 Tab 能走通全部控件（全键盘访问关着时 Tab 只停文本框与列表，漏掉按钮是系统行为不是页面缺陷）。AX 树物证由 native_gate 外部进程侧的两条判据（ax-window-exposed / ax-content-tree）持续守着。门不会为此虚报 AT-VERIFIED。"
   }
  ],
  "at_trees": [
@@ -20687,15 +20687,15 @@
  ],
  "at_os_ok": false,
  "at_os_token": "AT-UNVERIFIED",
- "at_os_detail": "AX 层可读（Finder pid=91306 树 nodes=241 环=0 菜单节点=0 非菜单=241 文本=74 => AX 层可读（非菜单内容树））但读不到交付物 'AgentOS' 的内容树：对照进程 'AgentOS' 不在运行，无法取对照 AX 树 ⇒ 先启动 AgentOS.app 并等窗口注册（实测需 >7s）再重跑；注意「0 窗口」也可能只是它在后台，不能据此断定没开。人工项同 AT-UNVERIFIED 常规口径：① Cmd+F5 开 VoiceOver 实机走焦点顺序与朗读；② 系统设置→键盘→「全键盘访问」设为「所有控件」后重跑 kbd（.venv-pw/bin/python tools/a11y_walk.py --url <地址>）确认 Tab 走通全部控件",
+ "at_os_detail": "AX 层不可读 ⇒ OS 读屏层无法验证（与页面开没开无关）：AXIsProcessTrusted()=True 但 Finder pid=91306 树 nodes=5 环=0 菜单节点=0 非菜单=5 文本=3（非菜单内容不足 8 节点 / 3 文本 ⇒ 读不到界面内容）；要真验证需：OS 层读屏在本机无法自动验证，原因是平台限制而非本门缺陷：辅助功能权限按**进程**授予，本门进程不是 AT 客户端，所以拿不到VoiceOver 的实际焦点序列（旧文案说的是 Chromium web 子树，D105 已实测推翻：AgentOS.app 原生树的 AXWebArea=1、内容节点 305、文本 160，AX 层对交付物本身是**可读**的）。本机 **VoiceOver 已安装**（/System/Library/CoreServices/VoiceOver.app，open rc=0 可拉起），所以人工验证是可行的。辅助功能权限本身是好的（AXIsProcessTrusted=True）。要真确认请：① 按 Cmd+F5 打开 VoiceOver；② 启动 AgentOS.app 并置于前台；③ 人工用 VO 键（Ctrl+F3）逐控件走一遍焦点顺序与朗读；④ 系统设置→键盘→「全键盘访问」设为「所有控件」后重跑kbd（.venv-pw/bin/python tools/a11y_walk.py --url <地址>），确认 Tab 能走通全部控件（全键盘访问关着时 Tab 只停文本框与列表，漏掉按钮是系统行为不是页面缺陷）。AX 树物证由 native_gate 外部进程侧的两条判据（ax-window-exposed / ax-content-tree）持续守着。门不会为此虚报 AT-VERIFIED。",
  "at_err": "",
  "passed": 6,
  "total": 6,
  "at": {
   "verified": false,
   "token": "AT-UNVERIFIED",
-  "reason": "AX 层可读（Finder pid=91306 树 nodes=241 环=0 菜单节点=0 非菜单=241 文本=74 => AX 层可读（非菜单内容树））但读不到交付物 'AgentOS' 的内容树：对照进程 'AgentOS' 不在运行，无法取对照 AX 树 ⇒ 先启动 AgentOS.app 并等窗口注册（实测需 >7s）再重跑；注意「0 窗口」也可能只是它在后台，不能据此断定没开。人工项同 AT-UNVERIFIED 常规口径：① Cmd+F5 开 VoiceOver 实机走焦点顺序与朗读；② 系统设置→键盘→「全键盘访问」设为「所有控件」后重跑 kbd（.venv-pw/bin/python tools/a11y_walk.py --url <地址>）确认 Tab 走通全部控件",
-  "blocked": null,
-  "fix": ""
+  "reason": "AX 层不可读 ⇒ OS 读屏层无法验证（与页面开没开无关）：AXIsProcessTrusted()=True 但 Finder pid=91306 树 nodes=5 环=0 菜单节点=0 非菜单=5 文本=3（非菜单内容不足 8 节点 / 3 文本 ⇒ 读不到界面内容）；要真验证需：OS 层读屏在本机无法自动验证，原因是平台限制而非本门缺陷：辅助功能权限按**进程**授予，本门进程不是 AT 客户端，所以拿不到VoiceOver 的实际焦点序列（旧文案说的是 Chromium web 子树，D105 已实测推翻：AgentOS.app 原生树的 AXWebArea=1、内容节点 305、文本 160，AX 层对交付物本身是**可读**的）。本机 **VoiceOver 已安装**（/System/Library/CoreServices/VoiceOver.app，open rc=0 可拉起），所以人工验证是可行的。辅助功能权限本身是好的（AXIsProcessTrusted=True）。要真确认请：① 按 Cmd+F5 打开 VoiceOver；② 启动 AgentOS.app 并置于前台；③ 人工用 VO 键（Ctrl+F3）逐控件走一遍焦点顺序与朗读；④ 系统设置→键盘→「全键盘访问」设为「所有控件」后重跑kbd（.venv-pw/bin/python tools/a11y_walk.py --url <地址>），确认 Tab 能走通全部控件（全键盘访问关着时 Tab 只停文本框与列表，漏掉按钮是系统行为不是页面缺陷）。AX 树物证由 native_gate 外部进程侧的两条判据（ax-window-exposed / ax-content-tree）持续守着。门不会为此虚报 AT-VERIFIED。",
+  "blocked": "TCC-AX-UNREADABLE",
+  "fix": "OS 层读屏在本机无法自动验证，原因是平台限制而非本门缺陷：辅助功能权限按**进程**授予，本门进程不是 AT 客户端，所以拿不到VoiceOver 的实际焦点序列（旧文案说的是 Chromium web 子树，D105 已实测推翻：AgentOS.app 原生树的 AXWebArea=1、内容节点 305、文本 160，AX 层对交付物本身是**可读**的）。本机 **VoiceOver 已安装**（/System/Library/CoreServices/VoiceOver.app，open rc=0 可拉起），所以人工验证是可行的。辅助功能权限本身是好的（AXIsProcessTrusted=True）。要真确认请：① 按 Cmd+F5 打开 VoiceOver；② 启动 AgentOS.app 并置于前台；③ 人工用 VO 键（Ctrl+F3）逐控件走一遍焦点顺序与朗读；④ 系统设置→键盘→「全键盘访问」设为「所有控件」后重跑kbd（.venv-pw/bin/python tools/a11y_walk.py --url <地址>），确认 Tab 能走通全部控件（全键盘访问关着时 Tab 只停文本框与列表，漏掉按钮是系统行为不是页面缺陷）。AX 树物证由 native_gate 外部进程侧的两条判据（ax-window-exposed / ax-content-tree）持续守着。门不会为此虚报 AT-VERIFIED。"
  }
 }

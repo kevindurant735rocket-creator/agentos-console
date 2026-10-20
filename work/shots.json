@@ -10,7 +10,7 @@
    "overflow": false,
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 86245
+   "png_bytes": 86305
   },
   "768": {
    "innerW": 768,
@@ -19,7 +19,7 @@
    "overflow": false,
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 139355
+   "png_bytes": 139282
   },
   "1440": {
    "innerW": 1440,
@@ -32,7 +32,7 @@
   }
  },
  "pageerrors": [],
- "url": "http://127.0.0.1:57696/index.html",
+ "url": "http://127.0.0.1:51867/index.html",
  "served": true,
  "transport": "real-http"
 }

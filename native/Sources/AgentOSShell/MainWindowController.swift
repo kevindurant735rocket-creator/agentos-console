@@ -546,10 +546,33 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, WKNaviga
         }
     }
 
+    /// 页面是否已加载完成（didFinish 到过）。
+    private var webviewDidFinish = false
+    /// 加载重试次数（有界：不是无限刷新）。
+    private var webviewLoadRetries = 0
+
+    /// didFinish 没到就催一次 reload（窗口被遮挡时 WebKit 会推迟加载）。
+    private func scheduleLoadRetry() {
+        guard !webviewDidFinish, webviewLoadRetries < 3 else { return }
+        webviewLoadRetries += 1
+        DispatchQueue.main.asyncAfter(deadline: .now() + 6.0) { [weak self] in
+            guard let self, !self.webviewDidFinish else { return }
+            self.probe.put("webview_load_retry", self.webviewLoadRetries)
+            self.webView.reload()
+            self.scheduleLoadRetry()
+        }
+    }
+
     private func loadConsole() {
         loadedOnce = true
         probe.put("webview_url_requested", baseURL.absoluteString)
         webView.load(URLRequest(url: baseURL))
+        // 加载**重试**（2026-10-20 实测踩到）：窗口被完全遮挡时 WebKit 会
+        // **推迟**这次加载 —— didFinish 迟迟不来，页面就一直空着，探针序列
+        // 卡在等页面上，落下半份证据（门整片飘红，真凶只是「页面没加载」）。
+        // 现在：didFinish 没到就自己 reload（有界 3 次，每次 6s 一催）。
+        // 恢复可见后 WebKit 会自己继续，但**不催**它就一直不继续。
+        scheduleLoadRetry()
         // 左侧项目树与驾驶舱同时起：两者都依赖同一个本地服务，分两次拉会
         // 让「面板在窗口一出现就是空的」成为可能。只拉一次。
         if !projectsLoaded {
@@ -1008,6 +1031,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, WKNaviga
     // MARK: - WKNavigationDelegate
 
     func webView(_ w: WKWebView, didFinish navigation: WKNavigation!) {
+        webviewDidFinish = true
         probe.put("webview_did_finish", 1)
         // 降级序列在等这个信号：服务自己拉起来之后，控制台要真的渲染出来，
         // 「恢复面板收掉、控制台随后加载」这条才算量到，而不是猜一个固定秒数。

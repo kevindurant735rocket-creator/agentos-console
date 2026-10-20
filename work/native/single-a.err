@@ -1,9 +1,0 @@
-[probe 2026-10-20T11:24:02Z] probe: step 0 begin
-[probe 2026-10-20T11:24:03Z] probe: step 1 begin
-[probe 2026-10-20T11:24:04Z] probe: step 2 begin
-[probe 2026-10-20T11:24:05Z] probe: step 3 begin
-[probe 2026-10-20T11:24:07Z] probe: step 4 begin
-[probe 2026-10-20T11:24:08Z] probe: step 5 begin
-[probe 2026-10-20T11:24:19Z] probe: step 6 begin
-[probe 2026-10-20T11:24:33Z] probe: sequence drained -> final shot + flush
-[probe 2026-10-20T11:24:33Z] probe: evidence flushed, exiting now

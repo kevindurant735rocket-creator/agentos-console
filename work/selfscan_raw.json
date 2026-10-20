@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2026-10-20T11:19:16Z",
+  "generated_at": "2026-10-20T12:26:45Z",
   "metrics": {
     "_totals": {
       "CONFIDENCE.HIGH": 378,
@@ -11,7 +11,7 @@
       "SEVERITY.LOW": 365,
       "SEVERITY.MEDIUM": 44,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 52697,
+      "loc": 52723,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -973,7 +973,7 @@
       "SEVERITY.LOW": 13,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 1239,
+      "loc": 1265,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -7706,7 +7706,7 @@
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "1304     try:\n1305         r = subprocess.run([BIN], env=env, capture_output=True,\n1306                            text=True, timeout=timeout, cwd=ROOT)\n1307         return r.returncode, r.stdout, r.stderr\n",
+      "code": "1322     try:\n1323         r = subprocess.run([BIN], env=env, capture_output=True,\n1324                            text=True, timeout=timeout, cwd=ROOT)\n1325         return r.returncode, r.stdout, r.stderr\n",
       "col_offset": 12,
       "end_col_offset": 64,
       "filename": "tools/native_gate.py",
@@ -7717,17 +7717,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1305,
+      "line_number": 1323,
       "line_range": [
-        1305,
-        1306
+        1323,
+        1324
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "1320     ef = open(os.path.join(WORK, \"app-main.err\"), \"w\")\n1321     p = subprocess.Popen([BIN], env=env, stdout=of, stderr=ef,\n1322                          text=True, cwd=ROOT)\n1323     return p, of, ef\n",
+      "code": "1338     ef = open(os.path.join(WORK, \"app-main.err\"), \"w\")\n1339     p = subprocess.Popen([BIN], env=env, stdout=of, stderr=ef,\n1340                          text=True, cwd=ROOT)\n1341     return p, of, ef\n",
       "col_offset": 8,
       "end_col_offset": 45,
       "filename": "tools/native_gate.py",
@@ -7738,17 +7738,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1321,
+      "line_number": 1339,
       "line_range": [
-        1321,
-        1322
+        1339,
+        1340
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "1368     print(\"[1/6] \u6784\u5efa\")\n1369     bl = subprocess.run([\"bash\", BUILD], capture_output=True,\n1370                         text=True, cwd=ROOT)\n1371     tail = \"\"\n",
+      "code": "1386     print(\"[1/6] \u6784\u5efa\")\n1387     bl = subprocess.run([\"bash\", BUILD], capture_output=True,\n1388                         text=True, cwd=ROOT)\n1389     tail = \"\"\n",
       "col_offset": 9,
       "end_col_offset": 44,
       "filename": "tools/native_gate.py",
@@ -7759,17 +7759,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Starting a process with a partial executable path",
-      "line_number": 1369,
+      "line_number": 1387,
       "line_range": [
-        1369,
-        1370
+        1387,
+        1388
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
       "test_id": "B607",
       "test_name": "start_process_with_partial_path"
     },
     {
-      "code": "1368     print(\"[1/6] \u6784\u5efa\")\n1369     bl = subprocess.run([\"bash\", BUILD], capture_output=True,\n1370                         text=True, cwd=ROOT)\n1371     tail = \"\"\n",
+      "code": "1386     print(\"[1/6] \u6784\u5efa\")\n1387     bl = subprocess.run([\"bash\", BUILD], capture_output=True,\n1388                         text=True, cwd=ROOT)\n1389     tail = \"\"\n",
       "col_offset": 9,
       "end_col_offset": 44,
       "filename": "tools/native_gate.py",
@@ -7780,17 +7780,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1369,
+      "line_number": 1387,
       "line_range": [
-        1369,
-        1370
+        1387,
+        1388
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "1475                 break\n1476             subprocess.run([\"kill\", str(spawned)],\n1477                            capture_output=True)\n1478             time.sleep(0.4)\n",
+      "code": "1516                 break\n1517             subprocess.run([\"kill\", str(spawned)],\n1518                            capture_output=True)\n1519             time.sleep(0.4)\n",
       "col_offset": 12,
       "end_col_offset": 47,
       "filename": "tools/native_gate.py",
@@ -7801,17 +7801,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Starting a process with a partial executable path",
-      "line_number": 1476,
+      "line_number": 1517,
       "line_range": [
-        1476,
-        1477
+        1517,
+        1518
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
       "test_id": "B607",
       "test_name": "start_process_with_partial_path"
     },
     {
-      "code": "1475                 break\n1476             subprocess.run([\"kill\", str(spawned)],\n1477                            capture_output=True)\n1478             time.sleep(0.4)\n",
+      "code": "1516                 break\n1517             subprocess.run([\"kill\", str(spawned)],\n1518                            capture_output=True)\n1519             time.sleep(0.4)\n",
       "col_offset": 12,
       "end_col_offset": 47,
       "filename": "tools/native_gate.py",
@@ -7822,17 +7822,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1476,
+      "line_number": 1517,
       "line_range": [
-        1476,
-        1477
+        1517,
+        1518
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "1479     else:\n1480         subprocess.run([\"pkill\", \"-f\", \"serve.py --port %d\" % port],\n1481                        capture_output=True)\n1482         time.sleep(0.5)\n",
+      "code": "1520     else:\n1521         subprocess.run([\"pkill\", \"-f\", \"serve.py --port %d\" % port],\n1522                        capture_output=True)\n1523         time.sleep(0.5)\n",
       "col_offset": 8,
       "end_col_offset": 43,
       "filename": "tools/native_gate.py",
@@ -7843,17 +7843,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Starting a process with a partial executable path",
-      "line_number": 1480,
+      "line_number": 1521,
       "line_range": [
-        1480,
-        1481
+        1521,
+        1522
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
       "test_id": "B607",
       "test_name": "start_process_with_partial_path"
     },
     {
-      "code": "1479     else:\n1480         subprocess.run([\"pkill\", \"-f\", \"serve.py --port %d\" % port],\n1481                        capture_output=True)\n1482         time.sleep(0.5)\n",
+      "code": "1520     else:\n1521         subprocess.run([\"pkill\", \"-f\", \"serve.py --port %d\" % port],\n1522                        capture_output=True)\n1523         time.sleep(0.5)\n",
       "col_offset": 8,
       "end_col_offset": 43,
       "filename": "tools/native_gate.py",
@@ -7864,10 +7864,10 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1480,
+      "line_number": 1521,
       "line_range": [
-        1480,
-        1481
+        1521,
+        1522
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",

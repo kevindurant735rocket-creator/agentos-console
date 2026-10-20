@@ -3,49 +3,61 @@
   "base_main": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/probe.json",
   "checks": 116,
   "gate": "native_gate_selftest",
-  "ok": 116,
-  "rc": 0,
-  "red": [],
+  "ok": 105,
+  "rc": 1,
+  "red": [
+    "base-green judge_ax(live) ax-target-is-under-test,ax-sampling-got-a-tree,ax-window-exposed,ax-content-tree,ax-sustained",
+    "base-green judge_menu menu-forward-targets-match",
+    "base-green judge_webview page-title-real,page-tab-count,page-has-tablist,page-main-present,page-buttons,page-body-text,probe-sequence-complete",
+    "base-green judge_view_switch switch-mx-ran,switch-mx-tab,switch-mx-panel,switch-mx-tab-text,switch-back-ran,switch-back-tab,switch-back-panel",
+    "base-green judge_cmdk cmdk-open-called,cmdk-on-after-open,cmdk-focus-in-input,cmdk-options-listed,cmdk-closed",
+    "base-green judge_pixels shot-over-captured,shot-over-bytes,shot-over-dim,shot-over-distinct-colors,shot-over-ink-ratio,shot-mx-captured,shot-mx-bytes,shot-mx-dim,shot-mx-distinct-colors,shot-mx-ink-ratio,shot-cmdk-captured,shot-cmdk-bytes,shot-cmdk-dim,shot-cmdk-distinct-colors,shot-cmdk-ink-ratio,shot-back-captured,shot-back-bytes,shot-back-dim,shot-back-distinct-colors,shot-back-ink-ratio,shot-final-captured,shot-final-bytes,shot-final-dim,shot-final-distinct-colors,shot-final-ink-ratio,shot-hashes-distinct",
+    "base-green judge_panel panel-sequence-complete,panel-tree-loaded,panel-tree-has-real-files,panel-outline-rows,panel-tree-expanded,panel-term-ok,panel-term-rc-zero,panel-term-computed-42,panel-term-argv-parsed,panel-term-served-argv,panel-term-textview-monospaced,panel-term-textview-selectable,panel-term-textview-readonly,panel-term-input-wired,panel-term-run-wired,panel-shot-method-not-blank,panel-shot-distinct-colors,panel-shot-ink-ratio,panel-shot-bytes,panel-ax-has-tree,panel-ax-term-has-result,panel-ax-has-run-button,panel-ax-has-browser-go,panel-pane-count-is-five,panel-pane-titles-complete,panel-pane-segments-declared,panel-pane-tabs-in-ax-tree,panel-pane-switch-count,panel-pane-only-one-visible,panel-pane-visited-all-five,panel-pane-tour-recorded,panel-pane-back-to-file,panel-code-loaded,panel-code-served-by-backend,panel-code-via-tree-selection,panel-code-readonly,panel-code-readonly-in-ax,panel-browser-loaded,panel-browser-dom-title,panel-browser-rendered-chars,panel-browser-rejects-external,panel-browser-lost-page-on-reject,panel-preview-loaded,panel-preview-rendered-chars,panel-preview-dom-title,panel-preview-not-confused-with-browser,panel-shot-code-method-not-blank,panel-shot-code-distinct-colors,panel-shot-code-ink-ratio,panel-shot-code-bytes",
+    "base-green judge_projects projects-ax-has-header,projects-ax-rows-named,keyeq-real-menu-path,keyeq-sequence-complete,keyeq-all-views-consumed,keyeq-all-views-reached,keyeq-cmdk-opens,keyeq-cmdt-toggled,keyeq-cmdp-focuses-projects,projects-arrow-key-moves,native-menu-cmdp-focuses",
+    "MUTFN-CRASH m_shot_same_file KeyError('shot_path_over')",
+    "MUTFN-CRASH m_menu_miswired KeyError('native_menu_forward_targets')",
+    "MUTFN-CRASH m_panel_preview_confused KeyError('browser_url')"
+  ],
   "results": [
     {
       "msg": "base-green judge_ax(synth) ",
       "ok": true
     },
     {
-      "msg": "base-green judge_ax(live) ",
-      "ok": true
+      "msg": "base-green judge_ax(live) ax-target-is-under-test,ax-sampling-got-a-tree,ax-window-exposed,ax-content-tree,ax-sustained",
+      "ok": false
     },
     {
       "msg": "base-green judge_window ",
       "ok": true
     },
     {
-      "msg": "base-green judge_menu ",
-      "ok": true
+      "msg": "base-green judge_menu menu-forward-targets-match",
+      "ok": false
     },
     {
-      "msg": "base-green judge_webview ",
-      "ok": true
+      "msg": "base-green judge_webview page-title-real,page-tab-count,page-has-tablist,page-main-present,page-buttons,page-body-text,probe-sequence-complete",
+      "ok": false
     },
     {
-      "msg": "base-green judge_view_switch ",
-      "ok": true
+      "msg": "base-green judge_view_switch switch-mx-ran,switch-mx-tab,switch-mx-panel,switch-mx-tab-text,switch-back-ran,switch-back-tab,switch-back-panel",
+      "ok": false
     },
     {
-      "msg": "base-green judge_cmdk ",
-      "ok": true
+      "msg": "base-green judge_cmdk cmdk-open-called,cmdk-on-after-open,cmdk-focus-in-input,cmdk-options-listed,cmdk-closed",
+      "ok": false
     },
     {
-      "msg": "base-green judge_pixels ",
-      "ok": true
+      "msg": "base-green judge_pixels shot-over-captured,shot-over-bytes,shot-over-dim,shot-over-distinct-colors,shot-over-ink-ratio,shot-mx-captured,shot-mx-bytes,shot-mx-dim,shot-mx-distinct-colors,shot-mx-ink-ratio,shot-cmdk-captured,shot-cmdk-bytes,shot-cmdk-dim,shot-cmdk-distinct-colors,shot-cmdk-ink-ratio,shot-back-captured,shot-back-bytes,shot-back-dim,shot-back-distinct-colors,shot-back-ink-ratio,shot-final-captured,shot-final-bytes,shot-final-dim,shot-final-distinct-colors,shot-final-ink-ratio,shot-hashes-distinct",
+      "ok": false
     },
     {
-      "msg": "base-green judge_panel ",
-      "ok": true
+      "msg": "base-green judge_panel panel-sequence-complete,panel-tree-loaded,panel-tree-has-real-files,panel-outline-rows,panel-tree-expanded,panel-term-ok,panel-term-rc-zero,panel-term-computed-42,panel-term-argv-parsed,panel-term-served-argv,panel-term-textview-monospaced,panel-term-textview-selectable,panel-term-textview-readonly,panel-term-input-wired,panel-term-run-wired,panel-shot-method-not-blank,panel-shot-distinct-colors,panel-shot-ink-ratio,panel-shot-bytes,panel-ax-has-tree,panel-ax-term-has-result,panel-ax-has-run-button,panel-ax-has-browser-go,panel-pane-count-is-five,panel-pane-titles-complete,panel-pane-segments-declared,panel-pane-tabs-in-ax-tree,panel-pane-switch-count,panel-pane-only-one-visible,panel-pane-visited-all-five,panel-pane-tour-recorded,panel-pane-back-to-file,panel-code-loaded,panel-code-served-by-backend,panel-code-via-tree-selection,panel-code-readonly,panel-code-readonly-in-ax,panel-browser-loaded,panel-browser-dom-title,panel-browser-rendered-chars,panel-browser-rejects-external,panel-browser-lost-page-on-reject,panel-preview-loaded,panel-preview-rendered-chars,panel-preview-dom-title,panel-preview-not-confused-with-browser,panel-shot-code-method-not-blank,panel-shot-code-distinct-colors,panel-shot-code-ink-ratio,panel-shot-code-bytes",
+      "ok": false
     },
     {
-      "msg": "base-green judge_projects ",
-      "ok": true
+      "msg": "base-green judge_projects projects-ax-has-header,projects-ax-rows-named,keyeq-real-menu-path,keyeq-sequence-complete,keyeq-all-views-consumed,keyeq-all-views-reached,keyeq-cmdk-opens,keyeq-cmdt-toggled,keyeq-cmdp-focuses-projects,projects-arrow-key-moves,native-menu-cmdp-focuses",
+      "ok": false
     },
     {
       "msg": "base-green judge_degraded ",
@@ -116,16 +128,16 @@
       "ok": true
     },
     {
-      "msg": "RED-OK m_shot_same_file shot-hashes-distinct 5张同一张",
-      "ok": true
+      "msg": "MUTFN-CRASH m_shot_same_file KeyError('shot_path_over')",
+      "ok": false
     },
     {
       "msg": "RED-OK m_shot_truncated shot-cmdk-bytes 截图被截断",
       "ok": true
     },
     {
-      "msg": "RED-OK m_menu_miswired menu-forward-targets-match 转发接错线",
-      "ok": true
+      "msg": "MUTFN-CRASH m_menu_miswired KeyError('native_menu_forward_targets')",
+      "ok": false
     },
     {
       "msg": "RED-OK m_menu_no_cmdk menu-has-cmdk 菜单没有cmdK",
@@ -256,8 +268,8 @@
       "ok": true
     },
     {
-      "msg": "RED-OK m_panel_preview_confused panel-preview-not-confused-with-browser 预览与浏览器互相覆盖",
-      "ok": true
+      "msg": "MUTFN-CRASH m_panel_preview_confused KeyError('browser_url')",
+      "ok": false
     },
     {
       "msg": "RED-OK m_panel_shot_code_flat panel-shot-code-distinct-colors 代码格纯色",

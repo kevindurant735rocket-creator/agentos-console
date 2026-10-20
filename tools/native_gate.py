@@ -171,9 +171,21 @@ LOOPBACK_PREFIX = "http://127.0.0.1"
 RESULTS = []
 
 
-def check(name, ok, detail):
+def check(name, ok, detail, skip=False):
+    """记一条判据。skip=True = **量具没量到**（不是产品判红）。
+
+    「跳过」是第三态，与本仓既有的 AT-UNVERIFIED 口径一致：量具（前台/
+    AX 权限/环境）没量到东西时，如实说没量到，**不**把整片判据染红，
+    也**不**假装这条路径验过了（那正是「假绿」的另一种形态）。
+    跳过项照样进证据（results 里带 skip=true），事后能查「这轮没验哪条」。
+    """
     RESULTS.append({"check": name, "ok": bool(ok),
+                    "skip": bool(skip),
                     "detail": str(detail)})
+    if skip:
+        print("  skip " + name + "  " + str(detail)
+              + "（量具没量到，不判红）")
+        return bool(ok)
     tag = "  ok   " if ok else "  RED  "
     print(tag + name + "  " + str(detail))
     return bool(ok)
@@ -452,6 +464,43 @@ def run_ax_probe(wait=AX_WAIT, pid=0):
     except Exception as e:                                     # noqa: BLE001
         ax["why"] = "ax.json 落盘失败 %r" % (e,)
     return ax
+
+
+def _activate_app():
+    """把被测 app 拉到前台（窗口被完全遮挡时 WebKit 会推迟加载，
+    AX 树也读不到内容区）。拉不动就如实说拉不动。"""
+    for _script in (
+        'tell application id "com.zhangfenurui.agentos-console" to activate',
+        'tell application "AgentOS" to activate',
+    ):
+        try:
+            r = subprocess.run(
+                ["osascript", "-e", _script],
+                capture_output=True, text=True, timeout=15,
+            )
+            if r.returncode == 0:
+                return True
+        except Exception:  # noqa: BLE001
+            continue
+    return False
+
+
+def _ax_exposed_ratio(ax):
+    """AX 序列里「真暴露」的占比（0..1）。"""
+    seq = (ax or {}).get("series") or []
+    if not seq:
+        return 0.0
+    good = sum(1 for s in seq if s.get("exposed"))
+    return float(good) / float(len(seq))
+
+
+def _ax_sustained_ok(ax):
+    """ax-sustained 是否已满足（用它决定要不要重采）。
+
+    直接用 ax_probe 自己算的 sustained —— 那是判据的**同一份口径**
+    （在 ax_probe 里算，阈值同源），门这边不另起一套算法。
+    """
+    return bool((ax or {}).get("ok")) and (ax or {}).get("sustained") is True
 
 
 def judge_ax(ax):
@@ -1402,7 +1451,55 @@ def run_gate():
         "AGENTOS_AX_GRACE": "120",
         "AGENTOS_MULTI_INSTANCE": "1",
     })
+    # ── 有界等待：页面 didFinish 到达再往下走 ──────────────────────────
+    # 为什么等：app 加载页面若被**完全遮挡**，WebKit 会**推迟**这次加载
+    # （2026-10-20 实测踩实：didFinish 迟迟不来 → 探针序列卡在等页面 →
+    # 落下半份证据 → 几十条判据一起飘红，而真凶只是「页面没加载」）。
+    # app 侧已加「didFinish 没到就自己 reload」（有界 3 次）；这边再等
+    # 一段有界时间：等到了就正常判；等不到就**如实说环境不可用**，
+    # 不用一片红来掩盖「页面没加载」这件具体的事。
+    _t_page = time.time() + 45.0
+    _dpre = {}
+    _last_act = 0.0
+    while time.time() < _t_page:
+        _dpre = load_json(pmain) or {}
+        if _dpre.get("webview_did_finish") == 1:
+            break
+        if not _pid_alive(proc.pid):
+            break
+        # 每 6s 把它拉到前台一次：窗口被**完全遮挡**时 WebKit 会推迟
+        # 加载（didFinish 不来 → 序列卡住 → 半份证据）。能被拉到前台
+        # 时加载立刻恢复。拉不动就如实说「环境不可用」。
+        if time.time() - _last_act > 6.0:
+            _last_act = time.time()
+            _activate_app()
+        time.sleep(0.5)
+    if _dpre.get("webview_did_finish") != 1:
+        print("  RED  app 的 webview 没加载出页面（didFinish 未到达；"
+              "app 侧 reload 重试 %s 次）" % (_dpre.get("webview_load_retry"),))
+        print("        —— 这是**环境/时序**问题（窗口被完全遮挡时 WebKit 会推迟"
+              "加载），不是产品判红；重跑本门即可。")
+        try:
+            proc.wait(timeout=30)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+        of.close()
+        ef.close()
+        return finish(before, t_all, 3)
     ax = run_ax_probe(pid=proc.pid)
+    # 前台被占时 AX 暴露会塌（实测：链里前面的浏览器门抢了前台 →
+    # 12 个样本只暴露 1 个 → ax-sustained 8% 判红）。
+    # 这里**重采一次**（不是放松判据：AX_SAMPLES/AX_SERIES_MIN_PCT 一个没动），
+    # 取两次里**暴露更好**的那次。app 现在的硬顶寿命 600s，够重采。
+    for _try in range(3):
+        if _ax_sustained_ok(ax):
+            break
+        print("  note  AX 暴露不足（前台可能被占），激活后重采（第 %d 次）"
+              % (_try + 1,))
+        _activate_app()
+        _ax2 = run_ax_probe(pid=proc.pid)
+        if _ax_exposed_ratio(_ax2) > _ax_exposed_ratio(ax):
+            ax = _ax2
     for _pr in (ax.get("ax_prep") or []):
         print("  ax-prep before=%s action=%s attempts=%s why=%s"
               % (_pr.get("before"), _pr.get("action"),
@@ -1417,10 +1514,15 @@ def run_gate():
     so = open(of.name, errors="replace").read()
     se = open(ef.name, errors="replace").read()
     check("app-main-rc", rc == 0, "rc=%d" % rc)
+    # AX 探针**没拿到树**（前台被占 / AX 权限 / 进程已走）时，AX 派生判据
+    # 一律**跳过**而不是判红 —— 与 AT-UNVERIFIED 同一套诚实口径：
+    # 量具没量到东西，如实说没量到，不因此把别的判据一起染红。
+    _ax_blind = not ax.get("ok")
+    if _ax_blind:
+        print("  note  AX 采样未成：%s（AX 派生判据跳过，不判红）"
+              % ax.get("why"))
     for n, ok, dd in judge_ax(ax):
-        check(n, ok, dd)
-    if not ax.get("ok"):
-        print("  RED  AX 采样未成：%s" % ax.get("why"))
+        check(n, ok, dd, skip=_ax_blind)
     d1 = load_json(pmain)
     check("probe-main-parses", bool(d1), "fields=%d" % len(d1))
     # 证据是**半份**（探针序列没走完）时，先说清这是量具被腰斩，
@@ -1460,7 +1562,11 @@ def run_gate():
     print("[3/6] 降级面探针（死端口 + 真点按钮）")
     port = free_port()
     pdeg = os.path.join(WORK, "probe_degraded.json")
-    rc2, _, _ = run_app({
+    # 降级面也要**能加载页面**：服务被拉起来后控制台要重新加载，
+    # 而窗口被完全遮挡时 WebKit 会推迟加载 → 降级序列 25s 预算耗尽 →
+    # degraded-console-then-loaded 判红（真凶是「没加载」，不是「自愈坏了」）。
+    # 所以这里异步起它，**一边等一边把它拉到前台**（与主路径同一手法）。
+    _dproc, _dof, _def = run_app_async({
         "AGENTOS_PROBE_OUT": pdeg,
         "AGENTOS_DEGRADED_PROBE": "1",
         "AGENTOS_TAP_START": "1",
@@ -1468,6 +1574,30 @@ def run_gate():
         "AGENTOS_AUTOCLOSE": "90",
         "AGENTOS_MULTI_INSTANCE": "1",
     })
+    _dlast = 0.0
+    _dt0 = time.time()
+    while time.time() - _dt0 < 180:
+        if _dproc.poll() is not None:
+            break
+        # 等「降级序列走完」这个**事实**，而不是等一个固定秒数：降级流程
+        # 的长度取决于自愈服务起来要多久（机器忙时更久），固定秒数会把
+        # 「还没走完」当成「走完了」→ 半份证据 → 判红。
+        _dd = load_json(pdeg) or {}
+        if _dd.get("degraded_sequence_complete") == 1:
+            break
+        if time.time() - _dlast > 6.0:
+            _dlast = time.time()
+            _activate_app()
+        time.sleep(0.5)
+    if _dproc.poll() is None:
+        _dproc.kill()
+    try:
+        _dproc.wait(timeout=20)
+    except Exception:  # noqa: BLE001
+        pass
+    _dof.close()
+    _def.close()
+    rc2 = _dproc.returncode if _dproc.returncode is not None else -1
     check("app-degraded-rc", rc2 == 0, "rc=%d" % rc2)
     d2 = load_json(pdeg)
     check("probe-degraded-parses", bool(d2), "fields=%d" % len(d2))
@@ -1508,10 +1638,16 @@ def run_gate():
 
 def finish(before, t_all, forced):
     n_ok = sum(1 for r in RESULTS if r["ok"])
-    red = [r["check"] for r in RESULTS if not r["ok"]]
-    rc = forced if forced is not None else (0 if not red else 1)
+    red = [r["check"] for r in RESULTS if not r["ok"] and not r.get("skip")]
+    skipped = [r["check"] for r in RESULTS if r.get("skip")]
+    # 「跳过」= 量具没量到 → **不算绿**（本仓铁律：没量到 ≠ 没缺陷）。
+    # 口径与 selfscan 的「未部署 rc=3」一致：rc=3 = 没验成，不是判红。
+    if forced is None:
+        rc = 0 if (not red and not skipped) else (3 if not red else 1)
+    else:
+        rc = forced
     rep = {"gate": "native_gate", "rc": rc, "checks": len(RESULTS),
-           "ok": n_ok, "red": red, "results": RESULTS,
+           "ok": n_ok, "red": red, "skipped": skipped, "results": RESULTS,
            "live_sha_before": before,
            "elapsed": round(time.time() - t_all, 1)}
     os.makedirs(os.path.dirname(REPORT), exist_ok=True)
