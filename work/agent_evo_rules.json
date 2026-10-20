@@ -125,6 +125,15 @@
    "proposed": true,
    "sig": "converge:stall",
    "state": "ACTIVE"
+  },
+  {
+   "advice": "查 stderr 里 [失败 kind] 的原文；同类失败连续出现会在此聚成经验规则",
+   "count": 5,
+   "created": "2026-10-20 18:03:30",
+   "id": "evo-contract-generic",
+   "notified": true,
+   "sig": "contract:generic",
+   "state": "CANDIDATE"
   }
  ],
  "version": 1

@@ -7,7 +7,7 @@
   fail-closed 可以在崩溃时悄悄放行、description 预算可以静默超、/skill
   可以注错字段。本门站在外面认这些事实（纯离线：夹具钩子就是本地 sh）：
     D1  hooks_mw / skills_load 可导入 + 纯面
-    D2  `--check` 末行逐字 `AGENT_CORE OK 158/158`（数漂移即红）
+    D2  `--check` 末行逐字 `AGENT_CORE OK 162/162`（数漂移即红）
     D3  源码锚点：_hooks_session / fail-closed 拦截 / /skill 分支 / 补全表 /
         exit 2 / 预算截断 各就位
     D4  拦截（行为）：exit 2 拦截 + glob 不匹配不跑 + additionalContext 收集
@@ -37,7 +37,7 @@ DEFAULT_CORE = os.path.join(HERE, "agent_core.py")
 DEFAULT_HOOKS = os.path.join(HERE, "hooks_mw.py")
 DEFAULT_SKILLS = os.path.join(HERE, "skills_load.py")
 DEFAULT_OUT = os.path.join(ROOT, "work", "hooks_gate.json")
-EXPECT_CHECK = "AGENT_CORE OK 158/158"
+EXPECT_CHECK = "AGENT_CORE OK 162/162"
 
 results = []
 

@@ -51,7 +51,7 @@ MUTANTS = [
     ),
     (
         "D2 令牌被改字",
-        'EXPECT_CHECK = "AGENT_CORE OK 158/158"',
+        'EXPECT_CHECK = "AGENT_CORE OK 162/162"',
         'EXPECT_CHECK = "AGENT_CORE  OK 140/140"',
         "D2",
     ),

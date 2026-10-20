@@ -7,7 +7,7 @@
   丢失、⎿ 详情可以永远空、缩进可以静默不生效 —— 屏上手感全在，判据全无。
   本门站在外面认这些事实（纯离线，不碰真模型）：
     D1  纯面：续行奇偶 / 拼接 / @候选 / ⎿对账 / 缩进 五件函数的边界态
-    D2  `--check` 末行逐字 `AGENT_CORE OK 158/158`（数漂移即红）
+    D2  `--check` 末行逐字 `AGENT_CORE OK 162/162`（数漂移即红）
     D3  源码锚点：续行循环 / @ 路由 / 摘要集成 / 缩进两站点 / ⎿ 渲染 各就位
     D4  续行（行为）：奇=续、偶=字面、逐段拼接语义
     D5  @补全（行为）：前缀匹配 / 目录带斜杠 / 隐藏跳过 / 非 @ 不问
@@ -33,7 +33,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 DEFAULT_CORE = os.path.join(HERE, "agent_core.py")
 DEFAULT_OUT = os.path.join(ROOT, "work", "repl_ux_gate.json")
-EXPECT_CHECK = "AGENT_CORE OK 158/158"
+EXPECT_CHECK = "AGENT_CORE OK 162/162"
 
 results = []
 
@@ -215,6 +215,61 @@ def main():
           and K._format_answer("") == "（无终答）")
     gate("D8 终答：续行缩进两格/单行不变/空答占位（行为）", d8,
          "fmt=%r" % (K._format_answer("l1\nl2"),))
+
+    # D10-D12 CC 式过程显示（2026-10-20 用户诉求：工作过程别那么长）
+    #   一次工具 = 一行；行上是**短标签**（Write(path)），不是完整 JSON。
+    try:
+        _lab = K._tool_label
+        d10 = (
+            _lab("write_file", {"path": "hello.txt", "content": "正文"}) == "Write(hello.txt)"
+            and _lab("read_file", {"path": "a/b.py"}) == "Read(a/b.py)"
+            and _lab("run_cmd", {"argv": ["ls", "-la"]}) == "Bash(ls -la)"
+            and _lab("search", {"pattern": "TODO"}) == "Grep(TODO)"
+        )
+        gate("D10 CC 手感：工具行是短标签（Write/Bash/Grep），不是完整 JSON", d10,
+             "w=%r c=%r" % (_lab("write_file", {"path": "x"}),
+                            _lab("run_cmd", {"argv": ["ls"]})))
+        d11 = (
+            "正文" not in _lab("write_file", {"path": "a.py", "content": "正文"})
+            and len(_lab("mystery", {"a": "v1", "b": "v2"})) <= 60
+        )
+        gate("D11 CC 手感：短标签不带正文/不吐整坨参数", d11,
+             "m=%r" % (_lab("mystery", {"a": "v1", "b": "v2"}),))
+        # 交互面一次工具一行：tool 事件不再另起「[工具 X → ok]」那行
+        import io as _io
+        import sys as _sys
+
+        class _Cap(object):
+            def __init__(self):
+                self.buf = _io.StringIO()
+
+        _cap = _Cap()
+        _old_out = _sys.stdout
+        _sys.stdout = _cap.buf
+        try:
+            # 转轮桩要「enabled」：交互面的那一行只在 enabled 时才画
+            # （与内核自检同口径：_TurnSpinner(True, _c)，不 start()）。
+            _sp = K._TurnSpinner(True, K._c) if hasattr(K, "_TurnSpinner") else None
+            _ui = K._turn_ui(_sp, None, {"delta": False})
+            _ui({"type": "tool_call", "tool": "write_file",
+                 "args": {"path": "hello.txt"}})
+            _ui({"type": "tool", "tool": "write_file", "ok": True,
+                 "executed": True, "summary": "hello.txt · 3 字节"})
+            _ui({"type": "tool", "tool": "read_file", "ok": False,
+                 "executed": True, "summary": "", "error": "路径不存在"})
+        finally:
+            _sys.stdout = _old_out
+        _out = _cap.buf.getvalue()
+        d12 = (
+            "Write(hello.txt)" in _out
+            and "[工具" not in _out
+            and "失败：路径不存在" in _out
+            and _out.count("\n") <= 3
+        )
+        gate("D12 CC 手感：一次工具一行（无重复「[工具 …]」行，失败说原因）", d12,
+             "out=%r" % (_out[:160],))
+    except Exception as e:                                     # noqa: BLE001
+        gate("D10-D12 CC 式过程显示", False, repr(e)[:120])
 
     # D9 零污染
     shutil.rmtree(tmp, ignore_errors=True)

@@ -60,6 +60,20 @@ MUTANTS = [
         "    return s  # MUT 不缩进",
         "D8",
     ),
+    (
+        "M5 短标签被摘（工具行退回完整 JSON）",
+        "    return \"%s(%s)\" % (short, arg) if arg else short",
+        "    return _args_one_line(args)  # MUT 退回完整 JSON",
+        "D10",
+    ),
+    (
+        "M6 重复行被摘（工具结果又单起一行）",
+        "            _ts = str(ev.get(\"summary\") or \"\")\n"
+        "            if not _ts and not ev.get(\"ok\"):",
+        "            _ts = str(ev.get(\"summary\") or \"\")\n"
+        "            if False:  # MUT 失败行被摘",
+        "D12",
+    ),
 ]
 
 

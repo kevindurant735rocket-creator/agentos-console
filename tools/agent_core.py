@@ -3522,8 +3522,9 @@ def build_system_prompt(ctx):
             "2. 工具结果里的 rc / bytes / sha256 是真相，转述时不许改数字。",
             "3. 工具失败或被拒绝时，如实说明哪一步没执行，然后换路子；"
             "不许把没做的事说成做了。",
-            "4. 收尾用简体中文写：做了什么（文件:行号级）、验证命令的真实 rc、"
-            "还剩什么没做。",
+            "4. 收尾用简体中文，**简短**（默认 3-6 行，别写成长报告）："
+            "做了什么（文件:行号级）、验证命令的真实 rc、还剩什么没做。"
+            "不要加粗小标题、不要分节罗列、不要复述过程。",
             "",
             "边界（工具层会硬拦，命中了别重试）：",
             "· 只动仓库根内的路径，越界一律拒绝；",
@@ -4326,6 +4327,9 @@ def run_agent(
                         "ok": bool(res.get("ok")),
                         "executed": bool(res.get("executed")),
                         "summary": _tool_summary(name, args, res),
+                        # 失败原因随事件走：交互面要在 ⎿ 一行里说清「为什么没成」，
+                        # 不必再另起一行（headless 的行形状不变）。
+                        "error": str(res.get("error") or "")[:120],
                     }
                 )
             # 收敛观测：喂一次（工具, 参数, 成败, rc）。产出与否决定停滞计数。
@@ -4886,6 +4890,89 @@ class _EscWatcher(object):
                 pass
 
 
+# 工具的「CC 式短名」：Claude Code 那一行是 `⏺ Write(src/app.ts)` ——
+# 工具名 + 一个关键参数。我们原来打的是**完整 JSON**
+# （`write_file({"path": …, "content": "整段正文"})`）：一行几百字符，
+# 又长又泄内容。现在只留**一个**关键参数。
+_TOOL_SHORT = {
+    "read_file": "Read",
+    "write_file": "Write",
+    "edit_file": "Edit",
+    "run_cmd": "Bash",
+    "list_dir": "List",
+    "search": "Grep",
+    "gh_search": "Search",
+    "gh_repo_view": "Repo",
+    "gh_file_read": "View",
+    "gh_deploy": "Deploy",
+    "git_status": "Status",
+    "git_log": "Log",
+    "git_diff": "Diff",
+    "web_fetch": "Fetch",
+    "subagent": "Agent",
+    "skills": "Skill",
+}
+
+
+def _clip_tail(s, n):
+    """太长的参数：留**尾巴**（文件名比前缀更有用）。"""
+    s = " ".join(str(s or "").split())
+    if len(s) <= n:
+        return s
+    return "…" + s[-(n - 1):]
+
+
+def _tool_label(tool, args=None, limit=44):
+    """工具调用的一行短标签：Write(hello.txt) / Bash(cat x) / Grep(pattern)。
+
+    纯函数（可被门钉住）。规则：
+    · 文件类工具只留**路径**；命令类只留**命令**；搜索类只留**模式**；
+    · 参数太长就截断（留尾巴）；
+    · 认不出的工具：第一个字符串参数，截断；连参数都没有就只留工具名。
+    """
+    name = str(tool or "")
+    short = _TOOL_SHORT.get(name, name)
+    a = args if isinstance(args, dict) else {}
+
+    def _s(k):
+        v = a.get(k)
+        return "" if v is None else str(v)
+
+    if name in ("read_file", "write_file", "edit_file", "list_dir"):
+        arg = _s("path")
+    elif name == "run_cmd":
+        argv = a.get("argv")
+        if isinstance(argv, str):
+            arg = argv
+        elif isinstance(argv, (list, tuple)):
+            arg = " ".join(str(x) for x in argv)
+        else:
+            arg = _s("cmd")
+    elif name == "search":
+        arg = _s("pattern") or _s("query")
+    elif name == "gh_search":
+        arg = _s("query") or _s("q")
+    elif name in ("gh_repo_view", "gh_file_read"):
+        arg = _s("slug") or _s("repo") or _s("path")
+    elif name == "subagent":
+        arg = _s("prompt")
+    elif name == "web_fetch":
+        arg = _s("url")
+    else:
+        arg = ""
+        for v in a.values():
+            if isinstance(v, str) and v.strip():
+                arg = v
+                break
+        if not arg:
+            for v in a.values():
+                if isinstance(v, (list, tuple)) and v:
+                    arg = " ".join(str(x) for x in v)
+                    break
+    arg = _clip_tail(arg, limit)
+    return "%s(%s)" % (short, arg) if arg else short
+
+
 def _args_one_line(args):
     try:
         s = json.dumps(args, ensure_ascii=False)
@@ -5012,8 +5099,7 @@ def _turn_ui(sp, printer, seen):
                 sp.set("执行 " + str(ev.get("tool") or "?"))
                 sys.stdout.write(
                     _c("brand", "⏺ ")
-                    + _c("cyan", str(ev.get("tool") or "?"))
-                    + _c("dim", "(%s)" % _args_one_line(ev.get("args")))
+                    + _c("cyan", _tool_label(ev.get("tool"), ev.get("args")))
                     + "\n"
                 )
                 sys.stdout.flush()
@@ -5022,15 +5108,22 @@ def _turn_ui(sp, printer, seen):
             sp.wake()
         if t == "tool_call":
             return
-        if printer is not None:
-            printer(ev)
-        # ⎿ 详情行（Claude Code 手感）：只有交互 TTY 且工具自报有详情才画
-        # （headless / -p --stream 的既有输出形状一字不动）。
         if t == "tool" and sp is not None and sp.enabled:
+            # 交互 REPL：**一次工具 = 一行**（CC 手感）。
+            # 原来这里会多打一行「[工具 X → ok]」，加上 ⎿ 详情就是两行 ——
+            # 一次工具两行、三个工具六行，工作过程被撑得很长。
+            # 现在：⏺ Write(hello.txt) 一行 + ⎿ 结果一行（失败时说明原因）。
+            # headless / -p --stream 的既有输出形状**一字不动**（那里仍打
+            # 「[工具 X → ok]」，那是给 CI 解析用的稳定形状）。
             _ts = str(ev.get("summary") or "")
+            if not _ts and not ev.get("ok"):
+                _ts = "失败：%s" % str(ev.get("error") or "未执行/被拒")[:60]
             if _ts:
                 sys.stdout.write(_c("dim", "  ⎿ %s\n" % _ts))
                 sys.stdout.flush()
+            return
+        if printer is not None:
+            printer(ev)
 
     return _ev
 
@@ -5082,8 +5175,7 @@ def _run_once(args):
         ctx["full_access"] = False
     if ctx.get("full_access"):
         sys.stderr.write(
-            "[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕"
-            " work/destructive_audit.jsonl）\n"
+            "[权限] 破坏性命令放行（逐条留痕 work/destructive_audit.jsonl）\n"
         )
     _on9 = [
         n
@@ -5102,9 +5194,8 @@ def _run_once(args):
         )
     else:
         sys.stderr.write(
-            "[安全闸] 自由面：计划锁/权限模式/命令白名单均关"
-            "（默认以用户要求为中心；字面 true 才上锁；"
-            "硬阻断清单默认不可关（full_access 除外））\n"
+            "[安全闸] 自由面：计划锁/权限/白名单均关"
+            "（硬阻断清单始终在）\n"
         )
     seen = {"delta": False}
     _mcp_sync()  # headless 也挂 MCP 服务器工具（配置里有 [mcp] 才动）
@@ -5210,58 +5301,43 @@ REPL_SLASH_CMDS = (
 
 
 def _repl_welcome(provider, ctx, sid, resumed):
-    """Claude Code 式欢迎框：开 REPL 先看见「在哪、用什么模型、怎么使」。
+    """Claude Code 式欢迎行：开 REPL 先看见「在哪、用什么模型、怎么使」。
 
     走 stderr（REPL 的 UI 全在 stderr，stdout 只留答案/数据 —— 管道喂
-    stdin 的量具在 stdout 上拿到的仍是纯数据）。框内全是现取真值：
-    模型/端点/来源、权限模式、仓库根、会话与续跑条数、工具数。
+    stdin 的量具在 stdout 上拿到的仍是纯数据）。
+
+    **形状从 13 行的框压到 3 行**（2026-10-20 用户诉求：「工作过程不要显示
+    那么长，要和 cc 一样」）。框里 5 行信息塞进 2 行：模型与模式一行、
+    会话与工具数一行、提示一行。信息一条没少（还是现取真值），只是不占屏。
     """
-    W = 72
-    bar = _c("brand", "│  ")
-    end = _c("brand", "  │")
-    blank = bar + " " * (W - 4) + end
     tip = _clip72(
         "/help · /goal 自主执行 · /evo 自进化 · /exit 或 Ctrl-D 退出 · !cmd · @文件",
-        W - 4,
+        76,
     )
-    items = [
-        (
-            "模型",
-            "%s @ %s（%s）"
-            % (provider.model or "-", provider.base_url, provider.source),
+    line1 = _clip72(
+        "%s @ %s · %s · v%s · %s"
+        % (
+            provider.model or "-",
+            provider.base_url or "-",
+            ctx["mode"],
+            VERSION,
+            ctx["root"],
         ),
-        ("模式", "%s · v%s · 仓库 %s" % (ctx["mode"], VERSION, ctx["root"])),
-        (
-            "会话",
-            "%s（%s）"
-            % (
-                sid,
-                "续跑 %d 条" % len(ctx.get("history") or []) if resumed else "新开",
-            ),
+        76,
+    )
+    line2 = _clip72(
+        "会话 %s（%s）· 工具 %d 个 · /tools 看清单与风险级"
+        % (
+            sid,
+            "续跑 %d 条" % len(ctx.get("history") or []) if resumed else "新开",
+            len(TOOLS),
         ),
-        ("工具", "%d 个 · /tools 看清单与风险级" % len(TOOLS)),
-    ]
+        76,
+    )
     out = [
-        _c("brand", "bold", "✻ Welcome to AgentOS!"),
-        "",
-        _c("brand", "╭" + "─" * (W - 2) + "╮"),
-    ]
-    for lab, val in items:
-        body = _clip72("* %s  %s" % (lab, val), W - 4)
-        fill = " " * max(0, (W - 4) - _dw(body))
-        ci = 2 + len(lab)
-        out.append(
-            bar
-            + _c("brand", body[:2])
-            + _c("cyan", body[2:ci])
-            + body[ci:]
-            + fill
-            + end
-        )
-    out += [
-        blank,
-        bar + _c("dim", tip) + " " * max(0, (W - 4) - _dw(tip)) + end,
-        _c("brand", "╰" + "─" * (W - 2) + "╯"),
+        _c("brand", "bold", "✻ Welcome to AgentOS!") + "  " + _c("dim", line1),
+        "  " + _c("cyan", line2),
+        "  " + _c("dim", tip),
     ]
     sys.stderr.write("\n".join(out) + "\n")
 
@@ -6913,8 +6989,7 @@ def _repl(args):
         ctx["full_access"] = False
     if ctx.get("full_access"):
         sys.stderr.write(
-            "[完全权限] 破坏性命令放行（rm/git push 等，逐条留痕"
-            " work/destructive_audit.jsonl）\n"
+            "[权限] 破坏性命令放行（逐条留痕 work/destructive_audit.jsonl）\n"
         )
     _on9 = [
         n
@@ -6933,9 +7008,8 @@ def _repl(args):
         )
     else:
         sys.stderr.write(
-            "[安全闸] 自由面：计划锁/权限模式/命令白名单均关"
-            "（默认以用户要求为中心；字面 true 才上锁；"
-            "硬阻断清单默认不可关（full_access 除外））\n"
+            "[安全闸] 自由面：计划锁/权限/白名单均关"
+            "（硬阻断清单始终在）\n"
         )
     if resumed:
         ctx["history"] = resumed["history"]
@@ -7172,30 +7246,37 @@ def _repl(args):
         _ctxseg = ""
         if _cw > 0 and tot.get("prompt_tokens"):
             _ctxseg = " · ctx %.0f%%" % (100.0 * tot["prompt_tokens"] / _cw)
+        # 累计段：只有「累计 ≠ 本轮」时才出现（第一轮显示两遍同样的数是噪音）
+        _totseg = ""
+        if (
+            tot.get("prompt_tokens") is not None
+            and tot.get("prompt_tokens") != u.get("prompt_tokens")
+        ):
+            _totseg = " · 累计 ↑%s ↓%s" % (
+                tot.get("prompt_tokens"),
+                tot.get("completion_tokens")
+                if tot.get("completion_tokens") is not None
+                else "-",
+            )
+        _totseg += _ctxseg
         sys.stderr.write(
             _c(
                 "dim",
-                "  %d 步 %.1fs · 工具 %d 次 · 回执 %d/%d · "
-                "本轮 ↑%s ↓%s tok · 累计 ↑%s ↓%s%s\n"
+                "  %d 步 %.1fs · 工具 %d/%d · 本轮 ↑%s ↓%s tok%s\n"
                 % (
                     res.get("steps") or 0,
                     res.get("elapsed") or 0.0,
-                    len(_tu),
-                    _tx,
-                    len(_tu),
+                    _tx,          # 拿到回执的工具数
+                    len(_tu),     # 调用的工具总数
                     u.get("prompt_tokens")
                     if u.get("prompt_tokens") is not None
                     else "-",
                     u.get("completion_tokens")
                     if u.get("completion_tokens") is not None
                     else "-",
-                    tot.get("prompt_tokens")
-                    if tot.get("prompt_tokens") is not None
-                    else "-",
-                    tot.get("completion_tokens")
-                    if tot.get("completion_tokens") is not None
-                    else "-",
-                    _ctxseg,
+                    # 累计只在与本轮不同时出现（第一轮重复显示是噪音）；
+                    # ctx% 只在配了 context_window 时才有。
+                    _totseg,
                 ),
             )
         )
@@ -10108,11 +10189,16 @@ def _selftest_body(case, jc, tmp):
         ui({"type": "delta", "text": "你好"})
         ui({"type": "delta", "text": "呀"})
     case(
-        "过程编排：⏺ 两次（工具行+首增量）、delta 不经 printer、seen 置位",
+        "过程编排：⏺ 两次（工具行+首增量）、工具/增量都不经 printer、seen 置位",
         seen_u["delta"] is True
-        and printed_u == ["step", "tool"]
+        # 交互面里 tool 事件**不再转发给 printer**（结果并进 ⎿ 一行，
+        # 一次工具一行 = CC 手感）；delta 一律不经 printer。
+        and printed_u == ["step"]
         and buf_u.getvalue().count("⏺") == 2
-        and "read_file" in buf_u.getvalue()
+        # 工具行是**短标签**（Read(x)），不是完整 JSON
+        and "Read(x)" in buf_u.getvalue()
+        # 交互面不再有重复的「[工具 …]」行
+        and "[工具" not in buf_u.getvalue()
         and "你好呀" in buf_u.getvalue(),
         "printed=%r out=%r" % (printed_u, buf_u.getvalue()[:120]),
     )
@@ -10596,6 +10682,44 @@ def _selftest_body(case, jc, tmp):
         "交付闸：缺证据的完成宣言被退回并拿到补证据后的终答",
         "交付闸" in _cs2_seen and bool(_cs2_res.get("ok")),
         "退回=%s ok=%s" % ("交付闸" in _cs2_seen, _cs2_res.get("ok")),
+    )
+
+    # (CC-UX) 过程显示：CC 式短标签（一次工具一行，不打完整 JSON）
+    # ────────────────────────────────────────────────────────────────────
+    # 用户诉求（2026-10-20）：「工作过程不要显示那么长，要和 cc 一样」。
+    # 原来那行是 `write_file({"path": "a.py", "content": "整段正文"})` ——
+    # 一行几百字符，又长又泄内容。现在只留**一个**关键参数。
+    case(
+        "CC 手感：短标签是 Write(path)/Bash(cmd)/Grep(pattern) 形态",
+        _tool_label("write_file", {"path": "hello.txt", "content": "x"}) == "Write(hello.txt)"
+        and _tool_label("read_file", {"path": "a/b.py"}) == "Read(a/b.py)"
+        and _tool_label("run_cmd", {"argv": ["ls", "-la"]}) == "Bash(ls -la)"
+        and _tool_label("search", {"pattern": "TODO"}) == "Grep(TODO)",
+        "w=%r r=%r c=%r s=%r"
+        % (
+            _tool_label("write_file", {"path": "hello.txt"}),
+            _tool_label("read_file", {"path": "a/b.py"}),
+            _tool_label("run_cmd", {"argv": ["ls", "-la"]}),
+            _tool_label("search", {"pattern": "TODO"}),
+        ),
+    )
+    case(
+        "CC 手感：短标签不含正文（write_file 的 content 不上屏）",
+        "content" not in _tool_label("write_file", {"path": "a.py", "content": "机密正文"})
+        and "机密正文" not in _tool_label("write_file", {"path": "a.py", "content": "机密正文"}),
+        _tool_label("write_file", {"path": "a.py", "content": "机密正文"}),
+    )
+    _long_cmd = "sh -c " + ("echo " + "x" * 40 + " && ") * 6 + "tail out.txt"
+    case(
+        "CC 手感：长参数截断且留尾巴（命令尾部的关键信息仍在）",
+        len(_tool_label("run_cmd", {"argv": [_long_cmd]})) <= 60
+        and "tail out.txt" in _tool_label("run_cmd", {"argv": [_long_cmd]}),
+        _tool_label("run_cmd", {"argv": [_long_cmd]}),
+    )
+    case(
+        "CC 手感：认不出的工具也只留一个参数（不吐整坨 JSON）",
+        len(_tool_label("mystery_tool", {"a": "v1", "b": "v2", "c": "v3"})) <= 60,
+        _tool_label("mystery_tool", {"a": "v1", "b": "v2", "c": "v3"}),
     )
 
     # (ENDPOINT) 端点连不上 → 一直等（用户要求：不放弃、不换本地模型）

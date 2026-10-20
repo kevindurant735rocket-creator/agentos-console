@@ -7,8 +7,8 @@
       "ok": true
     },
     {
-      "detail": "rc=0 actual='AGENT_CORE OK 158/158' expected='AGENT_CORE OK 158/158'",
-      "gate": "D2 --check 末行逐字 AGENT_CORE OK 158/158",
+      "detail": "rc=0 actual='AGENT_CORE OK 162/162' expected='AGENT_CORE OK 162/162'",
+      "gate": "D2 --check 末行逐字 AGENT_CORE OK 162/162",
       "ok": true
     },
     {
@@ -42,11 +42,26 @@
       "ok": true
     },
     {
+      "detail": "w='Write(x)' c='Bash(ls)'",
+      "gate": "D10 CC 手感：工具行是短标签（Write/Bash/Grep），不是完整 JSON",
+      "ok": true
+    },
+    {
+      "detail": "m='mystery(v1)'",
+      "gate": "D11 CC 手感：短标签不带正文/不吐整坨参数",
+      "ok": true
+    },
+    {
+      "detail": "out='⏺ Write(hello.txt)\\n  ⎿ hello.txt · 3 字节\\n  ⎿ 失败：路径不存在\\n'",
+      "gate": "D12 CC 手感：一次工具一行（无重复「[工具 …]」行，失败说原因）",
+      "ok": true
+    },
+    {
       "detail": "新增=无",
       "gate": "D9 零污染（work/ 只多 --out；夹具已清）",
       "ok": true
     }
   ],
-  "n_ok": 9,
-  "n_total": 9
+  "n_ok": 12,
+  "n_total": 12
 }
