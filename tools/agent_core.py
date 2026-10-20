@@ -3589,6 +3589,25 @@ def build_system_prompt(ctx):
     return base
 
 
+# 「端点连不上」词表：传输层不通 / 网关过载 / 限流窗口。
+# 这一族与 _TRANSIENT_RE 的区别 —— **端点自己会回来**（网络抖、网关重启、
+# 限流窗口），所以在「不许用本地模型」的口径下要**一直等**。
+# 401/403/400 **不在**这里：那些是 key/协议问题，等一辈子也不会好，
+# 而且会把真病因（key 过期、网关路由错）藏起来 —— 那种要立刻报错 + 给处方。
+_ENDPOINT_DOWN_RE = re.compile(
+    r"connection refused|connection reset|connection aborted|no route to host|"
+    r"name or service not known|nodename nor servname|temporary failure in name|"
+    r"could not resolve host|dns|"
+    r"tls handshake|ssl|handshake failure|"
+    r"i/o timeout|timed? ?out|timeout expired|deadline exceeded|"
+    r"unexpected[ _-]?eof|eof occurred|remote disconnected|server disconnected|"
+    r"without response|empty reply|broken pipe|aborted|dial tcp|"
+    r"temporar|overloaded|rate.?limit|\b429\b|\b50[2345]\b|"
+    r"service unavailable|bad gateway|gateway timeout|"
+    r"connection closed|closed connection|apex|disconnected",
+    re.I,
+)
+
 _TRANSIENT_RE = re.compile(
     r"tls handshake|connection reset|connection refused|i/o timeout|"
     r"unexpected[ _-]?eof|eof occurred|dial tcp|temporar|timed? ?out|overloaded|"
@@ -3777,6 +3796,7 @@ def run_agent(
     # SSL 六次把池子吃完，中毒轮换没得花，裸死）。
     _sess_n = 0
     _SESS_MAX = 3
+    _down_n = 0  # 端点重连次数（0 = 无上限时一直涨）
     step = 0
     _total_steps = 0
     _gate_retries = 0  # 交付闸退回次数（上限 2 次，防无限打转）
@@ -3969,23 +3989,61 @@ def run_agent(
                             raise
                         e = e2  # 还是中毒：预算 -1，继续轮换
             else:
+                # ── 端点连不上 → **一直等**（用户要求：不放弃、不换本地）──
+                # 两种失败要分开：
+                # · **连不上**（传输层不通/网关过载/限流）→ 端点自己会回来，
+                #   所以一直等；预算 0 = 无上限（_endpoint_retry_max）。
+                #   只有在「不许用本地模型」（no_fallback=true）时无上限 ——
+                #   允许本地兜底的用户等 6 次就切本地（那是他们自己选的策略）。
+                # · 其它瞬时错 → 照旧有界（_TRANSIENT_MAX），别无限刷。
+                # 401/403/400 两族都不在内：key/协议问题等一辈子也不会好。
+                _down_max = (
+                    _endpoint_retry_max() if _no_fallback() else _TRANSIENT_MAX
+                )
                 while True:
-                    if (
-                        stream
-                        or not _TRANSIENT_RE.search(str(e))
-                        or _transient_n >= _TRANSIENT_MAX
-                    ):
-                        raise
-                    _transient_n += 1
-                    _tw = min(2.0 * (2 ** (_transient_n - 1)), 12.0)
-                    if callable(on_event):
-                        on_event(
-                            {
-                                "type": "note",
-                                "text": "瞬时错误，%.0fs 后重试（第 %d/%d 次）：%s"
-                                % (_tw, _transient_n, _TRANSIENT_MAX, str(e)[:80]),
-                            }
+                    if stream:
+                        raise  # 流式中途重放文本是假丑
+                    _down = bool(_ENDPOINT_DOWN_RE.search(str(e)))
+                    if _down:
+                        if _down_max and _down_n >= _down_max:
+                            raise
+                    else:
+                        if (
+                            not _TRANSIENT_RE.search(str(e))
+                            or _transient_n >= _TRANSIENT_MAX
+                        ):
+                            raise
+                    if cancel is not None and cancel():
+                        raise AgentError(
+                            "interrupted", "已打断（Esc），端点等待中止；上下文保留"
                         )
+                    if _down:
+                        _down_n += 1
+                        _tw = min(2.0 * (2 ** min(_down_n - 1, 5)), 30.0)
+                        _msg = (
+                            "端点连不上：%s\n"
+                            "  → 第 %d 次重试，%.0fs 后再试；**一直等到端点恢复**"
+                            "（不会改用本地模型；Ctrl-C 中断）"
+                            % (str(e)[:120], _down_n, _tw)
+                        )
+                    else:
+                        _transient_n += 1
+                        _tw = min(2.0 * (2 ** (_transient_n - 1)), 12.0)
+                        _msg = "瞬时错误，%.0fs 后重试（第 %d/%d 次）：%s" % (
+                            _tw,
+                            _transient_n,
+                            _TRANSIENT_MAX,
+                            str(e)[:80],
+                        )
+                    # 直写 stderr：note 事件在 REPL/headless 都不上屏，
+                    # 「一直在等」而没有一行提示 = 看起来像卡死。
+                    try:
+                        sys.stderr.write(_msg + "\n")
+                        sys.stderr.flush()
+                    except Exception:  # noqa: BLE001
+                        pass
+                    if callable(on_event):
+                        on_event({"type": "note", "text": _msg})
                     time.sleep(_tw)
                     try:
                         comp = provider.chat(
@@ -3996,7 +4054,10 @@ def run_agent(
                     except AgentError as e2:
                         if e2.kind == "interrupted":
                             raise
-                        if not _TRANSIENT_RE.search(str(e2)):
+                        if not (
+                            _ENDPOINT_DOWN_RE.search(str(e2))
+                            or _TRANSIENT_RE.search(str(e2))
+                        ):
                             raise
                         e = e2
         if isinstance(comp.get("usage"), dict) and comp["usage"]:
@@ -4349,6 +4410,27 @@ def _build_task_contract(prompt, ctx, verify_info=None):
         return _c
     except Exception:  # noqa: BLE001  契约坏不许拖垮主链路
         return None
+
+
+def _endpoint_retry_max():
+    """端点重连预算：0 = **一直等**（默认），>0 = 试 N 次后放弃。
+
+    只认字面 "0" 与可解析的整数；配置读不到就是 0（一直等）——
+    「端点连不上就一直试」是用户明确的要求，不该因为配置缺失就退回放弃。
+    """
+    v = os.environ.get("AGENTOS_ENDPOINT_RETRY_MAX")
+    if v is None or str(v).strip() == "":
+        try:
+            v = (_read_agentos_config().get("llm") or {}).get("endpoint_retry_max")
+        except Exception:  # noqa: BLE001
+            v = None
+    if v is None or str(v).strip() == "":
+        return 0
+    try:
+        n = int(str(v).strip())
+    except (TypeError, ValueError):
+        return 0
+    return max(0, n)
 
 
 def _no_fallback():
@@ -10515,6 +10597,87 @@ def _selftest_body(case, jc, tmp):
         "交付闸" in _cs2_seen and bool(_cs2_res.get("ok")),
         "退回=%s ok=%s" % ("交付闸" in _cs2_seen, _cs2_res.get("ok")),
     )
+
+    # (ENDPOINT) 端点连不上 → 一直等（用户要求：不放弃、不换本地模型）
+    # ────────────────────────────────────────────────────────────────────
+    # 三条判据：① 连不上按预算重试（不放弃）；② 失败后恢复 → 重试并交付；
+    # ③ 401 这类 key/协议错**立刻**报错（等一辈子也不会好，还会把病因藏起来）。
+    # 测例自己钉住 no_fallback 与预算，不受本机 ~/.agentos/config.toml 影响。
+    class _DownStub(object):
+        """按脚本抛错的桩端点：前 n 次失败，之后返回终答。"""
+
+        def __init__(self, errs, n_after=1):
+            self.errs = list(errs)
+            self.n = 0
+            self.n_after = n_after
+
+        def chat(self, messages, tools=None, stream=False, on_event=None, cancel=None):
+            self.n += 1
+            if self.n <= len(self.errs):
+                raise AgentError("provider", self.errs[self.n - 1])
+            return {"content": "接上了", "tool_calls": [], "usage": {}}
+
+        def rotate_session(self):
+            pass
+
+    # 用 globals() 改模块级函数：直接 `_no_fallback = ...` 会让它变成本函数
+    # 的局部名（finally 里再读就是 UnboundLocalError）。
+    _g = globals()
+    _old_nf = _g["_no_fallback"]
+    _old_env = os.environ.get("AGENTOS_ENDPOINT_RETRY_MAX")
+    try:
+        _g["_no_fallback"] = lambda: True  # 测例里钉住口径
+        os.environ["AGENTOS_ENDPOINT_RETRY_MAX"] = "2"
+        _d1 = _DownStub(["connection refused"] * 5)
+        try:
+            run_agent(
+                "连不上就一直等",
+                ctx={"root": tmproot, "mode": "plan"},
+                provider=_d1,
+                max_steps=2,
+            )
+            _d1_err = ""
+        except AgentError as e:
+            _d1_err = str(e)
+        case(
+            "端点：连不上按预算一直重试（不放弃，3 次 = 1+2）",
+            _d1.n == 3 and "connection refused" in _d1_err,
+            "calls=%d err=%r" % (_d1.n, _d1_err[:60]),
+        )
+        _d2 = _DownStub(["connection refused"])
+        _d2_res = run_agent(
+            "连一下就好",
+            ctx={"root": tmproot, "mode": "plan"},
+            provider=_d2,
+            max_steps=2,
+        )
+        case(
+            "端点：失败后恢复 → 重试并正常交付",
+            _d2.n == 2 and _d2_res.get("ok") is True,
+            "calls=%d ok=%s" % (_d2.n, _d2_res.get("ok")),
+        )
+        _d3 = _DownStub(["HTTP 401 Unauthorized: api_key_expired"] * 5)
+        try:
+            run_agent(
+                "key 坏了",
+                ctx={"root": tmproot, "mode": "plan"},
+                provider=_d3,
+                max_steps=2,
+            )
+            _d3_err = ""
+        except AgentError as e:
+            _d3_err = str(e)
+        case(
+            "端点：401（key 问题）立刻报错，不无限等（1 次）",
+            _d3.n == 1 and "401" in _d3_err,
+            "calls=%d err=%r" % (_d3.n, _d3_err[:60]),
+        )
+    finally:
+        _g["_no_fallback"] = _old_nf
+        if _old_env is None:
+            os.environ.pop("AGENTOS_ENDPOINT_RETRY_MAX", None)
+        else:
+            os.environ["AGENTOS_ENDPOINT_RETRY_MAX"] = _old_env
 
     # (CONTRACT) 任务契约内核级判据：类型判定 → 契约进 prompt → 类型进账
     # ────────────────────────────────────────────────────────────────────

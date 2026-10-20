@@ -59,6 +59,30 @@ agent 测试 → 该门判红（停止按钮/进程回收/中止提示全错）�
 ACTIVE 规则**必须能改行为**，不只是往 prompt 里加提示文字：
 收敛类规则通过 `action.op=converge_tune` 拧引擎旋钮（`max_stall` / `max_explore` / `loop_repeat`）。
 
+## 5.1 端点连不上：两件事都做
+
+**一、内核侧（已实装）**：端点「连不上」（传输层不通 / 网关过载 / 限流）→
+**一直重试到端点恢复**，绝不改用本地模型（`llm.no_fallback="true"` 时预算=0=无上限）。
+401/403/400 **不在**此列：key/协议问题等一辈子也不会好，还会把真病因藏起来 ——
+那种要立刻报错 + 给处方。预算可调：`llm.endpoint_retry_max`（0=一直等，>0=试 N 次）。
+
+**二、链路侧（本机常见病因）**：clash 把 opencode.ai 路由到死节点时，
+表现是 `SSL_ERROR_SYSCALL` / `UNEXPECTED_EOF_WHILE_READING`。查+修：
+
+```bash
+SOCK=/var/run/clash-verge-service/users/501/verge-mihomo.sock
+# 1) 看当前组选了谁
+curl -sS --unix-socket "$SOCK" http://localhost/proxies | python3 -c "import json,sys;d=json.load(sys.stdin)['proxies'];print({k:v.get('now') for k,v in d.items() if v.get('type') in ('Selector','URLTest','Fallback')})"
+# 2) 用 opencode.ai 自己的 URL 测各节点（别用 gstatic 测——它不代表本机要用的站点）
+curl -sS --unix-socket "$SOCK" "http://localhost/proxies/<节点名>/delay?timeout=6000&url=https%3A%2F%2Fopencode.ai%2Fzen%2Fgo%2Fv1%2Fmodels"
+# 3) 切到能用的节点
+curl -sS -X PUT --unix-socket "$SOCK" -H 'Content-Type: application/json' -d '{"name":"<节点名>"}' "http://localhost/proxies/自动选择"
+# 4) 复核
+curl -sS -o /dev/null -w '%{http_code}\n' --max-time 20 https://opencode.ai/zen/go/v1/models
+```
+2026-10-20 实测：`自动选择` 当时指着 `FR高速-法国`（到 opencode.ai 不通），
+切到 `CA高速-加拿大02`（267ms）后立刻恢复 HTTP 200。
+
 ## 6. 云端模型不可达时
 
 一直重试云端端点，**绝不用本地模型顶替**。配置口径：`llm.no_fallback` / `gh.write_enabled`

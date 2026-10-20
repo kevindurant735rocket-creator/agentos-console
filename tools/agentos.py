@@ -289,6 +289,25 @@ def cmd_doctor(_args):
         % (llm.get("provider") or "-", llm.get("model") or "-"),
         "provider 缺：agentos config set llm.provider opencode",
     )
+    # 端点连不上的口径（用户明确要求：连不上就一直试，不换本地模型）
+    _nf = str(llm.get("no_fallback") or "").strip().lower() == "true"
+    _erm = llm.get("endpoint_retry_max")
+    try:
+        _erm_n = int(str(_erm).strip()) if str(_erm or "").strip() else 0
+    except (TypeError, ValueError):
+        _erm_n = 0
+    ck(
+        "端点重连口径",
+        True,
+        "no_fallback=%s（%s）· 端点连不上时%s"
+        % (
+            "true" if _nf else "false",
+            "绝不换本地模型" if _nf else "允许本地兜底",
+            "一直重试到端点恢复" if (_nf and _erm_n == 0)
+            else ("最多重试 %d 次" % _erm_n if _nf else "等 %d 次后切本地" % 6),
+        ),
+        "想要「连不上就一直等」：agentos config set llm.no_fallback true",
+    )
 
     # ③ 端点解析 + 探活（借 resolve_provider —— 用户实际会跑的路径）
     try:
