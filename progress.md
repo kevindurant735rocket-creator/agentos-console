@@ -518,3 +518,22 @@ Ctrl-C 中断）」→ 预算用尽后**诚实失败 rc=3**（不假装成功、
 长参截断留尾 / 陌生工具只留一个参数）· repl_ux_gate 9→**12/12**（新增 D10-D12：
 短标签形态、不带正文、一次工具一行无重复行）· repl_ux_selftest 7→**9/9**
 （新增 2 个变异体：短标签被摘 / 失败行被摘，必红）· 计数钉 11 文件同步 162。
+
+**同波修的一个产品真缺陷（原生 app 的生命周期）**
+W28 认证链里 `native_gate` / `native_gate_selftest` / `a11y_human` 三门红。
+查下去不是 UI 回归，是**原生 app 被自己的定时器腰斩**：
+
+- `AGENTOS_AUTOCLOSE` 的**文档语义**是「探针序列 **drained 之后**进程再活 N 秒」
+  （`Probe.swift` 注释写明：drained 后还有 flush + AX grace 两段，外部 AX 量具
+  要靠这段采满 12 个样本）。
+- 但 `AppDelegate.swift` 把它实现成「**启动后** N 秒就杀」。机器一慢（页面大、
+  负载高）序列还没走完就被杀 → 落下**半份证据**：页面明明 `webview_did_finish=1`、
+  `webview_title_after_load` 正确，但 `page_*` 字段全没有 → 门整片飘红
+  （实测 79 条红项，真凶只是「量具被腰斩」）。
+
+**修**：① `AppDelegate` 里只留**硬顶**安全网（`max(secs*8, 600)`），序列 drained
+后的退场由它自己按 AX_GRACE 安排；② 门侧新增**半份证据的明确报告**：
+缺 `probe_sequence_complete` 时先说「这是量具被腰斩，不是产品判红，重跑即可」，
+并列出缺的关键字段，不再让几十条判据红成一片假象。
+
+**实测**：修完 `NATIVE_GATE OK 194/194`（墙钟 205s）· `NATIVE_GATE_SELFTEST_OK 116/116`。

@@ -28,14 +28,14 @@
   "browser_hostile_asked" : "http://example.com/steal",
   "browser_last_requested" : "http://127.0.0.1:8790/",
   "browser_live_loaded" : 1,
-  "browser_live_title" : "",
+  "browser_live_title" : "AgentOS 交付驾驶舱",
   "browser_live_url" : "http://127.0.0.1:8790/",
   "browser_loaded" : 1,
   "browser_rejected" : "只接回环地址（收到 host=example.com）",
   "browser_rejected_navigations" : 1,
   "browser_rejected_url" : "http://example.com/steal",
   "browser_rendered_chars" : 225,
-  "browser_title" : "",
+  "browser_title" : "AgentOS 交付驾驶舱",
   "browser_url" : "http://127.0.0.1:8790/",
   "bundle_executable" : "AgentOS",
   "bundle_id" : "com.zhangfengrui.agentos-console",
@@ -252,9 +252,9 @@
   "preview_truncated" : false,
   "probe_mode" : 1,
   "probe_multi_instance" : 1,
-  "probe_saved_at" : "2026-10-20T09:14:06Z",
+  "probe_saved_at" : "2026-10-20T11:24:33Z",
   "probe_sequence_complete" : 1,
-  "probe_sibling_instances" : 0,
+  "probe_sibling_instances" : 1,
   "proj_active_flag" : [
     "console"
   ],
@@ -263,7 +263,7 @@
   "proj_ax_header" : "项目与任务空间",
   "proj_ax_row_count" : 2,
   "proj_ax_rows" : [
-    "● AgentOS 驾驶舱\n1912 文件 · 产品根：台面、门链、账本都在这里",
+    "● AgentOS 驾驶舱\n1956 文件 · 产品根：台面、门链、账本都在这里",
     "○ future agent\n2000 文件 · 证据与企业门真树：轮次/覆盖数据由它抽取"
   ],
   "proj_ax_rows_named" : 2,
@@ -282,7 +282,7 @@
   ],
   "proj_loaded" : 1,
   "proj_nfiles" : [
-    1912,
+    1956,
     2000
   ],
   "proj_roots_absolute" : true,

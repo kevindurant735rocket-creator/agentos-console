@@ -89,8 +89,33 @@
   "panel_visible_now" : 0,
   "probe_mode" : 1,
   "probe_multi_instance" : 1,
-  "probe_saved_at" : "2026-10-20T09:13:34Z",
+  "probe_saved_at" : "2026-10-20T11:24:00Z",
   "probe_sibling_instances" : 0,
+  "proj_active_flag" : [
+    "console"
+  ],
+  "proj_arrow_moves" : 0,
+  "proj_count" : 2,
+  "proj_error" : "",
+  "proj_key_after_arrow" : "console",
+  "proj_keys" : [
+    "console",
+    "future"
+  ],
+  "proj_labels" : [
+    "AgentOS 驾驶舱",
+    "future agent"
+  ],
+  "proj_loaded" : 1,
+  "proj_nfiles" : [
+    1956,
+    2000
+  ],
+  "proj_roots_absolute" : true,
+  "proj_row_view_count" : 2,
+  "proj_selected_is_active" : true,
+  "proj_selected_key" : "console",
+  "proj_status_text" : "2 个项目 · 当前 console",
   "projects_default_visible" : 1,
   "projects_divider_x" : 257,
   "projects_loaded_at" : "loadConsole",
@@ -98,7 +123,7 @@
   "recovery_panel_visible" : 0,
   "retry_title" : "重新检测",
   "retry_wired" : true,
-  "service_pid" : 33782,
+  "service_pid" : 20711,
   "service_started_by_app" : 1,
   "start_title" : "启动服务",
   "start_wired" : true,

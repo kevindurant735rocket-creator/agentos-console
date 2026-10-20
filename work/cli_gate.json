@@ -3,7 +3,7 @@
  "ok": true,
  "pre_ok": true,
  "prefail": "",
- "elapsed": 44.39,
+ "elapsed": 67.05,
  "cli": [
   "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/tools/agentos.py"
  ],
@@ -282,7 +282,7 @@
   {
    "gate": "tty-noarg-enters-tui",
    "ok": true,
-   "detail": "首行='✻ AgentOS TUI · 18:06:38 · http://127.0.0.1:87' footer='视图 6/13 · 数据源: GET /__health + /__act(__' elapsed=4.13s",
+   "detail": "首行='✻ AgentOS TUI · 18:47:36 · http://127.0.0.1:87' footer='视图 6/13 · 数据源: GET /__health + /__act(__' elapsed=4.29s",
    "cmd": "agentos   # 真 PTY、无参数、零送键（门在 boot 后主动终止，故不判 rc）",
    "rc": null
   },
@@ -345,15 +345,15 @@
   {
    "gate": "inst-isolated-port-health",
    "ok": true,
-   "detail": "port=53261 rc=0   code_sha  c10e8cac5f26fcef",
-   "cmd": "env -i PATH=/usr/bin:/bin <shim> --port 53261 health",
+   "detail": "port=54703 rc=0   code_sha  c10e8cac5f26fcef",
+   "cmd": "env -i PATH=/usr/bin:/bin <shim> --port 54703 health",
    "rc": 0
   },
   {
    "gate": "inst-isolated-port-released",
    "ok": true,
-   "detail": "port=53261 仍可连=False",
-   "cmd": "connect 127.0.0.1:53261（服务已停）",
+   "detail": "port=54703 仍可连=False",
+   "cmd": "connect 127.0.0.1:54703（服务已停）",
    "rc": 0
   },
   {
@@ -443,7 +443,7 @@
   {
    "gate": "sessions-lists-id",
    "ok": true,
-   "detail": "id='cli-20261020-180711-f8e4' 命中=True",
+   "detail": "id='cli-20261020-184808-ab42' 命中=True",
    "cmd": "agentos --output-format json -p '服务健康吗' → agentos sessions",
    "rc": 0
   },
@@ -710,7 +710,7 @@
   ],
   "tui_nontty_out_has_esc": false,
   "views_present_missing": [],
-  "session_id": "cli-20261020-180711-f8e4",
+  "session_id": "cli-20261020-184808-ab42",
   "resume_rc": 0,
   "zero_write": [
    {

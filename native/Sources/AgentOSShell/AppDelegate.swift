@@ -41,7 +41,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         if probe.enabled, let secs = Env.autoCloseSeconds {
-            DispatchQueue.main.asyncAfter(deadline: .now() + secs) { NSApp.terminate(nil) }
+            // AGENTOS_AUTOCLOSE 的语义是「**序列 drained 之后**进程再活多少秒」
+            // （Probe.swift 的注释是准的，drained 后还有 flush + AX grace 两段）。
+            // 原来这里按「**启动后** N 秒就杀」实现 —— 机器一慢（页面大、
+            // 负载高）序列还没走完就被腰斩，落下**半份证据**：
+            // 页面明明 loaded=1、title 正确，但 page_* 字段全没有 →
+            // 门整片飘红（2026-10-20 实测 79 条红项，而真凶只是「量具被腰斩」）。
+            //
+            // 现在这里只留**硬顶**（安全网）：序列自己会在 drained 后按
+            // AGENTOS_AUTOCLOSE/AX_GRACE 安排退场（见 MainWindowController
+            // 的 flush(quit:false) 段），不该由一个「从启动算起」的定时器去抢。
+            let hardCap = max(secs * 8, 600)
+            DispatchQueue.main.asyncAfter(deadline: .now() + hardCap) { NSApp.terminate(nil) }
         }
     }
 

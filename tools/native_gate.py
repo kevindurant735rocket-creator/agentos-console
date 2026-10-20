@@ -1423,7 +1423,21 @@ def run_gate():
         print("  RED  AX 采样未成：%s" % ax.get("why"))
     d1 = load_json(pmain)
     check("probe-main-parses", bool(d1), "fields=%d" % len(d1))
-    if d1:
+    # 证据是**半份**（探针序列没走完）时，先说清这是量具被腰斩，
+    # 别让后面几十条判据红成一片「产品坏了」的假象。
+    # 2026-10-20 实测踩实：app 被 AGENTOS_AUTOCLOSE 从启动算起掐掉 →
+    # 序列没 drained → 没有 page_* 字段 → 79 条判据一起红，
+    # 而页面明明 loaded=1、title 正确。真凶在 AppDelegate 的定时器语义
+    # （已修：那是「drained 后再活 N 秒」，不是「启动后 N 秒就杀」）。
+    _half = bool(d1) and d1.get("probe_sequence_complete") != 1
+    if _half:
+        print("  RED  探针序列未走完（证据是半份：缺 probe_sequence_complete）")
+        print("        —— 这是**量具被腰斩**，不是产品判红；重跑本门即可。")
+        print("        缺的关键字段：%s"
+              % [k for k in ("page_title", "page_tab_count", "panel_code_loaded",
+                            "shot_over_captured")
+                 if k not in d1][:6])
+    if d1 and not _half:
         check("bundle-is-app",
               d1.get("bundle_is_app") == 1, d1.get("bundle_is_app"))
         groups = (judge_window, judge_menu, judge_webview,
