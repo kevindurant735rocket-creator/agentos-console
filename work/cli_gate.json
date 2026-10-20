@@ -3,7 +3,7 @@
  "ok": true,
  "pre_ok": true,
  "prefail": "",
- "elapsed": 40.82,
+ "elapsed": 41.5,
  "cli": [
   "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/tools/agentos.py"
  ],
@@ -282,7 +282,7 @@
   {
    "gate": "tty-noarg-enters-tui",
    "ok": true,
-   "detail": "首行='✻ AgentOS TUI · 03:15:29 · http://127.0.0.1:87' footer='视图 6/13 · 数据源: GET /__health + /__act(__' elapsed=4.08s",
+   "detail": "首行='✻ AgentOS TUI · 17:20:17 · http://127.0.0.1:87' footer='视图 6/13 · 数据源: GET /__health + /__act(__' elapsed=4.12s",
    "cmd": "agentos   # 真 PTY、无参数、零送键（门在 boot 后主动终止，故不判 rc）",
    "rc": null
   },
@@ -345,15 +345,15 @@
   {
    "gate": "inst-isolated-port-health",
    "ok": true,
-   "detail": "port=64125 rc=0   code_sha  c10e8cac5f26fcef",
-   "cmd": "env -i PATH=/usr/bin:/bin <shim> --port 64125 health",
+   "detail": "port=57071 rc=0   code_sha  c10e8cac5f26fcef",
+   "cmd": "env -i PATH=/usr/bin:/bin <shim> --port 57071 health",
    "rc": 0
   },
   {
    "gate": "inst-isolated-port-released",
    "ok": true,
-   "detail": "port=64125 仍可连=False",
-   "cmd": "connect 127.0.0.1:64125（服务已停）",
+   "detail": "port=57071 仍可连=False",
+   "cmd": "connect 127.0.0.1:57071（服务已停）",
    "rc": 0
   },
   {
@@ -443,7 +443,7 @@
   {
    "gate": "sessions-lists-id",
    "ok": true,
-   "detail": "id='cli-20261020-031600-b818' 命中=True",
+   "detail": "id='cli-20261020-172048-7a75' 命中=True",
    "cmd": "agentos --output-format json -p '服务健康吗' → agentos sessions",
    "rc": 0
   },
@@ -710,20 +710,20 @@
   ],
   "tui_nontty_out_has_esc": false,
   "views_present_missing": [],
-  "session_id": "cli-20261020-031600-b818",
+  "session_id": "cli-20261020-172048-7a75",
   "resume_rc": 0,
   "zero_write": [
    {
     "index.html": "e8bd8c9cd5ac2b5220d10e9832ca12bf4135435be69480b7324bc6c6f85a5d40",
     "data.json": "6fdf2493fd741696cf67fa5b9b37554ab619d35494b470f0f282710f312feb8b",
-    "tools/agentos.py": "b98fd66e81a8eb0082ee12826d27591f6e45a2d351f8573af4b4038e8f5bd585",
+    "tools/agentos.py": "baa7b4cef9ccaf564084dea42f8f40564eca3089d5e6bf35e9169e345edc7bf0",
     "tools/serve.py": "c10e8cac5f26fcef6b4f0125a8e632757dd2b3ce6bf000ea889a07dab95d7886",
     "bin/agentos": "041119e9439a803285e1a4325e8b94d90dc0cded0e19152769cc8bb3ef867dc1"
    },
    {
     "index.html": "e8bd8c9cd5ac2b5220d10e9832ca12bf4135435be69480b7324bc6c6f85a5d40",
     "data.json": "6fdf2493fd741696cf67fa5b9b37554ab619d35494b470f0f282710f312feb8b",
-    "tools/agentos.py": "b98fd66e81a8eb0082ee12826d27591f6e45a2d351f8573af4b4038e8f5bd585",
+    "tools/agentos.py": "baa7b4cef9ccaf564084dea42f8f40564eca3089d5e6bf35e9169e345edc7bf0",
     "tools/serve.py": "c10e8cac5f26fcef6b4f0125a8e632757dd2b3ce6bf000ea889a07dab95d7886",
     "bin/agentos": "041119e9439a803285e1a4325e8b94d90dc0cded0e19152769cc8bb3ef867dc1"
    }

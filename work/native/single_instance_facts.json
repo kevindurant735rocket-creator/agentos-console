@@ -1,19 +1,19 @@
 {
   "a_in_process_table": true,
-  "a_pid": 24025,
+  "a_pid": 34177,
   "after_pids": [
-    24025
+    34177
   ],
   "before_pids": [
-    24025
+    34177
   ],
   "first_multi_instance": 1,
   "first_probe_fields": 270,
-  "first_sibling_instances": 1,
-  "second_elapsed": 0.3,
+  "first_sibling_instances": 0,
+  "second_elapsed": 0.4,
   "second_probe_exists": false,
   "second_probe_path": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/native/probe_single_b.json",
   "second_rc": 0,
-  "second_stderr_tail": "[agentos] 已有实例 24025 在运行，已激活并退出",
+  "second_stderr_tail": "[agentos] 已有实例 34177 在运行，已激活并退出",
   "second_takeover_msg": true
 }
