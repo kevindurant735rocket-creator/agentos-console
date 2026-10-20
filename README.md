@@ -104,6 +104,23 @@ python3 tools/agentos.py evolve     # 框架级自进化一圈：经验账候选
 改 → make test（绿）`，账本 `repro_fail_seen=True / repro_green=True /
 gate_retries=0`（一次放行，因为证据是真的）。
 
+## 端点连不上 → 一直等（不放弃、不换本地模型）
+
+`llm.no_fallback="true"` 时，端点**连不上**（传输层不通 / 网关过载 / 限流 /
+DNS 失败 / EOF / 无响应）会**一直重试到端点恢复**：
+
+```
+端点连不上：模型端点不可达：[SSL: UNEXPECTED_EOF_WHILE_READING] …
+  → 第 1 次重试，2s 后再试；**一直等到端点恢复**（不会改用本地模型；Ctrl-C 中断）
+```
+
+- 退避 2s→4s→…→封顶 30s，每轮检查 Esc/Ctrl-C 打断；时间不设上限。
+- 预算可调：`llm.endpoint_retry_max`（**0 = 一直等**，>0 = 试 N 次）。
+- **401/403/400 不在这一族**：key/协议问题等一辈子也不会好，还会把真病因
+  藏起来 —— 那种**立刻报错 + 给处方**（探活 / 换 key / 查网关路由）。
+- `agentos doctor` 会显式打出当前口径：
+  `no_fallback=true（绝不换本地模型）· 端点连不上时一直重试到端点恢复`。
+
 ## 故障三连（都是实测踩出来的）
 
 | 症状 | 根因 | 处置 |
