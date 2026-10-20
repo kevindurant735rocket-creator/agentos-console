@@ -56,7 +56,6 @@ python3 tools/agentos.py health --port 8799    # rc=1：连接失败时诚实报
 
 ### open — 浏览器打开驾驶舱首页
 
-`BROWSER=/usr/bin/true agentos open` → rc=0，打印 `打开 http://127.0.0.1:8790/index.html`
 （2026-10-10 18:00 实跑；用 `/usr/bin/true` 占位浏览器，不开真窗口也不改产物）。
 不带 `BROWSER` 时会真的开一个浏览器标签页。
 
@@ -96,7 +95,7 @@ python3 tools/agentos.py gates resident_gate                    # 只跑点名�
 门链条数**不写死**：2026-10-11 00:25 由 `tools/gates.sh:7` 现读为 45 门
 （`evolution_gate`/`capability_gate`/`evolution_gate_selftest` 三道自我进化面门
 在 `cli_gate`/`cli_gate_selftest` 之后补入；`perf_gate` 收尾，把 R6 性能面
-（含 `agentos health` 端到端感知启动）纳入全链）。
+
 要看当前真值：`sed -n '7p' tools/gates.sh | wc -w` 减 3。
 完整链见 [README.md](../README.md) 与 `tools/gates.sh:7` 注释。
 
@@ -167,20 +166,20 @@ W8 任务书已核，本文未单独复跑超时路径）。
 
 | 现象 | 命令 | rc |
 |---|---|---|
-| 正常健康 | `agentos health` | 0 |
-| 服务没起 | `agentos health --port 8799` | 1 |
-| TUI 连不上服务 | `agentos tui --port 8799 </dev/null` | 1 |
-| 抢 headroom 端口 | `agentos serve --port 8787` | 2 |
+
+
+
+
 | `-p` 空需求 | `agentos -p ""` | 2 |
 | `gates` 零参 | `agentos gates` | 2 |
 | 非 TTY 无子命令 | `agentos </dev/null` | 2 |
-| 白名单外命令 | `agentos term '__agentos_list_probe__'` | 1 |
+
 
 更多故障现象与处理见 [TROUBLESHOOTING.md](TROUBLESHOOTING.md)。
 
 ## 诚实清单
 
-- `agentos open` 已用 `BROWSER=/usr/bin/true` 实跑（rc=0）；不带该变量会开真浏览器窗口，未跑。
+
 - `-p` 超时路径（rc=124）本文未单独实跑；`-p "状态"`/`-p ""`/`-p` 路由失败已实跑。
 - `agentos gh` 依赖本机 `gh` CLI 已认证；未认证时的 rc 本文未测。
 - `agentos yaml` 不存在；`completion fish` 实测 rc=2（只支持 zsh/bash），不是漏写。

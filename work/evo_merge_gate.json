@@ -12,7 +12,7 @@
     },
     {
       "detail": "rc=0 tree=True lg=0 cg=0 verdicts=['merged']",
-      "gate": "D3 合入面：merged + 真树含标记 + leader_gate 复验绿 + capability_gate 10/10",
+      "gate": "D3 合入面：merged + 真树含标记 + leader_gate 复验绿 + verify_gate 绿",
       "ok": true
     },
     {

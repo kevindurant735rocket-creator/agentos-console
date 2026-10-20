@@ -107,8 +107,14 @@ def _run(mod):
 
 
 
-# ---------------- D50：三家接线的行为证伪（正例 + 变异体） ----------------
-GATES = ("shoot", "view_dod", "a11y_walk")
+# ---------------- D50：接线的行为证伪（正例 + 变异体） ----------------
+# 2026-10-20：这一层原来验的是 shoot/view_dod/a11y_walk 三家网页面门
+# **真的调用了 run_gate**（摘掉包裹必须退回 rc=1 + traceback）。那三家门随
+# 网页驾驶舱一起下线了，而且幸存的终端面门**没有**这个包裹形态
+# （它们的判据写法不同）—— 这一层验的「接线」已经不存在，变异体无从下手。
+# 与其留一条永远红的判据，不如如实说清：这一层随被测对象一起下线。
+# 下面两层（BASE + MUT1/MUT2）仍然自证 run_gate 这个函数本身对不对。
+GATES = ()
 _ENV = dict(os.environ, CD_FLAKE_INJECT="always", CD_FLAKE_SLEEP="0")
 _WRAP = "    ok, detail = run_gate(_body, None)\n"
 _UNWRAP = "    ok, detail = _body(None)\n"
@@ -122,7 +128,7 @@ def _run_gate(name, script_dir):
 
 def chk_wiring():
     """三门各一对：接上了 = rc=2 无 traceback；摘掉包裹 = rc=1 有 traceback。"""
-    for name in GATES:
+    for name in GATES:  # 空：被验的接线形态随网页面一起下线了
         rc, out = _run_gate(name, HERE)
         chk("WIRING 正例 %s：run_gate 包裹在位 → rc=2 无 traceback" % name,
             rc == 2 and "EXC TargetClosedError" in out and "Traceback" not in out and "[EXC]" in out,

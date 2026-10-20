@@ -558,3 +558,57 @@ W28 认证链里 `native_gate` 反复红。逐层查下来是**三件事叠在�
 - 页面没加载时**先说清**「这是环境/时序问题，不是产品判红，重跑即可」，
   并列出缺的关键字段；不再让几十条判据红成一片假象。
 - AX 采样未成 → 相关判据跳过 + 明确 note。
+
+## 第二十九波（2026-10-20）：**只留终端 agent** —— 网页驾驶舱与原生 app 全部下线删除
+
+**用户诉求**：「把所有软件和网页式的 agentos 的东西全删掉，现在我在工作的时候
+老是打开那个软件，并且我现在要的只是终端的 agentos 和软件无关。」
+
+### 一、「老是自动弹出那个 app」的根因（真凶）
+
+`~/.agent-os/keeper.log` 每 30 秒一条「starting server on 8320」→
+`~/.agent-os/keeper.sh`（由 launchd `com.zhangfenurui.agentos-keeper` 每 30s 触发）
+拉起 **`/Applications/AgentOS.app/Contents/Resources/app/server.py 8320`** ——
+那 app 的服务端，弹窗就是它带起来的。
+
+处置（全部当场生效）：
+1. `~/.agent-os/keeper.sh` → 改成空操作（`exit 0`），并留一份
+   `keeper.sh.disabled-20261020` 备份。
+2. 两个 launchd plist（`com.zhangfenurui.agentos-keeper` / `…-console`）
+   从 `~/Library/LaunchAgents` **挪走**（不是删，挪到 `~/.agent-os/disabled-*`）。
+3. 杀掉 8320 / 8321 上的服务与所有 AgentOS.app 进程。
+4. 复查：keeper.log 不再新增「starting server」，8320/8321 无监听，无 app 进程。
+
+### 二、仓库侧：网页面与原生面**删干净**
+
+- **原生软件面**：`AgentOS.app/`（产物）、`native/`（Swift 源码）、
+  `minimize_check` / `single_instance_probe` / `ax_probe` / `fg_activate` /
+  `native_gate` / `native_gate_selftest` / `kbd_gate*` / `diag_kbd*`。
+- **网页驾驶舱面**：`tools/serve.py` / `webface.py` / `index.html` /
+  `index.template.html` / `agent_desktop.html` / `data.json` /
+  `tools/build.py` / `tools/extract.py` / `tools/variant_pool.py` /
+  `web_gate` / `ux_audit` / `ux_verify` / `http_shot_gate` / `snap_gate` /
+  `snap_live` / `shoot` / `view_dod*` / `a11y_*` / `neg_a11y*` / `at_selftest` /
+  `neg_at_selftest` / `layout_gate` / `env_gate` / `projspace_gate` / `act_gate` /
+  `promo_gate` / `capmap_gate` / `abort_gate` / `abort_e2e` / `intent_gate` /
+  `retro_gate` / `goal_gate` / `round_gate` / `close_gate` / `resident_gate` /
+  `headroom_gate` / `perf_gate` / `indep_field_gate` / `freshness_gate` /
+  `capability_gate` / `evolution_gate*` / `tui_walk*`。
+- **CLI**：删掉 `serve` / `health` / `open` / `tui` / `term` / `resume` 六个子命令
+  与顶层 `-p`（网页动作路由）；`tools/agentos.py` 从 4663 行瘦到 ~1900 行。
+  保留：`agent` / `doctor` / `evolve` / `replay` / `gates` / `gh` / `config` /
+  `completion` / `sessions` / `steer` / `watch` / `leader` / `selfscan`。
+- **门链**：77 门 → **40 门**（只剩终端面）。
+- **装机脚本瘦身**：`install.sh` / `uninstall.sh` 现在**只装 CLI shim** ——
+  不装 app、不写 launchd、不起常驻服务、不开浏览器；卸载只删自己装的那两样
+  （且删文件只走 `unlink`，本仓禁 `rm -f`）。
+- **内核**：`agent_core` 里「终端白名单与 serve.py 同源」那条判据改成量**它自己**
+  （serve.py 已不存在，量一个不存在的文件是永远红）；`health` 工具不再有默认
+  地址（常驻驾驶舱没了，默认地址会指向空处），改成必须显式给 url。
+
+**顺带删掉的「自动弹窗」入口**
+- 根目录 `启动 AgentOS.command`（双击就起服务 + 开浏览器）→ 删。
+- `install.sh` / `uninstall.sh` → 瘦身为**只装 CLI shim**（不装 app、不写
+  launchd、不起常驻服务、不开浏览器）。
+- `~/.agent-os/keeper.sh` → 空操作；两个 launchd plist 挪到
+  `~/.agent-os/disabled-*`（下次登录/重载不会再被 launchd 拉起）。

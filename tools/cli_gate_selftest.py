@@ -56,48 +56,25 @@ def gate(name, ok, detail=""):
 
 STUB_SILENT0 = '''import sys
 a = sys.argv[1:]
-if a == ["-V"]:
+if a == ["-V"] or a == ["--version"]:
     print("AgentOS 9.9.9-silent0")
     raise SystemExit(0)
-if a == ["health"]:
-    print("health OK")
-    raise SystemExit(0)
+# 其它一律 rc=0 但什么都不打印：假 CLI 的典型形状。
 raise SystemExit(0)
 '''
 
-STUB_HANGQ = '''import sys
-import time
-a = sys.argv[1:]
-if a == ["-V"]:
-    print("AgentOS 9.9.9-hangq")
-    raise SystemExit(0)
-if a == ["health"]:
-    print("health OK")
-    raise SystemExit(0)
-if not a:
-    # 画一屏以假乱真的 TUI 后永久挂住：首屏判据必须绿，q 退出判据必须红。
-    sys.stdout.write("\\x1b[2J\\x1b[H")
-    print("AgentOS TUI \\u00b7 http://127.0.0.1:8790 \\u00b7 00:00:00")
-    print("\\u89c6\\u56fe 1/13 \\u00b7 \\u6570\\u636e\\u6e90: GET /__health")
-    sys.stdout.flush()
-    time.sleep(600)
-raise SystemExit(0)
-'''
+# 2026-10-20：网页面下线后，STUB_HANGQ 原来的两个判据
+# （TUI 首屏正常但 q 不退 / top-level -p 的自相矛盾记录）**被测对象没了**，
+# 变异体无从下手 → 连同它们的判据一起下线。
+# 留着一条永远红的断言不如说清「它随被测对象一起没了」。
 
 STUB_WRITEOK = '''import sys
 a = sys.argv[1:]
-if a == ["-V"]:
+if a == ["-V"] or a == ["--version"]:
     print("AgentOS 9.9.9-writeok")
     raise SystemExit(0)
-if a == ["health"]:
-    print("health OK")
-    raise SystemExit(0)
-if a[:1] == ["term"]:
-    print("writeok executed: %r" % (a,))
-    if a == ["term", "ls", "-1", "tools"]:
-        print("agentos.py")
-    raise SystemExit(0)
 if a[:1] == ["gh"]:
+    # 写向量也放行：gh 的写闸必须红。
     print("writeok executed: %r" % (a,))
     if a == ["gh", "whoami"]:
         print("sources: stub")
@@ -105,70 +82,24 @@ if a[:1] == ["gh"]:
 raise SystemExit(0)
 '''
 
-STUB_LYINGJSON = '''import json
-import sys
-a = sys.argv[1:]
-if a == ["-V"]:
-    print("AgentOS 9.9.9-lyingjson")
-    raise SystemExit(0)
-if a == ["health"]:
-    print("health OK")
-    raise SystemExit(0)
-if a and a[0] == "-p":
-    if len(a) == 1:
-        print("FAIL: \\u7a7a\\u9700\\u6c42")
-        raise SystemExit(2)
-    if len(a) > 2:
-        print("FAIL: -p \\u4e0d\\u80fd\\u548c\\u5b50\\u547d\\u4ee4")
-        raise SystemExit(2)
-    # 自相矛盾的 headless 记录：ok=True 却 exit_code=1
-    print(json.dumps({"ok": True, "query": a[1], "answer": "stub",
-                      "sources": [], "exit_code": 1}, ensure_ascii=False))
-    raise SystemExit(1)
-if "--output-format" in a and "-p" in a:
-    q = a[a.index("-p") + 1]
-    if "github" in q:
-        print(json.dumps({"ok": True, "query": q, "answer": "stub",
-                          "sources": ["gh repo list --limit 15"],
-                          "exit_code": 0, "route": "gh"}, ensure_ascii=False))
-        raise SystemExit(0)
-    print(json.dumps({"ok": True, "query": q, "answer": "stub",
-                      "sources": [], "exit_code": 1}, ensure_ascii=False))
-    raise SystemExit(1)
-raise SystemExit(0)
-'''
-
+# 2026-10-20：STUB_LYINGJSON 证的是「top-level -p 的 headless 记录自相矛盾
+# （ok=True 而 exit_code=1）」—— 顶层 -p 随网页驾驶舱一起下线，该变异体
+# 连同它的判据一起下线。
 
 # 变异体 -> (桩源, 必须红的判据, 必须绿的判据, 这一变体在证什么)
 MUTANTS = [
     ("silent0", STUB_SILENT0,
-     ["help-usage", "help-lists-all-subs", "tui-nontty-all-views",
-      "tui-nontty-has-source", "term-allow-rc0", "term-deny-rc1",
-      "term-zeroarg-rc2", "completion-zsh", "completion-noarg-rc2",
-      "resume-bogus-rc2", "gates-zeroarg-rc2", "gh-whoami-rc0",
-      "gh-write-denied-rc2", "gh-unknown-sub-rc2", "print-json-one-line",
-      "print-json-ok-matches-exit", "print-empty-rc2", "print-mix-sub-rc2",
-      "print-gh-route", "noarg-nontty-rc2", "open-rc0-url",
-      "tty-noarg-enters-tui"],
-     ["health-rc0", "sub-help-all-rc0", "sessions-rc0", "tty-q-exits-rc0"],
+     ["help-usage", "help-lists-all-subs", "completion-zsh",
+      "completion-noarg-rc2", "gates-zeroarg-rc2", "gh-write-denied-rc2",
+      "gh-unknown-sub-rc2", "noarg-nontty-rc2"],
+     ["sessions-rc0", "sub-help-all-rc0", "src-tree-version"],
      "恒 rc=0 的假 CLI：宣称的终端面全是纸面时，判据必须集体亮红；"
-     "而 -V/health/sessions 这几条结构上无法区分真假 CLI，保持绿才证明门不是见谁都红"),
-    ("hangq", STUB_HANGQ,
-     ["tty-q-exits-rc0"],
-     ["tty-noarg-enters-tui"],
-     "TUI 首屏正常但 q 不退：首屏判据必须放行（证明它不误伤），"
-     "退出判据必须红（2026-10-10 修的就是这条曾拿 open 的 rc 冒充）"),
+     "而 sessions/sub-help 这几条结构上无法区分真假 CLI，保持绿才证明门不是见谁都红"),
     ("writeok", STUB_WRITEOK,
-     ["term-deny-rc1", "gh-write-denied-rc2", "gh-unknown-sub-rc2"],
-     ["term-allow-rc0", "gh-whoami-rc0"],
-     "写向量放行的 CLI：白名单/只读面必须红，合法只读命令必须仍是绿，"
-     "证明红的不是 term/gh 存在，而是写向量没被拒"),
-    ("lyingjson", STUB_LYINGJSON,
-     ["print-json-ok-matches-exit"],
-     ["print-json-one-line", "print-gh-route", "print-empty-rc2",
-      "print-mix-sub-rc2"],
-     "自相矛盾的 headless 记录（ok=True 而 exit_code=1）：格式判据必须放行、"
-     "一致性判据必须红 —— 一行合法 JSON 照样可以是假绿"),
+     ["gh-write-denied-rc2"],
+     ["gh-whoami-rc0"],
+     "写向量放行的 CLI：gh 的写闸必须红，合法只读命令必须仍是绿，"
+     "证明红的不是 gh 存在，而是写向量没被拒"),
 ]
 
 
@@ -237,8 +168,9 @@ def main():
         gate("BASE 判据数不缩水（>=26）", nrows >= 26, "实到 %d" % nrows)
         gate("BASE JSON ok=True", data.get("ok") is True,
              "ok=%r" % data.get("ok"))
-        ask("BASE", data, "tty-q-exits-rc0", True)
-        ask("BASE", data, "tty-noarg-enters-tui", True)
+        # 2026-10-20：TUI 首屏/退出两条判据随网页面下线（被测对象没了），
+        # 换成终端面的「无参数进 agent」这一条。
+        ask("BASE", data, "tty-noarg-enters-agent", True)
 
         for name, src, want_red, want_green, why in MUTANTS:
             stub = os.path.join(td, name + ".py")

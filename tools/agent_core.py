@@ -2214,7 +2214,7 @@ def _t_gh_read(a, ctx):
 _S_HEALTH = {
     "type": "object",
     "properties": {
-        "url": {"type": "string", "description": "默认 http://127.0.0.1:8790/__health"}
+        "url": {"type": "string", "description": "要探的地址（必填）：如 http://127.0.0.1:8787/health"}
     },
 }
 
@@ -2223,7 +2223,12 @@ _S_HEALTH = {
     "health", RISK_READ, "GET 一个回环 /__health，判 ok:true 与真实 HTTP 码", _S_HEALTH
 )
 def _t_health(a, ctx):
-    url = (a.get("url") or "http://127.0.0.1:8790/__health").strip()
+    url = (a.get("url") or "").strip()
+    if not url:
+        return {
+            "ok": False,
+            "error": "health 工具要显式给 url（常驻驾驶舱已下线，没有默认地址了）",
+        }
     host = _host_of(url)
     if not _is_loopback(host):
         return {"ok": False, "error": "只允许回环地址：%r" % host}
@@ -7395,26 +7400,16 @@ def _selftest():
 
 def _selftest_body(case, jc, tmp):
     """自检正文。拆出来只为让 _selftest 的 finally 清理保持简单。"""
-    # (1) 终端白名单与 serve.py 逐项同源 -------------------------
-    try:
-        import importlib.util
-
-        sp = os.path.join(ROOT, "tools", "serve.py")
-        spec_ = importlib.util.spec_from_file_location("_st_serve", sp)
-        mod = importlib.util.module_from_spec(spec_)
-        spec_.loader.exec_module(mod)
-        mine = _term_cmds()
-        same = sorted(mod.TERM_CANDIDATES) == sorted(TERM_CANDIDATES) and sorted(
-            mod.TERM_CMDS.items()
-        ) == sorted(mine.items())
-        detail = "serve.py %d 条 / agent_core %d 条%s" % (
-            len(mod.TERM_CMDS),
-            len(mine),
-            "" if same else "（口径漂移）",
-        )
-    except Exception as e:  # noqa: BLE001
-        same, detail = False, "import serve.py 失败：%s" % str(e)[:120]
-    case("终端白名单与 serve.py 同源（逐项相等）", same, detail)
+    # (1) 终端白名单：工具层自己的真相。
+    #     原来这条判的是「agent_core 的白名单 == serve.py 的白名单」——
+    #     网页驾驶舱 serve.py 已下线，被量的那一方不存在了，留着就是永远红。
+    #     现在量它自己：候选集与命令表都在、且命令表非空。
+    _mine_cmds = _term_cmds()
+    case(
+        "终端白名单：工具层自洽（候选集与命令表都在）",
+        bool(TERM_CANDIDATES) and bool(_mine_cmds),
+        "候选=%d 命令=%d" % (len(TERM_CANDIDATES), len(_mine_cmds)),
+    )
 
     tmproot = os.path.realpath(tmp)
     os.makedirs(tmproot, exist_ok=True)

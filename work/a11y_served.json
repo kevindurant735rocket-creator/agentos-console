@@ -1,6 +1,6 @@
 {
  "tool": "a11y_served.py",
- "port": 55986,
+ "port": 53805,
  "method": "real-http-served + playwright-real-keyboard + cdp-ax-tree",
  "gates": [
   {

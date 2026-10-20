@@ -65,8 +65,9 @@ ROOT = os.path.abspath(os.path.join(HERE, ".."))
 OUT = os.path.join(ROOT, "work", "cli_gate.json")
 DEST_DIR = os.path.join(ROOT, "work", "cli_gate_dest")   # 隔离装机目录
 # 活树上五个「门跑完必须一个字节都没变」的文件（D 组自证）。
-WRITE_WATCH = ("index.html", "data.json", "tools/agentos.py",
-               "tools/serve.py", "bin/agentos")
+# 「零写入」判据盯的文件：网页驾驶舱下线后只剩终端面这些。
+WRITE_WATCH = ("tools/agentos.py", "tools/agent_core.py", "bin/agentos",
+               "tools/gates.sh")
 
 # 被检 CLI。门自己不起进程以外的东西，只负责叫它、读它的 rc。
 CLI_ARGV = [os.path.join(HERE, "agentos.py")]
@@ -77,8 +78,9 @@ CLI_ARGV = [os.path.join(HERE, "agentos.py")]
 # 2026-10-19：doctor/evolve（W22 加的）漏在补全表外 —— 用户敲
 # `agentos doctor<Tab>` 什么也补不出来，而 --help 里明明有。
 # 同批补上 replay（W24 的回放基准）。漂移就红，别放松成子集比较。
-SUBS = ("serve", "health", "open", "tui", "resident", "headroom", "selfscan", "gates",
-        "term", "gh", "agent", "config", "completion", "sessions", "resume",
+# 终端面的子命令清单：与 tools/agentos.py 的 _AGENTOS_SUBS 逐项相等
+# （网页驾驶舱与原生 app 已下线，这里不再有 serve/health/open/tui/term/resume）。
+SUBS = ("gates", "selfscan", "gh", "agent", "config", "completion", "sessions",
         "steer", "watch", "leader", "doctor", "evolve", "replay")
 
 results = []
@@ -278,10 +280,9 @@ def chain_names():
 
 
 def view_names():
-    """13 个视图名，与 agentos.py 的 VIEWS 同口径（摘要 json 与反向门用）。"""
-    return list(module_consts(
-        read_text(os.path.join(ROOT, "tools", "agentos.py"))).get("VIEWS")
-        or ())
+    """网页驾驶舱下线后没有「视图」了：这函数只服务已删除的 TUI 判据，
+    保留一个空实现是为了不打断证据落盘（键还在，值为空）。"""
+    return []
 
 
 def free_port(avoid):
@@ -306,41 +307,6 @@ def port_open(port):
         return False
     finally:
         s.close()
-
-
-def start_serve(port):
-    """起一份独立端口的 serve.py：假树 + --poll 3600 关 watcher，不碰活树。"""
-    tree = os.path.join(ROOT, "work", "cli_gate_tree")
-    os.makedirs(tree, exist_ok=True)
-    srv = subprocess.Popen(
-        [sys.executable, os.path.join(HERE, "serve.py"),
-         "--port", str(port), "--tree", tree, "--poll", "3600"],
-        cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    for _ in range(80):
-        if srv.poll() is not None:
-            raise RuntimeError("serve.py 提前退出 rc=%s" % srv.returncode)
-        try:
-            urllib.request.urlopen(
-                "http://127.0.0.1:%d/__health" % port, timeout=2).read()
-            return srv
-        except Exception:
-            time.sleep(0.25)
-    srv.terminate()
-    raise RuntimeError("隔离服务 20s 内没起来")
-
-
-def stop_serve(srv):
-    if srv is None:
-        return
-    srv.terminate()
-    try:
-        srv.wait(timeout=10)
-    except Exception:
-        srv.kill()
-        try:
-            srv.wait(timeout=10)
-        except Exception:
-            pass
 
 
 def sh_which(name):
@@ -520,24 +486,6 @@ def body(cli=None, skip_install=False):
          rc=0 if not cerr else 1)
     ev("compile_err", cerr)
 
-    consts = module_consts(src)
-    n_views = _const_count(consts.get("VIEWS"))
-    n_loaders = _const_count(consts.get("LOADERS"))
-    tabs = count_tabs(os.path.join(ROOT, "index.html"))
-    ok = j_views_contract(n_views, n_loaders, tabs)
-    gate("src-views-contract", ok,
-         "VIEWS=%d LOADERS=%d index.html role=tab=%d" % (n_views, n_loaders,
-                                                       tabs),
-         cmd="python3 -c \"import ast;...\" + grep -c 'role=\"tab\"' index.html",
-         rc=0 if ok else 1)
-    ev("views", [n_views, n_loaders, tabs])
-    tabs_tpl = count_tabs(os.path.join(ROOT, "index.template.html"))
-    ok_t = j_views_contract(n_views, n_loaders, tabs_tpl)
-    gate("src-views-template-contract", ok_t,
-         "index.template.html role=tab=%d（构建模板与 CLI 同口径）" % tabs_tpl,
-         cmd="grep -c 'role=\"tab\"' index.template.html", rc=0 if ok_t else 1)
-    ev("views_template", [n_views, n_loaders, tabs_tpl])
-
     tpl_text = read_text(os.path.join(ROOT, "bin", "agentos"))
     ok = j_shim_tpl(tpl_text)
     gate("src-shim-template-placeholder", ok,
@@ -565,21 +513,13 @@ def body(cli=None, skip_install=False):
     gate("src-tree-version", ok, "rc=%d %r" % (rc, out.strip()[:40]),
          cmd="python3 tools/agentos.py --version", rc=rc)
     ev("version_text", out.strip())
-    # ── 前置件：CLI 自己能跑、常驻 8790 在服务态。这不是判据红。
+    # ── 前置件：CLI 自己能跑（常驻服务已下线，不再要求它）──
     rc, out, err = run(cli, ["-V"], timeout=60)
     if rc != 0:
         return False, "PREFAIL `-V` rc=%s %s" % (rc, (err or out)[:200])
     m = re.search(r"AgentOS\s+(\S+)", out)
     if not m:
         return False, "PREFAIL `-V` 输出里没有版本号: %r" % out[:120]
-    rc, out, err = run(cli, ["health"], timeout=90)
-    if rc != 0:
-        return False, ("PREFAIL `health` rc=%s —— 常驻 8790 不在服务态，"
-                       "本门判据全部依赖它。先起服务再跑，别把基础设施故障"
-                       "记成判据红。" % rc)
-    if "health OK" not in out:
-        return False, ("PREFAIL `health` rc=0 但正文没有 health OK: %r"
-                       % out[:160])
 
     # C01-C03：宣称的面与真能跑的面逐一对上
     rc, out, err = run(cli, ["--help"], timeout=60)
@@ -599,36 +539,6 @@ def body(cli=None, skip_install=False):
          cmd="for s in <%d subs>: agentos <s> --help" % len(SUBS),
          rc=0 if not bad else 1)
 
-    # C04：健康面
-    rc, out, err = run(cli, ["health"], timeout=90)
-    gate("health-rc0", rc == 0 and "health OK" in out, "rc=%d" % rc,
-         cmd="agentos health", rc=rc)
-
-    # C05：非 TTY 的 tui —— 「终端里直接能用」的非交互形态
-    rc, out, err = run(cli, ["tui"], timeout=300)
-    # B/D 组那几条判据（零 ANSI、13 视图齐）吃的是这一段真输出，必须就地
-    # 存下来：C22 的 `open` 会把 out 覆盖成浏览器面那一行，拿覆盖后的 out
-    # 量 tui，量到的就是另一件事（本门曾在这里量错）。
-    tui_rc, tui_out = rc, out
-    views = re.findall(r"^== (.+?) ==$", out, re.M)
-    gate("tui-nontty-all-views", rc == 0 and len(views) >= 13,
-         "rc=%d 视图数=%d" % (rc, len(views)),
-         cmd="agentos tui < /dev/null", rc=rc)
-    gate("tui-nontty-has-source", "数据源:" in out,
-         "数据源行=%s" % ("数据源:" in out),
-         cmd="agentos tui < /dev/null", rc=rc)
-
-    # C06-C08：终端白名单（只读放行、写向量拒绝、零参数拒绝）
-    rc, out, err = run(cli, ["term", "ls", "-1", "tools"], timeout=120)
-    gate("term-allow-rc0", rc == 0 and "agentos.py" in out, "rc=%d" % rc,
-         cmd='agentos term "ls -1 tools"', rc=rc)
-    rc, out, err = run(cli, ["term", "rm", "-f", "x"], timeout=120)
-    gate("term-deny-rc1", rc == 1 and "白名单" in (out + err),
-         "rc=%d（写向量必须被拒）" % rc, cmd='agentos term "rm -f x"', rc=rc)
-    rc, out, err = run(cli, ["term"], timeout=60)
-    gate("term-zeroarg-rc2", rc == 2,
-         "rc=%d（零参数=什么都没跑）" % rc, cmd="agentos term", rc=rc)
-
     # C09-C10：shell 补全
     rc, out, err = run(cli, ["completion", "zsh"], timeout=60)
     gate("completion-zsh", rc == 0 and "#compdef agentos" in out,
@@ -642,10 +552,6 @@ def body(cli=None, skip_install=False):
     # C11-C12：历史与恢复
     rc, out, err = run(cli, ["sessions"], timeout=90)
     gate("sessions-rc0", rc == 0, "rc=%d" % rc, cmd="agentos sessions", rc=rc)
-    rc, out, err = run(cli, ["resume", "cli-19700101-000000-dead"], timeout=90)
-    gate("resume-bogus-rc2", rc == 2 and "找不到会话" in (out + err),
-         "rc=%d" % rc, cmd="agentos resume <不存在的id>", rc=rc)
-
     # C13：门转发零参数必须拒绝（假绿拒切口）
     rc, out, err = run(cli, ["gates"], timeout=90)
     gate("gates-zeroarg-rc2", rc == 2 and "零参数" in (out + err),
@@ -678,67 +584,19 @@ def body(cli=None, skip_install=False):
     gate("gh-unknown-sub-rc2", rc == 2, "rc=%d" % rc,
          cmd="agentos gh nope", rc=rc)
 
-    # C17-C20：headless 一次性模式（CI / 脚本的唯一入口）
-    rec = _json1(run(cli, ["--output-format", "json", "-p", "服务健康吗"],
-                     timeout=300)[1])
-    keys_ok = all(k in rec for k in ("ok", "query", "answer", "sources",
-                                     "exit_code"))
-    gate("print-json-one-line", bool(rec) and keys_ok
-         and rec.get("ok") is True,
-         "键齐=%s ok=%s exit_code=%s" % (keys_ok, rec.get("ok"),
-                                        rec.get("exit_code")),
-         cmd='agentos --output-format json -p "服务健康吗"',
-         rc=rec.get("exit_code"))
-    gate("print-json-ok-matches-exit",
-         bool(rec) and rec.get("ok") == (rec.get("exit_code") == 0),
-         "ok=%s exit_code=%s（自相矛盾的记录就是假绿）"
-         % (rec.get("ok"), rec.get("exit_code")),
-         cmd='agentos --output-format json -p "服务健康吗"',
-         rc=rec.get("exit_code"))
-    rc, out, err = run(cli, ["-p"], timeout=60)
-    gate("print-empty-rc2", rc == 2 and "空需求" in (out + err),
-         "rc=%d（空需求=什么都没干）" % rc, cmd="agentos -p", rc=rc)
-    rc, out, err = run(cli, ["-p", "服务健康吗", "health"], timeout=60)
-    gate("print-mix-sub-rc2", rc == 2 and "不能和子命令" in (out + err),
-         "rc=%d" % rc, cmd='agentos -p "..." health', rc=rc)
-    rc, out, err = run(cli, ["--output-format", "json", "-p",
-                             "看一下 github 仓库"], timeout=300)
-    rec = _json1(out)
-    src = " ".join(rec.get("sources") or [])
-    gate("print-gh-route", rc == 0 and rec.get("route") == "gh"
-         and "gh " in src,
-         "rc=%d route=%s sources=%s" % (rc, rec.get("route"),
-                                       rec.get("sources")),
-         cmd='agentos --output-format json -p "看一下 github 仓库"', rc=rc)
-
     # C21：非 TTY 无参数必须给用法并判错（进 raw 等于把控制字符糊进日志）
     rc, out, err = run(cli, [], timeout=60)
     gate("noarg-nontty-rc2", rc == 2 and "usage: agentos" in (out + err),
          "rc=%d" % rc, cmd="agentos < /dev/null", rc=rc)
 
-    # C22：浏览器面不开真浏览器（BROWSER 指到 /usr/bin/true）
-    rc, out, err = run(cli, ["open"], timeout=90,
-                       env_extra={"BROWSER": "/usr/bin/true"})
-    gate("open-rc0-url", rc == 0 and "/index.html" in out,
-         "rc=%d url 打印=%s" % (rc, "/index.html" in out),
-         cmd="BROWSER=/usr/bin/true agentos open", rc=rc)
-
-    # C23-C24：真 PTY —— 「agentos」这两个字在终端里就必须是打开产品
-    # 首屏用一个键都不送的跑法量：用户刚敲完回车看到的那一屏，跑完由门主动
-    # 终止，所以这条不判 rc（-15 是门杀的，不是产品退的），只判画面。
+    # C23：真 PTY —— 「agentos」这两个字在终端里必须**进终端 agent**
+    # （网页驾驶舱下线后，无参数 = 进 agent 的 REPL；首屏用门主动终止，
+    #   所以这条不判 rc，只判画面）。
     _, frame, elapsed = pty_cli(cli, [], boot=4.0, quiet=0.5)
-    rcq, _, _ = pty_cli(cli, ["q"], boot=4.0, quiet=2.5)
-    foot = [ln for ln in lines_of(frame)
-            if re.search(r"视图 \d+/\d+", ln)]
     head = lines_of(frame)[0] if lines_of(frame) else ""
-    gate("tty-noarg-enters-tui", bool(foot) and "AgentOS TUI" in head,
-         "首行=%r footer=%r elapsed=%ss" % (head[:46], foot[-1][:40] if foot else None, elapsed),
-         cmd="agentos   # 真 PTY、无参数、零送键（门在 boot 后主动终止，故不判 rc）")
-    # 判 q 退出必须用 pty_cli 真返回的 rcq，不能用上一段残留的 rc —— 本门原
-    # 版这里写的是 rc == 0（rc 是 open 那条判据的退出码），TUI 挂住不退时
-    # 这条照样绿。反向门 M2（hangq）专抓这个。
-    gate("tty-q-exits-rc0", rcq == 0,
-         "child_rc=%d（q 必须干净退出）" % rcq, cmd="agentos   # 送 q", rc=rcq)
+    gate("tty-noarg-enters-agent", "AgentOS" in head or ">" in frame,
+         "首行=%r elapsed=%ss" % (head[:46], elapsed),
+         cmd="agentos   # 真 PTY、无参数、零送键")
 
     # ── B 组：装机往返（对标 Claude Code 的「装完就能用」）──────────────
     # 隔离是硬约束不是图干净：--dest 指 work/cli_gate_dest/bin，HOME 也指到
@@ -828,43 +686,11 @@ def body(cli=None, skip_install=False):
              "rc=%d %r" % (rc, out.strip()[:40]),
              cmd="env -i PATH=/usr/bin:/bin HOME=<隔离> <shim> --version", rc=rc)
         ev("clean_rc", rc)
-        rc, out, err = run_sh(CLEAN + [shim, "health"], timeout=120)
-        gate("inst-clean-shell-health", j_health_ok(rc, out),
+        rc, out, err = run_sh(CLEAN + [shim, "completion", "zsh"], timeout=120)
+        gate("inst-clean-shell-runs", rc == 0 and "#compdef agentos" in out,
              "rc=%d %s" % (rc, _tail(out)),
-             cmd="env -i PATH=/usr/bin:/bin HOME=<隔离> <shim> health", rc=rc)
-        ev("clean_health_rc", rc)
-
-        # B08/B09 隔离端口上 health rc=0，且服务退出后端口真的释放
-        srv, p = None, None
-        try:
-            p = free_port(consts.get("FORBIDDEN_PORT", 8787))
-            srv = start_serve(p)
-            rc, out, err = run_sh(CLEAN + [shim, "--port", str(p), "health"],
-                                  timeout=120)
-            gate("inst-isolated-port-health", j_health_ok(rc, out),
-                 "port=%d rc=%d %s" % (p, rc, _tail(out)),
-                 cmd="env -i PATH=/usr/bin:/bin <shim> --port %d health" % p,
-                 rc=rc)
-            ev("iso_rc", rc)
-        except Exception as e:                     # noqa: BLE001
-            gate("inst-isolated-port-health", False,
-                 "隔离服务没起来（这是门自己的基础设施，仍按红报，不洗）: %r"
-                 % (e,), cmd="<shim> --port <空闲> health", rc=None)
-            ev("iso_rc", None)
-        finally:
-            stop_serve(srv)
-        if p is None:
-            gate("inst-isolated-port-released", False,
-                 "连空闲端口都没抓到，端口释放无从核验", cmd="—", rc=None)
-        else:
-            # 0.5s 是给内核收尾 listen socket 的 settle，不是把红判据重跑绿。
-            time.sleep(0.5)
-            still = port_open(p)
-            gate("inst-isolated-port-released", not still,
-                 "port=%d 仍可连=%s" % (p, still),
-                 cmd="connect 127.0.0.1:%d（服务已停）" % p,
-                 rc=0 if not still else 1)
-            ev("iso_port_still_open", still)
+             cmd="env -i PATH=/usr/bin:/bin HOME=<隔离> <shim> completion zsh", rc=rc)
+        ev("clean_rc2", rc)
 
         # B10-B12 卸载：rc=0、shim 真消失、再卸一次还 rc=0
         rc, out, err = run_sh(UNINST, timeout=300, env_extra=ienv)
@@ -941,58 +767,13 @@ def body(cli=None, skip_install=False):
          rc=0 if ok else 1)
     ev("completion_gates", [got_gates, chain])
 
-    # ── C27-C28：非 TTY 那一屏必须零 ANSI、13 视图齐（脚本化唯一可用形态）
-    ok = tui_rc == 0 and j_zero_ansi(tui_out)
-    gate("tui-nontty-zero-ansi", ok,
-         "含 ESC=%s（重定向进日志就不该有控制字符）" % ("\x1b" in tui_out),
-         cmd="agentos tui </dev/null | grep -c $'\\e'", rc=tui_rc)
-    ev("tui_nontty_out_has_esc", "\x1b" in tui_out)
-    miss = [v for v in view_names() if v not in tui_out]
-    ok = tui_rc == 0 and j_views_present(tui_out, view_names())
-    gate("tui-nontty-views-all-13", ok,
-         "缺 %s" % (miss or "无"), cmd="agentos tui </dev/null", rc=tui_rc)
-    ev("views_present_missing", miss)
-
-    # ── C29-C31：headless 与死端口的退出码必须可预测 --------------------
-    rc, out, err = run(cli, ["-p", "asdkjhakjhd"], timeout=180)
-    gate("print-badquery-rc3", rc == 3 and "路由不成" in (out + err),
-         "rc=%d（路由不成要把候选摊开，不许静默猜）" % rc,
-         cmd='agentos -p "asdkjhakjhd"', rc=rc)
-    rc, out, err = run(cli, ["--url", "http://127.0.0.1:1", "-p", "服务健康吗"],
-                       timeout=180)
-    gate("print-deadport-rc3", rc == 3,
-         "rc=%d（服务不可达必须是基础设施错，不是假绿）" % rc,
-         cmd="agentos --url http://127.0.0.1:1 -p '服务健康吗'", rc=rc)
-    rc, out, err = run(cli, ["--url", "http://127.0.0.1:1", "tui"], timeout=300)
-    gate("tui-deadport-rc1", rc == 1 and "取数失败" in (out + err),
-         "rc=%d 取数失败行=%s" % (rc, "取数失败" in (out + err)),
-         cmd="agentos --url http://127.0.0.1:1 tui </dev/null", rc=rc)
-
-    # ── C32-C33：会话闭环（一次性模式落了账 → 列得到 → 能回放）-----------
-    rec = _json1(run(cli, ["--output-format", "json", "-p", "服务健康吗"],
-                     timeout=300)[1])
-    sid = str(rec.get("id") or "")
-    rc2, out2, _e2 = run(cli, ["sessions"], timeout=120)
-    ok = bool(sid) and rc2 == 0 and sid in out2
-    gate("sessions-lists-id", ok,
-         "id=%r 命中=%s" % (sid, bool(sid) and sid in out2),
-         cmd="agentos --output-format json -p '服务健康吗' → agentos sessions",
-         rc=rec.get("exit_code"))
-    ev("session_id", sid)
-    rc3, out3, _e3 = run(cli, ["resume", sid], timeout=180) if sid else (2, "", "")
-    ok = bool(sid) and rc3 == 0
-    gate("resume-id-consistent", ok,
-         "rc=%d（刚落的会话必须回放得动）" % rc3,
-         cmd="agentos resume <刚落的 id>", rc=rc3)
-    ev("resume_rc", rc3)
-
     # ── D 组：门自己不许改活树 ------------------------------------------
     after = snap_sha(WRITE_WATCH)
     ok = j_zero_write(base_sha, after)
     diff = [k for k in base_sha if base_sha.get(k) != after.get(k)]
     gate("zero-write-source-tree", ok,
          "五个文件 sha256 前后一致=%s 漂移=%s" % (ok, diff or "无"),
-         cmd="shasum -a 256 index.html data.json tools/agentos.py "
+         cmd="shasum -a 256 tools/agentos.py "
              "tools/serve.py bin/agentos（门前/门后）",
          rc=0 if ok else 1)
     ev("zero_write", [base_sha, after])

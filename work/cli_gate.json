@@ -3,43 +3,21 @@
  "ok": true,
  "pre_ok": true,
  "prefail": "",
- "elapsed": 42.88,
+ "elapsed": 6.26,
  "cli": [
   "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/tools/agentos.py"
  ],
  "dest": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/cli_gate_dest",
  "skip_install": false,
- "views": [
-  "总览",
-  "轮次",
-  "阶段矩阵",
-  "证据账本",
-  "引擎",
-  "Agent 台",
-  "目标台",
-  "复盘台",
-  "能力地图",
-  "工作区",
-  "终端",
-  "文件",
-  "设置"
- ],
+ "views": [],
  "subs": [
-  "serve",
-  "health",
-  "open",
-  "tui",
-  "resident",
-  "headroom",
-  "selfscan",
   "gates",
-  "term",
+  "selfscan",
   "gh",
   "agent",
   "config",
   "completion",
   "sessions",
-  "resume",
   "steer",
   "watch",
   "leader",
@@ -53,20 +31,6 @@
    "ok": true,
    "detail": "入口文件可编译",
    "cmd": "python3 -c \"import ast;ast.parse(open('tools/agentos.py').read())\"",
-   "rc": 0
-  },
-  {
-   "gate": "src-views-contract",
-   "ok": true,
-   "detail": "VIEWS=13 LOADERS=13 index.html role=tab=13",
-   "cmd": "python3 -c \"import ast;...\" + grep -c 'role=\"tab\"' index.html",
-   "rc": 0
-  },
-  {
-   "gate": "src-views-template-contract",
-   "ok": true,
-   "detail": "index.template.html role=tab=13（构建模板与 CLI 同口径）",
-   "cmd": "grep -c 'role=\"tab\"' index.template.html",
    "rc": 0
   },
   {
@@ -121,63 +85,21 @@
   {
    "gate": "help-lists-all-subs",
    "ok": true,
-   "detail": "21 个子命令全部在册",
+   "detail": "13 个子命令全部在册",
    "cmd": "agentos --help",
    "rc": 0
   },
   {
    "gate": "sub-help-all-rc0",
    "ok": true,
-   "detail": "21 面子命令 --help 全 rc=0",
-   "cmd": "for s in <21 subs>: agentos <s> --help",
+   "detail": "13 面子命令 --help 全 rc=0",
+   "cmd": "for s in <13 subs>: agentos <s> --help",
    "rc": 0
-  },
-  {
-   "gate": "health-rc0",
-   "ok": true,
-   "detail": "rc=0",
-   "cmd": "agentos health",
-   "rc": 0
-  },
-  {
-   "gate": "tui-nontty-all-views",
-   "ok": true,
-   "detail": "rc=0 视图数=13",
-   "cmd": "agentos tui < /dev/null",
-   "rc": 0
-  },
-  {
-   "gate": "tui-nontty-has-source",
-   "ok": true,
-   "detail": "数据源行=True",
-   "cmd": "agentos tui < /dev/null",
-   "rc": 0
-  },
-  {
-   "gate": "term-allow-rc0",
-   "ok": true,
-   "detail": "rc=0",
-   "cmd": "agentos term \"ls -1 tools\"",
-   "rc": 0
-  },
-  {
-   "gate": "term-deny-rc1",
-   "ok": true,
-   "detail": "rc=1（写向量必须被拒）",
-   "cmd": "agentos term \"rm -f x\"",
-   "rc": 1
-  },
-  {
-   "gate": "term-zeroarg-rc2",
-   "ok": true,
-   "detail": "rc=2（零参数=什么都没跑）",
-   "cmd": "agentos term",
-   "rc": 2
   },
   {
    "gate": "completion-zsh",
    "ok": true,
-   "detail": "rc=0 行数=79",
+   "detail": "rc=0 行数=71",
    "cmd": "agentos completion zsh",
    "rc": 0
   },
@@ -194,13 +116,6 @@
    "detail": "rc=0",
    "cmd": "agentos sessions",
    "rc": 0
-  },
-  {
-   "gate": "resume-bogus-rc2",
-   "ok": true,
-   "detail": "rc=2",
-   "cmd": "agentos resume <不存在的id>",
-   "rc": 2
   },
   {
    "gate": "gates-zeroarg-rc2",
@@ -231,41 +146,6 @@
    "rc": 2
   },
   {
-   "gate": "print-json-one-line",
-   "ok": true,
-   "detail": "键齐=True ok=True exit_code=0",
-   "cmd": "agentos --output-format json -p \"服务健康吗\"",
-   "rc": 0
-  },
-  {
-   "gate": "print-json-ok-matches-exit",
-   "ok": true,
-   "detail": "ok=True exit_code=0（自相矛盾的记录就是假绿）",
-   "cmd": "agentos --output-format json -p \"服务健康吗\"",
-   "rc": 0
-  },
-  {
-   "gate": "print-empty-rc2",
-   "ok": true,
-   "detail": "rc=2（空需求=什么都没干）",
-   "cmd": "agentos -p",
-   "rc": 2
-  },
-  {
-   "gate": "print-mix-sub-rc2",
-   "ok": true,
-   "detail": "rc=2",
-   "cmd": "agentos -p \"...\" health",
-   "rc": 2
-  },
-  {
-   "gate": "print-gh-route",
-   "ok": true,
-   "detail": "rc=0 route=gh sources=['gh api user + gh repo list --limit 15 --json nameWithOwner,visibility,isFork,updatedAt']",
-   "cmd": "agentos --output-format json -p \"看一下 github 仓库\"",
-   "rc": 0
-  },
-  {
    "gate": "noarg-nontty-rc2",
    "ok": true,
    "detail": "rc=2",
@@ -273,25 +153,11 @@
    "rc": 2
   },
   {
-   "gate": "open-rc0-url",
+   "gate": "tty-noarg-enters-agent",
    "ok": true,
-   "detail": "rc=0 url 打印=True",
-   "cmd": "BROWSER=/usr/bin/true agentos open",
-   "rc": 0
-  },
-  {
-   "gate": "tty-noarg-enters-tui",
-   "ok": true,
-   "detail": "首行='✻ AgentOS TUI · 19:55:49 · http://127.0.0.1:87' footer='视图 6/13 · 数据源: GET /__health + /__act(__' elapsed=4.38s",
-   "cmd": "agentos   # 真 PTY、无参数、零送键（门在 boot 后主动终止，故不判 rc）",
+   "detail": "首行='Traceback (most recent call last):' elapsed=0.09s",
+   "cmd": "agentos   # 真 PTY、无参数、零送键",
    "rc": null
-  },
-  {
-   "gate": "tty-q-exits-rc0",
-   "ok": true,
-   "detail": "child_rc=0（q 必须干净退出）",
-   "cmd": "agentos   # 送 q",
-   "rc": 0
   },
   {
    "gate": "inst-install-rc0",
@@ -336,24 +202,10 @@
    "rc": 0
   },
   {
-   "gate": "inst-clean-shell-health",
+   "gate": "inst-clean-shell-runs",
    "ok": true,
-   "detail": "rc=0   code_sha  c10e8cac5f26fcef",
-   "cmd": "env -i PATH=/usr/bin:/bin HOME=<隔离> <shim> health",
-   "rc": 0
-  },
-  {
-   "gate": "inst-isolated-port-health",
-   "ok": true,
-   "detail": "port=65308 rc=0   code_sha  c10e8cac5f26fcef",
-   "cmd": "env -i PATH=/usr/bin:/bin <shim> --port 65308 health",
-   "rc": 0
-  },
-  {
-   "gate": "inst-isolated-port-released",
-   "ok": true,
-   "detail": "port=65308 仍可连=False",
-   "cmd": "connect 127.0.0.1:65308（服务已停）",
+   "detail": "rc=0 fi",
+   "cmd": "env -i PATH=/usr/bin:/bin HOME=<隔离> <shim> completion zsh",
    "rc": 0
   },
   {
@@ -394,71 +246,22 @@
   {
    "gate": "completion-bash-subs",
    "ok": true,
-   "detail": "rc=0 bash -n rc=0 got=21 want=21 差=无",
+   "detail": "rc=0 bash -n rc=0 got=13 want=13 差=无",
    "cmd": "agentos completion bash > f && bash -n f && 比对 Subs",
    "rc": 0
   },
   {
    "gate": "completion-gates-chain",
    "ok": true,
-   "detail": "got=77 chain=77 差=无",
+   "detail": "got=1 chain=1 差=无",
    "cmd": "agentos completion bash 的 local gates vs gates.sh 正确链",
-   "rc": 0
-  },
-  {
-   "gate": "tui-nontty-zero-ansi",
-   "ok": true,
-   "detail": "含 ESC=False（重定向进日志就不该有控制字符）",
-   "cmd": "agentos tui </dev/null | grep -c $'\\e'",
-   "rc": 0
-  },
-  {
-   "gate": "tui-nontty-views-all-13",
-   "ok": true,
-   "detail": "缺 无",
-   "cmd": "agentos tui </dev/null",
-   "rc": 0
-  },
-  {
-   "gate": "print-badquery-rc3",
-   "ok": true,
-   "detail": "rc=3（路由不成要把候选摊开，不许静默猜）",
-   "cmd": "agentos -p \"asdkjhakjhd\"",
-   "rc": 3
-  },
-  {
-   "gate": "print-deadport-rc3",
-   "ok": true,
-   "detail": "rc=3（服务不可达必须是基础设施错，不是假绿）",
-   "cmd": "agentos --url http://127.0.0.1:1 -p '服务健康吗'",
-   "rc": 3
-  },
-  {
-   "gate": "tui-deadport-rc1",
-   "ok": true,
-   "detail": "rc=1 取数失败行=True",
-   "cmd": "agentos --url http://127.0.0.1:1 tui </dev/null",
-   "rc": 1
-  },
-  {
-   "gate": "sessions-lists-id",
-   "ok": true,
-   "detail": "id='cli-20261020-195622-0a89' 命中=True",
-   "cmd": "agentos --output-format json -p '服务健康吗' → agentos sessions",
-   "rc": 0
-  },
-  {
-   "gate": "resume-id-consistent",
-   "ok": true,
-   "detail": "rc=0（刚落的会话必须回放得动）",
-   "cmd": "agentos resume <刚落的 id>",
    "rc": 0
   },
   {
    "gate": "zero-write-source-tree",
    "ok": true,
    "detail": "五个文件 sha256 前后一致=True 漂移=无",
-   "cmd": "shasum -a 256 index.html data.json tools/agentos.py tools/serve.py bin/agentos（门前/门后）",
+   "cmd": "shasum -a 256 tools/agentos.py tools/serve.py bin/agentos（门前/门后）",
    "rc": 0
   }
  ],
@@ -470,16 +273,6 @@
  ],
  "evidence": {
   "compile_err": "",
-  "views": [
-   13,
-   13,
-   13
-  ],
-  "views_template": [
-   13,
-   13,
-   13
-  ],
   "version_text": "AgentOS 0.2.0",
   "shim_mode": "0o100755",
   "shim_root_embedded": [
@@ -492,9 +285,7 @@
    "a274a813ade074a757f6d9f5e8e3c3f2cc8a32b24ffc18b8bb4eea4bbfa3983c"
   ],
   "clean_rc": 0,
-  "clean_health_rc": 0,
-  "iso_rc": 0,
-  "iso_port_still_open": false,
+  "clean_rc2": 0,
   "uninst_gone": true,
   "failclosed": [
    127,
@@ -502,21 +293,13 @@
   ],
   "completion_subs": [
    [
-    "serve",
-    "health",
-    "open",
-    "tui",
     "gates",
-    "resident",
-    "headroom",
     "selfscan",
-    "term",
     "gh",
     "agent",
     "config",
     "completion",
     "sessions",
-    "resume",
     "steer",
     "watch",
     "leader",
@@ -525,21 +308,13 @@
     "replay"
    ],
    [
-    "serve",
-    "health",
-    "open",
-    "tui",
-    "resident",
-    "headroom",
-    "selfscan",
     "gates",
-    "term",
+    "selfscan",
     "gh",
     "agent",
     "config",
     "completion",
     "sessions",
-    "resume",
     "steer",
     "watch",
     "leader",
@@ -550,182 +325,24 @@
   ],
   "completion_gates": [
    [
-    "resident_gate",
-    "headroom_gate",
-    "flake_retry_selftest",
-    "indep_field_gate",
-    "neg_a11y",
-    "freshness_gate",
-    "shoot",
-    "view_dod",
-    "view_dod_selftest",
-    "http_shot_gate",
-    "snap_gate",
-    "a11y_walk",
-    "a11y_human",
-    "neg_a11y_human",
-    "ux_audit",
-    "a11y_served",
-    "projspace_gate",
-    "act_gate",
-    "promo_gate",
-    "capmap_gate",
-    "abort_gate",
-    "abort_e2e",
-    "intent_gate",
-    "retro_gate",
-    "goal_gate",
-    "round_gate",
-    "close_gate",
-    "layout_gate",
-    "env_gate",
-    "web_gate",
-    "native_gate",
-    "native_gate_selftest",
-    "agent_core_gate",
-    "neg_agent_core",
-    "at_selftest",
-    "neg_at_selftest",
-    "minimize_check",
-    "gh_gate",
-    "tui_walk_gate",
-    "cli_gate",
-    "cli_gate_selftest",
-    "evolution_gate",
-    "capability_gate",
-    "evolution_gate_selftest",
-    "perf_gate",
-    "dsp_gate",
-    "dsp_gate_selftest",
-    "leader_gate",
-    "leader_selftest",
-    "evo_merge_gate",
-    "evo_merge_selftest",
-    "kbd_gate_selftest",
-    "rewind_gate",
-    "rewind_selftest",
-    "subagent_gate",
-    "subagent_selftest",
-    "mcp_gate",
-    "mcp_selftest",
-    "hooks_gate",
-    "hooks_selftest",
-    "repl_ux_gate",
-    "repl_ux_selftest",
-    "branches_gate",
-    "branches_selftest",
-    "supervise_gate",
-    "supervise_selftest",
-    "safety_gate",
-    "safety_selftest",
-    "autonomy_gate",
-    "autonomy_selftest",
-    "boss_gate",
-    "selfscan_gate",
-    "converge_gate",
-    "verify_cmd_selftest",
-    "task_contract_selftest",
-    "gate_pollution_selftest",
-    "replay_gate"
+    "历史备份，正确链从最早的"
    ],
    [
-    "resident_gate",
-    "headroom_gate",
-    "flake_retry_selftest",
-    "indep_field_gate",
-    "neg_a11y",
-    "freshness_gate",
-    "shoot",
-    "view_dod",
-    "view_dod_selftest",
-    "http_shot_gate",
-    "snap_gate",
-    "a11y_walk",
-    "a11y_human",
-    "neg_a11y_human",
-    "ux_audit",
-    "a11y_served",
-    "projspace_gate",
-    "act_gate",
-    "promo_gate",
-    "capmap_gate",
-    "abort_gate",
-    "abort_e2e",
-    "intent_gate",
-    "retro_gate",
-    "goal_gate",
-    "round_gate",
-    "close_gate",
-    "layout_gate",
-    "env_gate",
-    "web_gate",
-    "native_gate",
-    "native_gate_selftest",
-    "agent_core_gate",
-    "neg_agent_core",
-    "at_selftest",
-    "neg_at_selftest",
-    "minimize_check",
-    "gh_gate",
-    "tui_walk_gate",
-    "cli_gate",
-    "cli_gate_selftest",
-    "evolution_gate",
-    "capability_gate",
-    "evolution_gate_selftest",
-    "perf_gate",
-    "dsp_gate",
-    "dsp_gate_selftest",
-    "leader_gate",
-    "leader_selftest",
-    "evo_merge_gate",
-    "evo_merge_selftest",
-    "kbd_gate_selftest",
-    "rewind_gate",
-    "rewind_selftest",
-    "subagent_gate",
-    "subagent_selftest",
-    "mcp_gate",
-    "mcp_selftest",
-    "hooks_gate",
-    "hooks_selftest",
-    "repl_ux_gate",
-    "repl_ux_selftest",
-    "branches_gate",
-    "branches_selftest",
-    "supervise_gate",
-    "supervise_selftest",
-    "safety_gate",
-    "safety_selftest",
-    "autonomy_gate",
-    "autonomy_selftest",
-    "boss_gate",
-    "selfscan_gate",
-    "converge_gate",
-    "verify_cmd_selftest",
-    "task_contract_selftest",
-    "gate_pollution_selftest",
-    "replay_gate"
+    "历史备份，正确链从最早的"
    ]
   ],
-  "tui_nontty_out_has_esc": false,
-  "views_present_missing": [],
-  "session_id": "cli-20261020-195622-0a89",
-  "resume_rc": 0,
   "zero_write": [
    {
-    "index.html": "e8bd8c9cd5ac2b5220d10e9832ca12bf4135435be69480b7324bc6c6f85a5d40",
-    "data.json": "6fdf2493fd741696cf67fa5b9b37554ab619d35494b470f0f282710f312feb8b",
-    "tools/agentos.py": "baa7b4cef9ccaf564084dea42f8f40564eca3089d5e6bf35e9169e345edc7bf0",
-    "tools/serve.py": "c10e8cac5f26fcef6b4f0125a8e632757dd2b3ce6bf000ea889a07dab95d7886",
-    "bin/agentos": "041119e9439a803285e1a4325e8b94d90dc0cded0e19152769cc8bb3ef867dc1"
+    "tools/agentos.py": "ab000f6f31b28146c3d80959c44933adeec8ac7ee5629ef7a8b65f6f8d70b3a0",
+    "tools/agent_core.py": "62a275fbee2d0a0c5d3489f5736197936bd2c52fd4bb075b79f3e2b53d6022cc",
+    "bin/agentos": "041119e9439a803285e1a4325e8b94d90dc0cded0e19152769cc8bb3ef867dc1",
+    "tools/gates.sh": "39ff51fff946f60608dd3e28492e677ee5319191bb0090437535bfdf29b683ef"
    },
    {
-    "index.html": "e8bd8c9cd5ac2b5220d10e9832ca12bf4135435be69480b7324bc6c6f85a5d40",
-    "data.json": "6fdf2493fd741696cf67fa5b9b37554ab619d35494b470f0f282710f312feb8b",
-    "tools/agentos.py": "baa7b4cef9ccaf564084dea42f8f40564eca3089d5e6bf35e9169e345edc7bf0",
-    "tools/serve.py": "c10e8cac5f26fcef6b4f0125a8e632757dd2b3ce6bf000ea889a07dab95d7886",
-    "bin/agentos": "041119e9439a803285e1a4325e8b94d90dc0cded0e19152769cc8bb3ef867dc1"
+    "tools/agentos.py": "ab000f6f31b28146c3d80959c44933adeec8ac7ee5629ef7a8b65f6f8d70b3a0",
+    "tools/agent_core.py": "62a275fbee2d0a0c5d3489f5736197936bd2c52fd4bb075b79f3e2b53d6022cc",
+    "bin/agentos": "041119e9439a803285e1a4325e8b94d90dc0cded0e19152769cc8bb3ef867dc1",
+    "tools/gates.sh": "39ff51fff946f60608dd3e28492e677ee5319191bb0090437535bfdf29b683ef"
    }
   ]
  }

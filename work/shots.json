@@ -10,7 +10,7 @@
    "overflow": false,
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 86305
+   "png_bytes": 86350
   },
   "768": {
    "innerW": 768,
@@ -19,7 +19,7 @@
    "overflow": false,
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 139282
+   "png_bytes": 139127
   },
   "1440": {
    "innerW": 1440,
@@ -28,11 +28,11 @@
    "overflow": false,
    "offenders": [],
    "pageerrors": [],
-   "png_bytes": 267710
+   "png_bytes": 267700
   }
  },
  "pageerrors": [],
- "url": "http://127.0.0.1:51867/index.html",
+ "url": "http://127.0.0.1:51347/index.html",
  "served": true,
  "transport": "real-http"
 }

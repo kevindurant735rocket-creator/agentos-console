@@ -11,7 +11,7 @@ system prompt"，缺「安全地把自己改强」这一跳。本门站在外面
     D2  拒绝面（核心）：坏提案 → rejected（**不碰真树**：真树字节零改动，
         且沙箱里确有坏编辑证据）
     D3  合入面（核心）：好提案 → merged → 真树含标记 → 真树 leader_gate
-        复验绿 → capability_gate 10/10（体检报告点名的验收口径）
+        复验绿 → verify_gate 绿（终端面的验收口径）
     D4  回退面（核心原语）：合入中途失败 → rolled_back + 已落盘的第一个
         文件**逐字节复原**（rc=2）
     D5  账本面：rejected/merged 两行齐、字段对（id/verdict/gates）
@@ -238,11 +238,13 @@ def main():
             p = run_evo(gp, "leader_gate", ledger)
             merged_in_tree = marker in open(LEADER, encoding="utf-8").read()
             lr = run_gate_file("leader_gate", ROOT)
-            cg = run_gate_file("capability_gate", ROOT)
+            # capability_gate 随网页驾驶舱一起下线了（它量的是网页 /__capmap
+            # 能力账）→ 改用终端面仍然有的 verify_gate 复验。
+            cg = run_gate_file("verify_gate", ROOT)
             verdicts = [r.get("verdict") for r in _rows(ledger)
                         if r.get("id") == good_id]
             gate("D3 合入面：merged + 真树含标记 + leader_gate 复验绿 + "
-                 "capability_gate 10/10",
+                 "verify_gate 绿",
                  p.returncode == 0 and "EVO_MERGE merged" in p.stdout
                  and merged_in_tree and lr.returncode == 0
                  and cg.returncode == 0 and verdicts == ["merged"],
@@ -251,7 +253,7 @@ def main():
                     cg.returncode, verdicts))
         except Exception as e:                                 # noqa: BLE001
             gate("D3 合入面：merged + 真树含标记 + leader_gate 复验绿 + "
-                 "capability_gate 10/10", False, repr(e)[:120])
+                 "verify_gate 绿", False, repr(e)[:120])
 
         # 立即还原真树（D3 的合入是演示；本门结束时必须逐字同位）
         with open(LEADER, "wb") as f:

@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/tools/flake_retry_selftest.py", line 213, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/tools/flake_retry_selftest.py", line 200, in main
+    chk_wiring()
+    ~~~~~~~~~~^^
+  File "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/tools/flake_retry_selftest.py", line 134, in chk_wiring
+    t = io.open(tp, encoding="utf-8").read()
+        ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/var/folders/3p/m9ntmpmn5z34b3my27hrjdmm0000gn/T/flakeretry-mut-h6c2d2pi/tools/shoot.py'

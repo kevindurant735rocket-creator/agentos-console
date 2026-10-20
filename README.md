@@ -1,41 +1,30 @@
-# AgentOS 交付驾驶舱
+# AgentOS 终端 Agent
 
-仓库：https://github.com/kevindurant735rocket-creator/agentos-console
-本机开发根：`/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console`
+**只有终端面。** 网页驾驶舱与原生 macOS app 已于 2026-10-20 下线并删除
+（连同它们量的 30+ 道门）。现在这个仓库就是一件事：**一个能真正干完活的
+终端 agent** —— 真模型 + 真工具循环 + 可判定的完成契约 + 会自己进化的内核。
 
-AgentOS 是一个**只用 Python 标准库**的终端 agent 产品：真模型 + 真工具循环（Claude Code 式 REPL）、
-驾驶舱 TUI/Web 13 视图、72 门质量链、老板监督与自进化账本。
+```bash
+python3 tools/agentos.py agent            # 进终端 agent（REPL）
+python3 tools/agentos.py agent -p '需求'   # headless 一次跑完，退出码可接 CI
+bash install.sh                            # 把 agentos 装到 PATH（只装 CLI shim）
+```
 
 ## 新机快速上手
 
 ```bash
 git clone https://github.com/kevindurant735rocket-creator/agentos-console
 cd agentos-console
-python3 tools/agentos.py health                       # 服务健康（首次自动起 8790）
 python3 tools/agentos.py config set llm.provider opencode
 python3 tools/agentos.py config set llm.api_key <你的key>   # 缺它必 401
+python3 tools/agentos.py doctor                        # 一键体检（配置/key/端点/门锁）
 python3 tools/agentos.py agent -p 'ping 一下自己'      # 第一次真模型对话
-python3 tools/agentos.py tui                          # 13 视图驾驶舱
+bash install.sh                                        # 可选：把 agentos 装进 PATH
 ```
 
 配置都在 `~/.agentos/config.toml`（[llm] provider/model/api_key/no_fallback、
 [gh] write_enabled、[agent] full_access）。`no_fallback="true"` = 云端端点失败只重试
 主端点、绝不静默换本地模型。
-
-## 一键体检与自进化（W22 新增）
-
-```bash
-python3 tools/agentos.py doctor     # 7 项体检：config/key/端点/模型/服务/门锁，红给处方
-python3 tools/agentos.py evolve     # 框架级自进化一圈：经验账候选 → 模型提案 → 沙箱门验 → 自动合入
-```
-
-- `doctor`：配置可解析、key 挂着、端点 `GET /models` 200 且模型在清单、本地服务
-  `__health` ok、门链无陈旧锁。任一项红就打印处方（如 `401 → agentos config set llm.api_key <新key>`）。
-- `evolve`：把「反复失败的真实教训」（`work/agent_evo_rules.json` 里 state=CANDIDATE 的规则）
-  变成模型读码生成的 evo_merge 提案，**沙箱门验全绿才自动合入真树**（红了零污染，
-  自动回退），合入后规则转 ACTIVE。首圈实测：`evo-err-provider`（端点错误 5 连）
-  → `_key_hint` 泛化为 `_provider_hint` 全码度诊，`EVOLVE_RC=0`，账本 `verdict=merged`。
-  已实测的同类真修复：tqdm#1845、markdown-it-py#374、attrs#1637（真项目真测真修）。
 
 ## 收敛引擎与自进化旋钮（W23–W24 新增）
 
@@ -139,131 +128,3 @@ DNS 失败 / EOF / 无响应）会**一直重试到端点恢复**：
   一字不动 —— 那是给 CI 解析用的）。
 - 欢迎框 13 行 → **3 行**；状态行一条：`3 步 13.3s · 工具 2/2 · 本轮 ↑3327 ↓40 tok`。
 - 终答要求**简短**（默认 3-6 行）：不写成长报告、不加粗小标题、不复述过程。
-
-## 故障三连（都是实测踩出来的）
-
-| 症状 | 根因 | 处置 |
-|---|---|---|
-| HTTP 401 `api_key_expired` | key 过期 | `agentos config set llm.api_key <新key>`（错误信息会带这条提示） |
-| `SSL: UNEXPECTED_EOF_WHILE_READING` | 本机代理/TUN 链路抖 | 直连失败自动换经代理口重发（同主端点同净荷，非降级）；中段瞬时错有界重试 6 次 |
-| 网关 400 `No tool call found for tool output` | 有状态路由的会话日志与净荷脱钩 | 自动轮换会话 id 重试（rotate_session），净荷本身自洽 |
-
-## 终端使用（统一入口 `tools/agentos.py`，只用标准库）
-
-```bash
-cd /Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console
-
-python3 tools/agentos.py health                 # 判 __health 的 ok:true（rc=0 才是真健康）
-python3 tools/agentos.py serve                  # 起本地服务：默认 8790、占用顺延；显式拒绝 8787（headroom proxy 常驻端口）
-python3 tools/agentos.py serve --watch-tree     # 起服务 + 真树变动自动重抽+重构建+热重载（常驻推荐）
-python3 tools/agentos.py gates <门名> [门名…]    # 转发 tools/gates.sh 门链（零参数拒绝=假绿）
-python3 tools/agentos.py resident               # 常驻真值门：核 launchd 常驻实例
-python3 tools/agentos.py headroom               # headroom 8787 契约门
-python3 tools/agentos.py selfscan               # 静态安全自检：bandit 扫 tools/，只判新增 MEDIUM/HIGH
-python3 tools/agentos.py selfscan --install     # 幂等部署 bandit 到 .vendor/（不进运行时，主链路仍纯 stdlib）
-python3 tools/agentos.py replay                 # 真实会话回放基准：引擎开/关 A/B，量「空口完成」被压住多少
-python3 tools/agentos.py replay --check         # 基准门模式：有回归就非零退出
-python3 tools/agentos.py open                   # 浏览器打开驾驶舱首页
-python3 tools/agentos.py tui                    # 终端交互主界面：总览/轮次/阶段矩阵/证据账本/引擎/Agent 台/目标台/复盘台/能力地图/工作区/终端/文件/设置 13 视图全走真 8790 数据
-python3 tools/agentos.py agent                  # 内置终端 agent：真模型 + 真工具循环（Claude Code 式 REPL）
-python3 tools/agentos.py agent -p '把门链跑完'  # headless 一次跑完，退出码可接 CI（-p 的流式输出里每行都带 rc）
-python3 tools/agentos.py term ls -1 tools      # 服务端只读跑一条 shell 命令（allowlist，零远端写）
-python3 tools/agentos.py gh repos --limit 20    # GitHub 只读面（gh CLI 数据源，零远端写）
-python3 tools/agentos.py sessions               # 列 headless 会话历史（work/agent_sessions/cli-*.jsonl）
-python3 tools/agentos.py resume <会话 id>       # 回放一次会话（TTY 时回灌 Agent 台再进 TUI）
-python3 tools/agentos.py completion             # 打印 bash/zsh 补全脚本
-```
-
-TUI 键盘：`↑↓` 移动 · `Tab/→` 切下一面 · `←` 切上一面 · `回车` 当前行明细（再按返回）· `r` 刷新 · `q/Esc` 退出 · **数字 `1`-`9` 直达前九面，`0` 直达第十面**（第 11 面起没有单位数键位，走 `Tab` 在 13 面里轮转）。键位契约与代码同源：`tools/agentos.py` 的 `_tab_digit()` 对第 10 面返回 `0`，网页侧 `index.html` 第 10 个 tab（工作区）屏上也标 `0`。composer 输入态优先吞数字键，不会误切视图。驾驶舱网页侧同思路：数字 `1`-`9` 与 `0` 直达前 10 个视图（总览是默认视图，屏上不标 `1`），第 11 起走 Tab 进 tablist + 方向键 + 回车，或 Cmd+K。
-非终端环境（管道/CI）跑 `tui` 会一次性打印 13 视图真数据，不进 raw 模式；每个视图取数失败都如实报（fail-closed），不拿占位数据冒充面板。超宽的值在值列预裁时就补 `…`，整行超宽再裁一次并同样补 `…`，不许出现无声切断。
-
-## 门链（正确链，顺序有讲究——抢端口/抢浏览器的门排后面）
-
-```bash
-bash tools/gates.sh resident_gate headroom_gate flake_retry_selftest indep_field_gate \
-  neg_a11y freshness_gate shoot view_dod view_dod_selftest http_shot_gate snap_gate \
-  a11y_walk a11y_human neg_a11y_human ux_audit a11y_served projspace_gate act_gate \
-  promo_gate capmap_gate abort_gate abort_e2e intent_gate retro_gate goal_gate round_gate \
-  close_gate layout_gate env_gate web_gate native_gate native_gate_selftest \
-  agent_core_gate neg_agent_core at_selftest neg_at_selftest minimize_check gh_gate \
-  tui_walk_gate cli_gate cli_gate_selftest evolution_gate capability_gate \
-  evolution_gate_selftest perf_gate dsp_gate dsp_gate_selftest
-```
-
-零参数跑 `tools/gates.sh` 是空跑 0 门的假绿，必须把上面 47 个门名全传进去（`cli_gate` 的 `completion-gates-chain` 判据核对 CLI 补全吐出的门数 == 这条链的门数，漏一门当场红；`bash`/`zsh` 补全与 `act_projects.json` 的 `desktop_gates` 也逐项同序相等，漂移由引擎侧 D80 当场判红）。逐门结果落在 `work/gates/<门名>.log`，判据证据落 `work/<门名>.json`。
-
-## 常驻服务（桌面化三件套）
-
-- 常驻：launchd label `com.zhangfengrui.agentos-console`（plist：`~/Library/LaunchAgents/com.zhangfengrui.agentos-console.plist`，RunAtLoad=true + KeepAlive），`launchctl list | grep agentos` 查状态
-- 健康：`curl http://127.0.0.1:8790/__health`（`ok:true` 才是真健康）
-- 双击启动：macOS Finder 双击 `启动 AgentOS.command`（起服务 → 自动开浏览器 → 真树变动自动重抽+重构建+热重载）
-- 引擎侧核对：`bash ~/.codex/global-background/company-delivery/company.sh goal livecheck`（48 项上线自证，含 D25 desktop 化三件套与 D50 桌面化门链接线）
-
-## 引擎命令（company 引擎，须全路径调用）
-
-```bash
-bash ~/.codex/global-background/company-delivery/company.sh goal livecheck   # 上线自证 48 项
-bash ~/.codex/global-background/company-delivery/company.sh desktop --selftest  # 交付物三件套自测
-bash ~/.codex/global-background/company-delivery/company.sh status --dir /Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console
-```
-
-## 当前交付状态（2026-10-15 19:09 最新终跑）
-
-**70 门全链 `bash tools/gates.sh <上面那条正确链>`：rc=0，70/70 全绿**（2026-10-15 18:25-19:09 干净窗口，末行逐字 `== GATES_SUMMARY 共跑 70 门 / RC=0 计数 70 / 红门=无 ==`；此前 2026-10-14 的 64/64 与 2026-10-15 16:29 的 68/70 均为历史轮次，末两者的两条引擎态红已于 10-15 晚经正典轮次重建闭合，详见文末 W13 轮 ⑩）。
-
-历史：64 门全链 `bash tools/gates.sh <上面那条正确链>`：**rc=0，64/64 绿**（2026-10-14 14:35-2026-10-14 15:15 一个干净窗口跑完，墙钟 `TIME: TOTAL 2440s`，末行逐字 `== GATES_SUMMARY 共跑 64 门 / RC=0 计数 64 / 红门=无 ==`；逐门日志落 `work/gates/<门名>.log`，判据证据落 `work/<门名>.json`）。链尾三道补的是用户可见面：`gh_gate`（原生链接 GitHub）、`tui_walk_gate`（TUI 13 视图逐屏真数据）、`cli_gate`/`cli_gate_selftest`（一条命令装进 PATH、在终端真能用）；2026-10-10 22:49 再补三道自我进化面门 `evolution_gate` / `capability_gate` / `evolution_gate_selftest`（活服务上验复发簇追踪 / 能力自动晋升 / 能力自动回退 / 蒸馏双证据，外加一道「关于门的那道门」反向自证），门链 41→44；2026-10-11 00:25 再把 `perf_gate` 收尾补入（44→45），它把 R6 性能面连同 `agentos health` 端到端「用户敲回车到看见结果」的感知启动一起纳入每次全链复验。2026-10-11 22:42 起终端体验对齐 Claude Code：`agentos` 打开直达 Agent 台（`/` 直接给 Agent 派活，数据面板 Tab 一步可达，首帧带 ✻ 欢迎卡），`agentos agent` REPL 带 Claude 橙欢迎框、readline 历史 + `/` Tab 补全、`⏺` 回合弹点与用量状态行（配色只在交互 TTY 生效，headless 恒零 ANSI，`agent_core.py --check` 48/48）。2026-10-11 深夜 v0.2.0 三件套进舱：①`agentos gh` 写面（issue 评论/创建、PR 草稿）**默认拒绝**，`--yes`+`gh.write_enabled=true`+交互终端逐次确认三闸齐才真写，旗标白名单（-F/--body-file 结构性拒绝），审计 `work/gh_audit.jsonl` 哈希链 append-only 且 fail-closed，`--dry-run` 零网络预演（`gh_gate` 19/19，含 W1-W8 写面判据与 M1-M3 变异体必红）；②REPL 自进化：每轮信号落 `work/agent_sessions/signals.jsonl`（被兜底掩盖的主端点真失败也如实记，note=fallback-masked），同签名失败满 3 条聚 CANDIDATE，`/evo` 可见、`/evo-apply` 晋升 ACTIVE 真注入 system prompt、`/evo-off` 回退；③自主力面：`/ideas` 只读挖掘（TODO 留痕 file:line + 候选测试缺口）与回合尾部回执自检行（工具回执 x/x）。2026-10-12 再补过程可见性（Claude Code/Codex 式）：回合静默段有转轮（`✻ 思考中… Ns · Ctrl-C 打断`，0.12s 重画、只在交互 TTY 起线程），工具被调用的瞬间即上屏 `⏺ 工具(参数)`、结果随后 `[工具 X → ok]`，流式正文从 ⏺ 起接续；headless/管道零改动（`agent_core.py --check` 48/48）。2026-10-12 能力矩阵验证轮（43 项真旅程，work/CAPABILITY_MATRIX.md）：揭出 config 写面开关零校验与 TTY 确认拒绝无判据两缺口，当轮修复——`config set` 只放行 llm.*/gh.* 且 gh.write_enabled 只认字面 true/false，gh_gate 19→**22/22**（新增 W9 真 PTY 确认拒绝 / W10 字面量校验 / W11 任意表拒绝）。2026-10-12 蒸馏轮：**16 个 ≥1k 星项目**蒸馏卡落 work/distill/（星标全经 agentos gh 实测，四正交面：终端 CLI/TUI/agent 循环/记忆自进化），落地 4 条——AGENTS.md/AGENTOS.md 记忆层级注入（4KB 封顶）与 /memory、/sessions 首条请求预览列、上下文自动压缩提示、瞬时错误有界重试（词表自检）；`agent_core.py --check` 48→**51/51**。2026-10-12 CC 差距收敛轮：**Esc 打断**（流式回合 Esc 即断，interrupted 语义穿透 SSE 包装层不触发回退，cbreak 监听仅 TTY 启用，headless 零改动；实测 Esc→提示符 1.4~5.2s）、**/undo 写前快照**（work/agent_snapshots/<sid>/ manifest 消费制）、**/export 会话导出 Markdown**、**/stats**、**ctx% 配置化页脚**（llm.context_window 配了才显示）；`agent_core.py --check` 51→**54/54**。2026-10-12 GitHub 一等能力轮（用户授权自主部署）：agent 工具面新增 `gh_search`/`gh_repo_view`/`gh_file_read`/`gh_deploy` 四工具（只读三件走 gh_client 只读收口；gh_deploy 走 agent 自主路径=mode full+gh.write_enabled=true 免逐次确认但审计/限速/密钥扫描一条不少），system prompt 注入「实现类任务先参考 GitHub 成熟实现」纪律，CLI 新增 `gh repo-create`/`gh deploy`（TTY 三闸照旧）；gh_gate 22→**25/25**（W12 policy v2 矩阵/W13 密钥扫描/W14 建库预演），`agent_core.py --check` 54→**58/58**。2026-10-12 自进化 v2（工作同时按不足自提升）：信号面扩到工具失败/审批拒绝/Esc 打断（interrupted 入账但不进失败规则），tool 类 ACTIVE 规则运行时改写该工具 description（/evo-off 还原），每轮末 midflight 自动挖掘+新候选即时提示（notified 节流），/evo 不足自评（近 50 轮成功率/top 签名），失败 2 倍阈值自动生成框架级提升提案 work/evo_proposals/（人审入口）；`agent_core.py --check` 58→**61/61**。2026-10-11 决策监督计划（DSP）模块轮：新增纯标准库 `tools/dsp.py` —— **计划**（schema 校验/`bind_sha`+审计链 fail-closed 落盘 `work/plans/<sid>-plan.json`/人审 `/approve` 前写工具硬锁/每任务工具白名单/Aider 式 repo-map 4KB 封顶）、**监督**（DoomWatch 归一化同参 3 次转 ask、证据行必须含 rc=/PASS/FAIL/OK、单任务 8 步预算超即分片、偏离超限落 `-block.md`）、**决策**（实现类任务先 gh_search 参考万星仓纪律 + gh-first 路由）、**分析**（`analyze_task` 按关键词/长度/文件数结构化判 BIG/SMALL，**BIG 任务在 `run_agent` 头部自动建 3 任务骨架计划并注入系统提示**，幂等、`ctx["sid"]` 缺失即降级不阻断）；REPL 增 `/plan /approve /tasks /block`；TUI Agent 台增「决策监督计划」面板读真计划文件 fail-closed；`agent_core.py --check` 61→**73/73**，新增 `dsp_gate` 16/16 + `dsp_gate_selftest` 6/6（4 变异体：锁被摘/白名单被摘/EXPECT 漏判/doom 门内判据 必须各红，生产 JSON 字节不变），门链 45→47，bash/zsh 补全重生成、`cli_gate` 59/59、`tui_walk_gate` 35/35。2026-10-12 W0 轮（全面建设和提升首波·账内自洽，门链 47→48）：①dsp 工具名错位修复 + dsp_gate 防漂交叉断言（16→**18/18**，selftest 4→5 变异体 **7/7**，生产 work/dsp_gate.json 1991B 字节不变）；②`kbd_gate_selftest` 上链（判据本体纯 stdlib：9 变异体 + 5 裁决分支 + 缺-pyobjc 护栏回归；`kbd_gate` 本体加导入护栏后手工真跑 9/9 判据全绿、FKA=off 判 env 不假绿，按 doctrine 不上无条件下链）；③REPL 补全表 15→**27** 条 + dispatch⊆补全表防漂断言（--check 73→**74/74**）；④G2 结案（unquoted rc=2 逐字复现 / quoted rc=0 —— shell 引号用法，非产品缺陷）；全链 48 门 rc=0，墙钟 1642s。2026-10-12 W1 轮（上下文升级，门链 48→50）：①**compact v2**：压缩丢弃前先让 provider 生成事实摘要 digest 塞回头部（保留文件路径/决策/关键 rc），失败**逐字回退**旧口径；`/compact` 支持聚焦指令并透传进摘要请求。②**`/rewind N`**：会话 jsonl 重放回第 N 轮末替换 history + note 事件落盘（文件层不动，写回退用 /undo），`/rewind --list` 列轮次，越界/非数 fail-closed 上下文不动。③**门首跑抓出真缺陷并修复**：run_agent 的 `ctx = dict(ctx or {})` 浅拷使 docstring 承诺的「跑完写回 ctx["history"]」蒸发（REPL 多轮上下文与 v2 摘要全失效）—— 修为只回写 history 一个键（`_outer`）。④`rewind_gate`（10 判据：可 import/--check 逐字/锚点六元/重放对齐/越界/digest 真调用/回退逐字/聚焦/run_agent 集成真跑 22 步/零污染）+ `rewind_selftest`（4 变异体必红 + 生产 JSON 1525B 字节不变）上链。⑤链上 minimize_check 一条竞态假红（重启实例 deminiaturize 毫秒级延迟 vs 早点锁定）按判据本义修成有界等待（读到确定非最小时即过；超时仍确定最小才红）。`agent_core.py --check` 74→**80/80**；全链 50 门 rc=0，墙钟 1708s。2026-10-12/13 W2 轮（子代理 subagent-as-tool，门链 50→52）：①新工具 `subagent(prompt, max_steps≤12, tools?)`：复用 run_agent 可重入跑独立子任务（隔离 ctx、无会话历史），**禁嵌套**（depth>0 直接拒、零请求 fail-closed）、**步数硬钳 12**、**工具子集结构性强制**（schema 过滤 + `_authorize` 硬闸，手搓工具名也出不去）、**权限继承**（mode/approver/sid/plan 锁/快照目录随子 ctx，写类照走审批矩阵）；返回 {summary, steps, rc}。②`agent_core.py --check` 80→**85/85**（可重入/禁嵌套/步数封顶/子集强制/权限继承 5 例，外层停→内层终答→外层继续用序贯共享桩真跑）。③`subagent_gate`（9 判据）+ `subagent_selftest`（4 变异体：步数钳被摘/嵌套闸被摘/子集闸被摘/摘要伪造 必红 + 生产 JSON 1538B 字节不变）上链。④W2 首轮链红一门：`rewind_gate` 自己的 D2 钉还是旧数 80/80（计数钉同步清单漏了它）—— 这正是「数漂移即红」判据在工作，修后全链 **52/52 绿**（墙钟 1771s）。2026-10-13 W3 轮（MCP stdio 客户端·生态互操作，门链 52→54）：①新增 `tools/mcp_client.py`：行分隔 JSON-RPC 2.0、initialize 握手（协议版本 2026-07-28）/握手被拒自动降级为无状态直连（降级如实记 handshake="stateless"）、tools/list 注入 `mcp_<server>_<tool>`、tools/call、**密钥不进第三方服务器 env**（子进程 env 剔除本机 key）、fail-closed（id 错配/死服务器/超时都不许装成成功）；agent_core 在 REPL/headless 入口挂载（`_mcp_sync`，配置 ~/.agentos/config.toml [mcp]；--check 与门链不触，确定性不受用户配置影响）。②`agent_core.py --check` 91/91（纯面/握手/降级/id 错配/死服务器/注册映射 6 例，夹具=微型 stdio 服务器 `tools/mcp_fixture_srv.py` 四模式）。③`mcp_gate`（10 判据）+ `mcp_selftest`（3 变异体：id 错配不报/降级被绕/死服务器不报 必红 + 生产 JSON 字节不变）上链。④首跑即以门抓出夹具自身 bug（bad-id 模式原只污染未知方法回执），全量重写后 id 对账判据才真正咬得住。全链 54 门 rc=0，墙钟 1833s。2026-10-13 W4 轮（hooks 中间件 + skills 目录·可扩展性标配，门链 54→56）：①`tools/hooks_mw.py`：~/.agentos/hooks.json（契约形状与 ~/.codex/hooks.json 同款，headroom_gate 已验该形状可被外部工具读写），PreToolUse/PostToolUse/SessionStart 三事件、glob matcher、带超时子进程；**exit 2=拦截、崩溃/超时/非 0 退出码 fail-closed 拦截（只立 Pre）**、stdout JSON additionalContext 注入进 system prompt、Post 只记不拦、无配置全关。②`tools/skills_load.py`：~/.agentos/skills 与本仓 .agentos/skills 的 SKILL.md 极简 frontmatter 纯 stdlib 解析；description 单条 500/总量 4000 预算**截断留标记**；REPL 新增 `/skill [名]`（列技能 / 注入正文进下一轮上下文；自动触发挂账）。③`agent_core.py --check` 96/96（拦截与 glob/fail-closed/预算截断//skill 注入/hook_context 进 prompt 5 例）。④`hooks_gate`（10 判据）+ `hooks_selftest`（3 变异体：钩子崩溃放行/超预算不截/正文注入错位 必红）上链；自检首跑抓出量具自身两 bug（锚点计数错、变异副本 `.mut` 后缀致 importlib 拒载→门提前返回被误读为"未命中"），修复后 6/6。全链 **56 门 rc=0**（2026-10-13 01:48-02:19，墙钟 1899s）。2026-10-13 W5 轮（终端 UX 对齐 Claude Code，门链 56→58）：①**多行输入**：行尾奇数个反斜杠续行（`… ` 次级提示符，连续 `\` 继续；`\\` 是字面反斜杠不续），纯函数 `_line_wants_continue/_compose_join`。②**@ 路径 Tab 补全**：`@` 开头按会话 root 列候选（目录带 `/`、隐藏项跳过、限量 20），readline 完成器路由分流（slash 命令补全不变）。③**编辑类工具 ⎿ 详情行**：edit_file 真实行级 ±对账（公共前后缀之外的中段计数 + 首变更行预览）、write_file 行/字节数；失败/被拒/非编辑工具一律空（详情是"发生了什么"的如实描述，不是装饰）；headless/-p 输出形状一字未动。④**终答续行缩进两格**（⏺ 块手感）。`agent_core.py --check` 96→**102/102**；`repl_ux_gate`（9 判据：纯面/--check 逐字/锚点五元/续行奇偶/`@`补全/⎿对账/事件集成真跑 edit_file/终答缩进/零污染）+ `repl_ux_selftest`（4 变异体：续行被摘/@路由被摘/摘要集成被摘/缩进被摘 必红 + 生产 JSON 字节不变）上链。全链 **58 门 rc=0**（2026-10-13 07:00-07:33，墙钟 1991s）。2026-10-13 W6 轮（能力波：并行子代理批量 + skills 自动触发，门数不变 58）：①`subagent` 新增 **prompts 批量并行**（一次 ≤4，线程池；每任务独立 Provider 克隆与隔离 ctx，失败隔离、按输入序 `results` 返回；禁嵌套/步数钳/子集闸/权限继承全部照旧穿透批量）；**并行性由 barrier 夹具确定性证伪**（三线同到——串行化必 BrokenBarrierError，不靠摸时钟）；Provider.clone 构造语义钉在门的 barrier 桩上。②**skills 自动触发**：SKILL.md 第三 frontmatter 键 `triggers`（逗号/中文逗号切分）；需求文本子串命中才把技能正文自动注入本轮 system prompt（预算 4000 截断留标记、最多 2 个）；**只认显式词不猜**（无 triggers 的技能不参与）。③subagent_gate 9→**12** 判据（并行批次/批量边界/失败隔离），hooks_gate 10→**12**（自动触发两态/预算）；变异体 +2（并行串行化必红 D10 / 自动触发被摘必红 D11）。`agent_core.py --check` 102→**108/108**（EXPECT_N=108，钉清单 9 文件同步）；全链 58 门 rc=0（2026-10-13 08:45-09:20，墙钟 2072s）。2026-10-13 W7 轮（创新波：会话分支 + 计划自验收，门链 58→60）：①**`/branch [注记]`**：会话分支 —— 原 transcript 逐行拷到新会话 id（**原文件不动、永不断链**），新文件带 fork 注记（源 id/轮数）；`/sessions` 标出「← 当前」；回去（`--resume` 原 id）/回来（`--resume` 新 id）都靠 id；**分支是显式动作，不是自动分叉**。②**`/verify`**：计划自验收 —— 逐任务五态判定（真完成 / 未做 / 证据缺 / 证据对不上 accept / 无 accept 判据），**状态机不许提前 done**（白名单工具跑了也如实 pending，只认 done+证据命中 accept），结果落 note 事件。③`tools/branches.py`（纯函数层）+ REPL 两命令 + 补全表 29→31；`agent_core.py --check` 108→**114/114**。④`branches_gate`（9 判据：fork 对账 / verify 五态 / 不提前 done / 缺记录 fail-closed / 分叉两路独立）+ `branches_selftest`（4 变异体：注记类型被篡改 / done 不查证据 / doing 也算完成 / 丢末行 必红 + 生产 JSON 字节不变）上链。⑤过程自捕两件：防漂断言抓到 `/verify` 实漏补全表；此前失败运行留下的 `st-verify-*` 孤儿计划被 dsp_gate D12 残留判据抓住 → --check 用例改为开头自清陈旧文件（崩溃自愈）。全链 **60 门 rc=0**（2026-10-13 19:29-20:05，墙钟 2175s）。2026-10-13 W8 轮（老板监督框架 + 多智能体协作，门链 60→62）：①**老板监督指令通道 `agentos steer <sid|--last> "指令"`**（REPL `/steer` 同效）：`work/steer/<sid>.jsonl` append-only 收件箱 + `<sid>.cursor` 游标；跑着的 agent 在**每个步骤边界**消费新增指令、注入为 `[老板指令]` user 消息 + note 事件、**每条只进一次**（重启安全、幂等）；**只配送不裁决**——不做绕过写锁的后门；坏 sid 形状拒（防路径穿越）。②**老板监督面 `agentos watch`**（REPL `/watch`）：计划任务/未消费指令数/会话尾一屏；TTY 循环刷新、管道打一份；坏计划如实显示「计划不可读」。③**多智能体协作升级**：`subagent(chain=[...])` 顺序交接链（上一段真终答自动带进下一段；任一段失败即停并如实报 `stopped_at`）；`subagent(prompts=[...], merge=true)` map→reduce（批量后额外一次汇总调用产出 digest，失败如实留空）。④CLI 子命令四处同步（argparse / `_AGENTOS_SUBS` / bash 补全字面 / `cli_gate.SUBS`，16=16=16=16 集合相等断言通过）；`agent_core.py --check` 114→**120/120**。⑤`supervise_gate`（9 判据：steer 纯面往返/游标只进/防穿越 + 注入真跑 + 幂等 + 监督面渲染 + 会话隔离 + CLI 双冒烟 + 零污染）+ `supervise_selftest`（4 变异体：游标不推进/注入被摘/监督面丢行//steer 不接线 双通道必红）上链；subagent_gate 12→**15**（chain 交接/中途停/merge digest）+2 变异体。全链 **62 门 rc=0**（2026-10-13 22:01-22:39，墙钟 2315s）。2026-10-13 W9 轮（安全闸开关，门链 62→64）：老板可显式关掉两道监督闸 —— `agentos config set agent.plan_lock false`（未审批写锁 + 任务白名单不拦）与 `agent.mode_gate false`（plan 禁写 / accept-edits 审批询问 / 写命令与出网裁决不拦）；**只有字面布尔 False 才关**（配置文件里 `"false"` 字符串、`0`、`yes` 一律不认——防一个字符串悄悄提权，SEC E1 同类洞）；**默认全锁**（缺键即开）；**硬阻断清单（git push / rm / find -delete / git reset / dd）不可关**（防的是模型手滑，不是老板）；子代理继承开关；REPL/headless 启动时如实标注 `[安全闸] 计划锁=关 权限模式=关`。CLI 白名单扩到 `agent.*`（只 plan_lock/mode_gate 两键、值只认字面 true/false、**落盘为真布尔**）；`agent_core.py --check` 120→**125/125**。新门对 `safety_gate`（8 判据：flags 纯转换 / **默认回归**（无开关仍锁）/ 模式开关含硬阻断不可关 / 计划锁开关 / CLI 隔离 HOME 三态 / 零污染）+ `safety_selftest`（4 变异体：默认也放行 / 模式开关被摘 / **硬阻断被摘**（git push 探针——rm 探针会被命令白名单兜住，测不出硬阻断）/ flags 恒开 必红）上链。全链 **64 门 rc=0**（2026-10-13 23:08-23:48，墙钟 2415s）。
-
-同一晚 22:54-23:21 的**首跑**曾红两门（`abort_e2e` rc=1、`gh_gate` rc=2），而两门单跑各自 rc=0 —— 是长链重载下的偶发假红，不是产品缺陷。根因两条都已定位并修：`gh repo list` 探针当时**没有**传输层重试（`gh api rate_limit` 有，所以只有它红），现按同款有界重试收口（只吃 `TRANSIENT_RE`，认证问题 / 假 gh 不重试，M3 变异体仍必须红）；`abort_e2e` 在 run 没起来时会对隐藏的 `#wkstop` 无条件 `click()`，干等 30s 抛 Playwright TimeoutError 把整门打崩、连 `work/abort_e2e.json` 都不落盘，现在改成先查可见性、不可见如实记红，并把「run 起来」这段交付做成有界重试（判据一条不放松）。修完单门复验绿（`abort_e2e` rc=0 43s、`gh_gate` OK 11/11 15s），上面这行数据取自修复后的干净窗口。
-
-2026-10-14 W10 轮（默认自由面·以用户要求为中心，门数不变 64）：全流程默认**不摆闸** —— 监督闸从「默认全锁、显式关」翻转成「**默认自由、显式 true 才上锁**」（`agent.plan_lock` / `agent.mode_gate` / 新增 `agent.cmd_gate` 三键，缺键=自由；只有字面布尔 `true` 才上锁，字符串 "true"、数字 1、yes 一律不认——与 W9 同一套防暗改口径，只是方向反过来）。启动如实标注 `[安全闸] 自由面：计划锁/权限模式/命令白名单均关（默认以用户要求为中心；字面 true 才上锁；硬阻断清单不可关）`，有任一显式上锁则打 `[安全闸] 上锁：…`。**命令面同翻转**：`run_cmd` 默认自由命令面（任意命令，PATH/绝对路径解析；审批仍随 mode_gate），`agent.cmd_gate=true` 才收窄回只读 13 条白名单；REPL `!<命令>`、子代理继承、system prompt 提示行全部同源改口径。**硬阻断清单不可关**（任何模式/任何审批/任何开关都不放行），并按自由面补强形态：头词按 basename 判（`/bin/rm` 与 `rm` 同罪）、前缀赋值剥层（`env FOO=1 git push`）、`bash -c` 载荷拆词扫描（`bash -c "rm -rf x"` 拦、`bash -c "ls -la"` 放）。裸 ctx（无旗标）保持保守锁死——闸的钥匙只在入口派生的旗标上。`agent_core.py --check` 125→**128/128**（W9 五例改写成自由面两向断言 + 硬阻断形态/命令面真跑/子代理继承命令面 3 新例）；`safety_gate` 改写为 9 判据（新增 D9 命令面：自由面非白名单命令真跑 mkdir 落盘 / 显式 cmd_gate 拒），`safety_selftest` 4→5 变异体（新增「命令白名单被摘」必红）；十一处计数钉同步，`neg_agent_core` 硬阻断锚点随形态更新（32/32）。全链 **64 门 rc=0**（2026-10-14 14:35-15:15，墙钟 2440s）。
-
-2026-10-14 W11 轮（仓内指挥官·体检报告 P0-1 落地 + 防打转守卫，门链 64→66）：①`tools/leader.py` 把指挥官**内化进仓**（目标→里程碑→菱形任务 DAG→派发→回收→复盘：确定性编译、走 dsp 原语落盘上哈希链、**未审批拒跑**且拒时落 `-block.md` 留痕——指挥官不绕计划锁、拓扑派发默认 headless agent / `--worker` 桩离线复验、任务边界消费 steer 老板指令、失败阻塞下游不装绿、复盘落 `work/leader/<sid>-RETRO.md`）；CLI `leader` 子命令四处同步（17=17=17=17），`_forward_sub_argv` 泛化修掉 `leader --help` 被顶层 argparse 拦截。②`leader_gate` 10/10 + `leader_selftest` 10/10（6 变异体，含验收口径**「无 Leader 必红」模块面+CLI 面双条**）；门首跑抓出量具自身扇出判据真 bug（数的是 id 列表出现次数而非被依赖次数）并修。③同轮量具四修：`minimize_check` 门体模块级执行→**import 即整门开跑并 sys.exit 的「进口自杀」**修复（门体收进 `main()` + `__main__` 守卫）；`native_gate` 构建前排他预检（环境脏→~1s rc=3 快失败，且不再删掉下一道门赖以生存的探针基线）；探针「暴露塌陷」纳入有界「拉回再采」（判据阈值一条不动）；`native_gate_selftest` 变异崩溃护栏（`MUTFN-CRASH` 可读红，不再整门 Traceback）。④**防打转守卫**（用户实测事故驱动）：同一句话连续重复 ≥3 步停 / 同工具连续失败 ≥6 次停 / 空终答诚实化（`empty_answer` 标记 + 进信号账 `err:empty-answer`）/ 预算错误带末句——`agent_core.py --check` **131/131**（新 3 例），十一处计数钉 128→131 同步，`neg_agent_core` 32/32 不撞锚；两处假夹具（靠"读不存在文件"拖步数）改读真文件、用例本意不动。⑤**状态事故与恢复（诚实记录）**：本轮首测全链 58/66，8 红**全是 work/ 活项目状态文件被清**（`build.json`/`GOAL.json`/`ui_budget.json`/`tasks/d79fix`/会话/signals），非代码回归（无仓库删除路径、废纸篓空、锁无争用）；已按正典恢复 `build.json`（`tools/build.py`，view_dod 6/6 因果验证）、`ui_budget` 实测后重声明（ux_audit 14/14）、根 `GOAL.json` 引擎正典 set-goal 重建、`d79fix` 任务区引擎重建——**原轮次执行历史（≥3 行带真 giga_run+delta）不可复原**，当轮 `round_gate`/`close_gate` 据此诚实红（判据不放松）——**2026-10-15 已按引擎正典全流程重建闭合**：根 `GOAL.json` 走 set-goal → 逐轮 create_goal/bind-goal（R1-R4 各自对话目标）→ 每轮 new-run.sh 专属 00-project 账（`work/gf-main/agentos-rN`，ROUND-BIND 账↔轮绑定 + G0 真产物 ≥200B 非模板）→ close-round 带 delta（指名 AC）+ 命令退出码证据，R4 以 SHIP 收口（state=GOAL_SHIPPED）；`round_gate` 复绿「D78 轮次链 OK」、`close_gate` 复绿 「D79 收轮就绪度 OK」103/103——重建的是**真实执行记录**（每条 delta 都引真命令与真 rc），不是补写历史。同日再落 **W12（受控进化合入·体检报告 P0-2，门链 66→68）**：`tools/evo_merge.py` 把「提案→全门绿→合入」这一跳补齐——**机器可执行提案**（`find` 锚点必须恰出现一次；`replace` 或新文件 `write`）、**路径闸**（禁 `../`、绝对路径与 `work//native//.venv-pw/AgentOS.app` 禁改区）、**复制式沙箱**（本仓非 git；`tools/` 全量 + 与真仓同构的 `work/plans` 基线——沙箱基线不同构时门自己的零污染判据会误红，首跑实测踩过并修）、沙箱全绿才合入真树（先字节快照 → 应用 → **真树复验**），任一环红 → **不碰真树或自动回退**，账本 `work/evo_merges.jsonl` 逐行落 `merged/rejected/rolled_back`；正向 `evo_merge_gate` **7/7**（纯面闸/拒绝面/合入面/回退原语进程内直调/账本/CLI/还原零污染；含体检报告点名的「好提案合入后 capability_gate 仍 10/10」）、`evo_merge_selftest` **8/8**（4 变异体：拒绝分支/锚点唯一性/路径闸/回退 各被摘必红；M3 首跑「未命中」后给 D1 补了路径闸专属探针——`work/` 下真实存在且锚点唯一的文件，只有路径闸能拦）。
-
-同日 W10 **首跑** 61/64 曾红三门（`native_gate`、`native_gate_selftest`、`hooks_gate`），三门单跑各自全绿 —— 根因两条都在**量具侧**（不是产品缺陷，也不是 W10 内核）：①`native_gate` 采样时靶窗处于**最小化**（`window-on-screen mini=True`、`kAXWindowsAttribute err=-25204`，AX 读不到任何窗口树），是链外因素留下的窗口态；②`hooks_gate` D10 零污染窗口里看到 `_st_agent_core.<pid>` 新增目录，而快照时间线实证那是**别的 `--check` 进程当时正在跑**的临时目录（同一时刻有多个自检进程交叠存活）。修法按 W1 minimize 竞态同一口径（等到状态确定再判，判据一条不放松）：D10 对「pid 仍活着的 `_st_*` 新增」有界等待 40s（pid 已死不走 / 超时还在 / 非 `_st_*` 新增 → 照旧判红），`native_gate` 在 AX 采样前与重试点把靶窗按回 Dock（AXMinimized=false + 有界等待，助手与 `minimize_check` 同源；拉不回、读不到照旧红），准备过程落 `ax_prep` 进证据。修后四门单跑全绿、复跑全链 64/64（见上）。
-
-2026-10-15 W13 轮（自主执行引擎「全流程自己完成事情」，门链 68→70）：用户直接指示的落点 —— `tools/autonomy.py` 把 leader「派发之后」的空白补满，一句话目标在**一次审批**之后自己走到终点：①**确定性验证**：任务可带 `verify` 命令组（新 schema 键，`shlex` 拆词 `shell=False` 真跑），done 语义=**双闸** worker rc=0 ∧ verify 全 rc=0（无 verify 回退 rc=0+证据行）——worker 自称 rc=0 但判据红 = 不 done（**反假绿**，D9 两条夹具分别证伪两个方向）。②**有界自救**：失败按确定性分类表（timeout/notfound/budget/verify/crash/fail）生成修错提示，随下一轮派发书下发重试 ≤2 次（1+2 次仍不过 → `blocked`，下游按 DAG 语义不派发、独立分支照常做完）；D5 夹具（判据先红后绿）实证带修法第 2 次尝试转绿且「上一轮失败与修法」真进派发书。③**断点检查点**：每次派发/验证后计划 JSON + 跑账 `work/autonomy/<sid>.jsonl` 双落盘；D7 夹具在 t2 派发中途 **SIGKILL 整个进程组**强杀 → `resume` 从断点续、已完成 t1 零重跑（派发行=1）、终局全绿。④**诚实收口**：终局 `work/autonomy/<sid>-REPORT.md`（逐任务状态/尝试数/verify rc/证据 + 封顶阻断分类 + 下一步）；全绿 rc=0 / 部分 rc=1 如实报剩余 / 未审批 rc=2 拒跑（落 `-block.md`，自主引擎不绕计划锁）；`--max-tasks` 预算边界干净停（D8：停 rc=1 后重跑续完）。⑤REPL 新增 **`/goal [<目标>|run|resume]`**（有参=leader 菱形 DAG 编译落盘未审批；run/resume=审批后全流程自跑），补全表同步；`agent_core.py --check` 131→**134/134**。⑧**批准即执行·诚实收尾（W13 前半，同一夜间另一路补齐）**：用户实测事故——自由面 + 未审批计划 + 摘要硬编码「未审批：写工具锁死」→ 模型每轮读到「被锁死等 /approve」，而老板说「拍板」它认不出来 → 空转 + 逐字复读模板（`tools=[]` 且把没做的事写进「已全面落实」）。四根钉：**计划口径随闸走**（`dsp.plan_summary/auto_directive` 增 `locked` 参数：自由面说「写面自由：直接按任务开工」，上锁面才说锁死）；**批准即执行**（`_looks_approved` 批准词 + 否定前缀防误判「不同意/没批准/暂不批准」；命中后注入硬指令 + 未审批计划按口谕**自动批准上哈希链** + 有界重试 `_needs_approve_retry`（零工具才重试、Esc 打断不重试））；**零证据完成声明打脸**（0 工具却说「已落实/已部署」→ 铁律尾注 + 信号账 `err:no-evidence-claim`）；**跨轮复读检测**（相似度 ≥0.9 → `err:stale-reply` + 提示换端点）；空终答自动重试一轮。`agent_core.py --check` 134→**140/140**（新 6 例），计数钉 134→140 全同步（`neg_agent_core` 32/32 不撞锚；受影响的 8 道邻门单跑全绿）。（新 3 例：建计划/未审批拒跑 rc=2+block+零派发/桩小闭环 5/5），十一处计数钉 131→134 同步（27 处替换零残留）。⑥`autonomy_gate` **12/12**（纯面/环负控/锁面/一次调用 5/5 全流程含 verify marker 物证/自救先红后绿/封顶 1+2=3 次+DAG 传播/强杀续跑零重跑/预算边界/反假绿双闸/steer 监督/CLI/零污染）+ `autonomy_selftest` **10/10**（6 变异体：绕锁/无自救/封顶差一/续跑重跑/verify 被跳过/环守卫被摘 各必红）；两门纯 stdlib、桩 worker+桩判据命令零模型零网络。⑦同轮修 `rewind_gate` D8 假夹具（读 22 个不存在文件——W11.1 打转守卫正确地在第 6 步止损导致跑不到压缩阈值；改落真文件保夹具本意，与 subagent_gate D6 / agent_core 步数封顶夹具同类第三处）。⑨**终版全链 70 门**（2026-10-15 16:29-17:12，墙钟约 42 分钟）：末行逐字 `== GATES_SUMMARY 共跑 70 门 / RC=0 计数 68 / 红门=round_gate(RC=1),close_gate(RC=2) ==`。**本波全部新门与改动门在链上绿**：`autonomy_gate` rc=0（12/12）、`autonomy_selftest` rc=0（10/10）、`rewind_gate` rc=0（10/10）、`rewind_selftest` rc=0（7/7）、`agent_core_gate`「自检 140 条全绿 / 编译 rc=0 / 硬阻断 5 项独立复核通过」（链内 20 处 `AGENT_CORE OK 140/140` 见证）。唯二两红即诚实清单的引擎侧两条（`round_gate` 轮史被状态事故摧毁不可复原、`close_gate` 待引擎对话侧 `create_goal` 四步绑定）——**判据不放松、不装绿**。链的读法：链在 16:29 开跑，批准即执行那半在 16:38-16:39 由并行线落盘，**所有对内核计数敏感的门都在合流之后运行**（链内见证 140/140 而非旧 134），故整链判决对当前树有效；README 自身在 16:47 随链写入（无门读它做判据）。⑩**两红闭合·终版全链 70/70 全绿**（2026-10-15 18:25-19:09）：引擎侧按正典补完状态后，末行逐字 `== GATES_SUMMARY 共跑 70 门 / RC=0 计数 70 / 红门=无 ==`——**含此前两条诚实红**：`round_gate`「D78 轮次链 OK」（活根重建 R1-R4 真轮史：每轮专属 00-project 账 + ROUND-BIND 账↔轮绑定 + G0 真产物 ≥200B 非模板 + delta 指名 AC + 命令退出码证据）、`close_gate`「D79 收轮就绪度 OK」103/103（R4 以 SHIP 收口 → 活根 `GOAL.json` state=GOAL_SHIPPED，n7_e8 活根目标状态判据满足）。**过程中首次试跑仍读出两条旧红并当场复核归因**：账↔轮 binding 缺失（先 rc=2 再补齐）、fixture 账目录缺（后由正典重建），修后单跑 103/103 + 轮史 2/2 再进链——链内两门各自 `OK` 为终态凭证。
-
-2026-10-11 补 `perf_gate` 后的**首跑 45 门**曾红一门：`view_dod_selftest` rc=2，第 259 行 `[MUT M6] FAIL · 期望门「截图为旧版本冒充本轮」没红=空门`。这不是产品缺陷，是量具自己坏了 —— 深挖出三个独立根因，全部已修，修后单跑 `VIEW_DOD_SELFTEST OK 11/11`（287s）、纯隔离副本直跑 `VIEW_DOD OK 6/6`，再跑整条 45 门链才全绿（上面那行数据）：
-- **D103（真洞）**：`tools/view_dod.py` 的 `_sha_start = _page_sha()` 原先在解析 `--html/--shots/--out` **之前**取，隔离模式下 start 读的是活 `index.html`、end 读的是副本 → 两个文件对账，M1–M5 的副本被注入过脚本，恒与活页不等。后果：「截图为旧版本冒充本轮」这条判据对它们**恒红**，「rc!=0 ⇒ 注入被抓到」里 5/6 来自假来源。修法：把 `_sha_start` 挪到隔离缝解析之后。
-- **D104（时序竞态）**：`tools/view_dod_selftest.py` 原来用 `delay = max(0.4, base_elapsed*0.35)` 睡完再改写副本；45 门全链里 6 个变异体并发抢 CPU，走查实际耗时与 BASE 不同 → 改写可能落在 `_sha_end` 之后 → 门本来就该绿 → 「空门」假红。修法：删掉 wall-clock 定时，改成 `_arm_midrun()` **轮询等第一张 png 落盘**（=走查真的开始了）再改写，与机器快慢无关；并加 `_restore()` 每次量具尝试前还原副本 + 清空该变异体截图目录，防重试把改写洗白。
-- **D105（真洞）**：`_serve_root_for()` 用 symlink 造临时根，而 `/__fs` 的 realpath 前缀沙箱把 symlink 目标判成越界 → 隔离模式下 file 视图**永远**落不到真数据态 → 「任一视图 JS 报错」「屏截图齐」两条判据在副本上恒红 → M1/M5 被无关的红洗白，也是空门。修法：删掉临时根，服务根一律用活产品根，新增 `QuietHandler.translate_path()` 只在 `urlparse(path).path == "/index.html"` 时返回隔离副本、其余全走活根。
-
-逐门 OK 令牌（取自 2026-10-11 06:24 的 45 门全链；该链 rc=0、`GATES_SUMMARY` 红门=无；触发本轮重跑的两处改动 = `tools/agent_core.py` 的 Claude Code 式 REPL（会话持久化 + 12 斜杠命令 + `!`/`@` 展开 + `--continue`/`--resume`）与 `tools/ax_probe.py` 的 ax-sustained 快速路径）：
-
-- 常驻真值 `resident_gate`：`RESIDENT_GATE OK 20/20`
-- 8787 契约 `headroom_gate`：`HEADROOM_GATE OK 正向 18/18 · 变异体 47/47 抓住 · 漏网 0`
-- 视觉 DoD `view_dod`：`VIEW_DOD OK 6/6`（13 视图 × 3 尺寸 = 39 屏真视口走查）
-- 布局 `layout_gate`：`LAYOUT_GATE OK 8/8`
-- 键盘/读屏：`A11Y_WALK OK 21/21`、`A11Y_HUMAN OK 6/6`（AT=AT-UNVERIFIED，见诚实清单）、`AT_SELFTEST OK 6/6`、`NEG_AT_SELFTEST OK 5/5`
-- 原生壳 `native_gate`：`NATIVE_GATE OK 194/194`、`NATIVE_GATE_SELFTEST_OK 116/116`
-- 页面/服务面：`UX_AUDIT OK 14/14`、`A11Y_SERVED OK 4/4`、`HTTP_SHOT_GATE OK 8/8`、`SNAP-GATE-OK 15/15`、`SHOOT OK 3/3`
-- 真浏览器点按 `act_gate`：`ACT_GATE OK 24/24`
-- 接线与自证：`CAPMAP_GATE OK 15/15`、`PROMO_GATE OK 10/10`、`FRESHNESS_GATE OK 16/16`、`INDEP_FIELD_GATE OK 11/11`、`VIEW_DOD_SELFTEST OK 11/11`、`FLAKE_RETRY OK 12/12`
-- 中止/意图/目标台：`D76 中止能力上牙 OK`、`D76 中止端到端 OK`、`D75 意图路由上牙 OK`、`D77 目标台 OK`、`D78 轮次链 OK`、`D79 收轮就绪度 OK`、`D88 env_gate OK`、`D88 web_gate OK`
-- 终端 agent 与 CLI 面：`AGENT_CORE_GATE OK 自检 74 条全绿 / 编译 rc=0 / 硬阻断 5 项独立复核通过`、`NEG_AGENT_CORE OK 32/32`、`CLI_GATE OK 59/59 判据通过`、`CLI_GATE_SELFTEST OK 52/52 断言（1 BASE + 4 变异体）`、`MINIMIZE_CHECK_OK 11/11`
-- GitHub 原生面 `gh_gate`：`GH_GATE OK 11/11`（BASE 四件事实 which/rate_limit/repos/auth + 零远端写 AST 扫描 + 重试谓词自证 + 3 变异体 M1/M2/M3 + 零污染双自查）
-- 终端 TUI 逐屏 `tui_walk_gate`：`TUI_WALK_GATE OK 12/12`（真 PTY 逐屏走查 13 视图 + 2 变异体 + 判据双向咬合自证）
-- 自我进化面：`EVOLUTION_GATE OK 10/10`（活 8790 上复发簇非空且有复发性簇 / 能力账每条有状态 / 有 A/B 验证记录 / 有自动晋升触发 / 有退化检测）、`CAPABILITY_GATE OK 10/10`（36 条账 / 状态分布 / `ab_was`-`ab_now` 成对 / HOLD-AB 判定 / 回退能力 / 引擎账本 == 能力地图 / 复发簇与能力关联）、`EVOLUTION_GATE_SELFTEST OK 15/15`（夹具 HTTP 服务 + 10 个单点变异体逐条证伪 + 服务死两门同红 + 生产 JSON 字节不变双自查）
-- 性能 `perf_gate`：`PERF_GATE OK 9/9`（health 0.009s、distill 0.007s、capmap 0.014s、页面 0.006s、内存 31.4MB、进程 2、fd 32、冷启动 0.045s，外加 `perf-cli-perceived`：`agentos health` 端到端 0.060s rc=0）
-- 决策监督计划 `dsp_gate`：`DSP_GATE OK 16/16`（schema/审计链/写锁/白名单/doom/证据/BIG 自动计划 正向判据）、`dsp_gate_selftest`：`DSP_GATE_SELFTEST OK 6/6`（BASE + 4 变异体各必须红 + 生产 JSON 字节不变）
-- `python3 tools/agentos.py health`：**rc=0**；TUI 键盘契约 PTY 探针 `PROBE_RESULT 1/1 ALL-PASS`
-
-引擎上线自证（48 项 `company.sh goal livecheck`）：**rc=0，48/48 全绿，末行 `GOAL_LOOP_OK`**（2026-10-11 01:41:54-02:09:43 一个安静窗口跑完；判据 `ls -d work/gates.lockd` 空 + `pgrep -f 'gates[.]sh'` 空后才开跑）。其中 D50 本项逐字 `OK   桌面化门链接线（D50）                 AgentOS 交付驾驶舱: rc=0 45/45 门 RC=0` —— 引擎侧已把本项目的 45 门链纳入上线自证并当场跑绿，用户此前的「引擎侧没含本项目」缺口由此闭合。历史红项（14:47 那次 rc=2、红 D50）成因是当时外部管线并发写 `tools/`，`env_gate`/`web_gate` 的「零写入」判据把别的管线的落盘判成本门被写（该踩实案例记在 `tools/gates.sh` D102 门链互斥锁注释里），不是产品缺陷；本次干净窗口已不再复现。
-
-**诚实清单**（没有门覆盖、或只能人工验的项，写清楚免得当成已验）：
-- 外部真模型端点是外部阻断，不是产品缺陷：`agentos agent -p` 默认走 `~/.codex/config.toml` 里 CC Switch 本地代理（`http://127.0.0.1:15799/v1`）转发上游。2026-10-11 02:11 复测：`GET /v1/models` 仍 **200**（本地代理活着），而 `POST /v1/chat/completions` 返回 **HTTP 400** `cc_switch_upstream_error` / `MissingSessionID` —— 上游 OpenCode Go 要求 `x-opencode-session` 才能路由（此前 10-10 那次是 Cloudflare 403，阻断形态会漂，以当场探测为准）。自带端点不受影响：`tools/agent_core.py` 的 `resolve_provider()` 认 `AGENTOS_LLM_BASE_URL` / `AGENTOS_LLM_MODEL` / `AGENTOS_LLM_API_KEY` / `AGENTOS_LLM_HEADERS` 四个环境变量，指向自己的 OpenAI 兼容端点即可跑真模型。默认门链不连真端点（`agent_core_gate` 的 33 条自检全走桩）；`AGENT_CORE_GATE_REAL=1` 显式打开真端点冒烟时，对外部阻断如实报 FAIL，不算默认链的红。
-- **离线后端已实测可用**（2026-10-11 02:12，主线程 /root）：本机 Ollama 的 OpenAI 兼容口 `http://127.0.0.1:11434/v1`（模型 `qwen3:0.6b`）`curl` 探针 **HTTP 200**（1.33s），整条链路也通 —— `AGENTOS_LLM_BASE_URL=http://127.0.0.1:11434/v1 AGENTOS_LLM_MODEL=qwen3:0.6b python3 tools/agent_core.py -p --mode plan '用 read_file 读 README.md 前 3 行'` → **rc=0，2 步 10.8s，真工具调用 1 次**。另有开关式写法 `AGENTOS_LLM_LOCAL=ollama`（等价于上面前两个变量，模型可用 `AGENTOS_LLM_MODEL` 覆盖）。**为什么开关式而不自动探测**：本机常年跑着 Ollama，自动探测会让 `neg_agent_core` 的「空 HOME 必须抛 no-provider」判据变红 —— 那等于把「没配端点」谎成「有端点」；`agent_core.py --check` 第 16 条把这个边界也钉进了自检。0.6b 这种小模型的答案质量另说（它会把 README 概括一通而不是只读 3 行），这里证明的是**内核链路真跑通**，不是模型聪明。
-- **内置命名 provider：OpenCode zen 已接入**（2026-10-11 12:4x，主线程 /root）：`agentos agent --provider opencode`（或 `AGENTOS_PROVIDER=opencode`）直连 `https://opencode.ai/zen/go/v1`，模型 `muse-spark-1.3-contributor`（该网关 45 个模型之一，`GET /v1/models` HTTP 200）。端点要 Bearer key：`AGENTOS_LLM_API_KEY=<你的 OpenCode key>`。实测无 key / 假 key 各一条，均如实 rc=3：`agentos agent --provider opencode -p --mode plan '只回复两个字：可用'` → `HTTP 401 Missing API key`；`AGENTOS_LLM_API_KEY=sk-dummy-probe` 同命令 → `HTTP 401 Invalid API key`（证明 key 已按 Bearer 送到应用，只差真 key）。一个坑已修：Cloudflare 按 UA 拦 Python-urllib（403 error 1010），内核 `_open()` 现在默认发浏览器 UA，显式 `AGENTOS_LLM_HEADERS` 仍可覆盖。内置端点表在 `tools/agent_core.py` 的 `NAMED_PROVIDERS`，加新端点只改这张表；命名 provider 优先于 `AGENTOS_LLM_BASE_URL`。自检第 17 组把「opencode 解析出内置端点 + 未知名 fail-closed」钉进判据（`--check` 33/33）。
-- **REPL 开箱即用：端点失败自动回退**（2026-10-11 03:2x，主线程 /root）：`agentos agent` 交互 REPL 默认走 `~/.codex/config.toml` 端点；主端点连不通（403/400/不可达）时内核自动回退到本机 Ollama，stderr 逐字打印 `[回退] 主端点失败（模型端点 HTTP 403：...），改用本机离线后端 qwen3:0.6b`，REPL 不退出、上下文保留、默认开流式（`--no-stream` 关）。实测三条（命令 + 退出码）：默认环境管道喂 `用 read_file 读 README.md 前 3 行` → `REPL_DEFAULT_RC=0`（日志 `/tmp/repl_default_r4.out`，含 `[回退]` 与 `[工具 read_file → ok]`）；显式 `AGENTOS_LLM_LOCAL=ollama AGENTOS_LLM_MODEL=qwen3:0.6b` → `REPL_LOCAL_RC=0`；headless `-p` 空 HOME 无端点 → `HEADLESS_NOEP_RC=3`（**不**回退 —— CI 不许被本机模型悄悄洗绿）。REPL 连续两轮端点都失败仍不退出（`REPL_CONTINUE_RC=0`，stderr 两行「（上下文保留，可继续输入）」）。回退路径有自检第 18 组用桩端点双向证伪（回退成功 + headless 不回退），`agent_core.py --check` = 33/33。
-
-- VoiceOver 朗读是人工项：本机 TCC 未授予「辅助功能」权限，`a11y_human` 的 OS 层恒为 `AT-UNVERIFIED`（设计使然），成立的只有 AX 层物证（前台窗口 + 真 AX 内容树）
-- R6「启动时间 <3s」现在有端到端门了：`perf_gate` 的 `perf-cli-perceived` 真起 `agentos health`、量「用户敲回车到看见结果」全程 0.060s rc=0（<3s 且 rc=0）；`perf-cold-start` 另量进程冷启动 0.045s。双击启动器（`启动 AgentOS.command`）的服务+首帧面 2026-10-11 06:56 主线程实跑：8790 被占→顺延 8791、`AGENTOS_CONSOLE_UP`、首页 `HTTP=200 / 267621 B / __health ok:true`、Ctrl+C 后 `AGENTOS_CONSOLE_DOWN` + `已退出（rc=0）`、8791 释放；仍未覆盖的只剩 OS 层浏览器窗口渲染首帧（含 Chrome 冷启）那一段，仍是人工项
-- 8791 端口已空闲（2026-10-10 22:47 `lsof -nP -iTCP:8791 -sTCP:LISTEN` 无输出），冒烟服务可直接走 8791；8790 常驻 pid 36845、8787 headroom pid 61263 仍为唯一属主
-- `work/_delivery_gap.md` 是 10-08 的旧文，引用时注意日期
-
-**相关文档**：对抗审计 `work/w4_audit.md`（无 P0）、引擎侧 desktop 化核对 `work/w7_engine_livecheck.md`、13 视图规格 `work/w2_views9.md`、装机 `docs/INSTALL.md`、轮次台账 `work/GOALS.md`（R1-R5 已收轮；R6/R7/R8 的判据命令新鲜全绿，但目标已 GOAL_SHIPPED，引擎拒开新轮、`close-round` 不可达，该缺口如实记在 `work/_delivery_gap.md`）
-
-## W14 轮（老板模块 + 完全权限 + 自救环，门链 70→71，2026-10-15）
-- 本机 `~/.agentos/config.toml [agent] full_access=true`：删文件/推送默认放行，逐条审计 `work/destructive_audit.jsonl`；代码默认仍关，`_hard_deny` 一行未动。
-- `tools/boss.py` 独立老板进程：`review`（schema+环+风险，拒必说理）/`monitor`/`stop`/`fix`（blocked 重开+换路 steer+resume）/`memory`（提案落记忆账，去重封顶）/`pilot`（一句话大项目，`--max-tasks` 预算）。
-- `boss_gate` 9/9 进链；`autonomy_gate` 13/13 含 D12 撤销实证；`leader_gate` D9 文案同步（dsp 存时拒环在前）。

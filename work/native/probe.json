@@ -74,7 +74,7 @@
   "panel_visible_now" : 0,
   "probe_mode" : 1,
   "probe_multi_instance" : 1,
-  "probe_saved_at" : "2026-10-20T13:00:24Z",
+  "probe_saved_at" : "2026-10-20T13:24:29Z",
   "probe_sibling_instances" : 0,
   "proj_active_flag" : [
     "console"
@@ -93,7 +93,7 @@
   ],
   "proj_loaded" : 1,
   "proj_nfiles" : [
-    1971,
+    1982,
     2000
   ],
   "proj_roots_absolute" : true,
@@ -106,9 +106,6 @@
   "projects_loaded_at" : "loadConsole",
   "recovery_panel_visible" : 0,
   "target_url" : "http://127.0.0.1:8790/",
-  "webview_did_finish" : 1,
-  "webview_title_after_load" : "AgentOS 交付驾驶舱",
-  "webview_url" : "http://127.0.0.1:8790/",
   "webview_url_requested" : "http://127.0.0.1:8790/",
   "window_autosave_name" : "AgentOSMainWindow",
   "window_cg_onscreen_count" : 1,
