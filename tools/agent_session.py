@@ -499,14 +499,68 @@ def _memory_files(root):
     return out
 
 
+def _memory_digest(body, cap=1200):
+    """把项目记忆压成**确定性摘要**：每个小节留标题 + 该节第一条粗体规则。
+
+    为什么（2026-10-22 的 token 账）：项目记忆原来**整段**注入 system prompt
+    —— 本仓 AGENTS.md 3,634 字符 ≈ 1,355 token，**每一轮**都要付一遍，而
+    里面大部分是叙述性铺垫，不是「常驻指令」。现在只注入：
+      · 每个小节的标题（规则的全貌，一眼看到有哪些章）
+      · 每节的第一条粗体规则（真正的约束句）
+      · 一句指针：全文用 read_file 读原文（工具面本来就有 read_file）
+
+    摘要**确定性**（不调模型、不猜）→ 可测、可复跑，不会「这次给下次不给」。
+    丢的是叙述性解释，不是规则；真需要细节的模型可以 read_file 读回来。
+    """
+    out = []
+    has_heading = False
+    seen_bold = False
+    in_code = False
+    for raw in str(body or "").splitlines():
+        ln = raw.strip()
+        if ln.startswith("```"):
+            in_code = not in_code
+            continue
+        if in_code:
+            continue
+        if not ln:
+            continue
+        if ln.startswith("#"):
+            # 代码块里的注释行（bash 步骤）已被上面的 in_code 挡掉，
+            # 这里剩下的都是真标题（含「## 1.」这种编号标题）。
+            out.append(ln)
+            has_heading = True
+            seen_bold = False
+            continue
+        # 每节第一条**加粗句**才算「常驻指令」（**铁律**：… / **铁律**…），
+        # 散文与代码块不注入。粗体句常常不以 ** 结尾，所以只判开头。
+        if not seen_bold and ln.startswith("**"):
+            out.append(ln[:160])
+            seen_bold = True
+    if not has_heading:
+        # 兜底：**没有标题结构的文件不许被摘要吃掉**。有些项目的 AGENTS.md
+        # 就是一段散文（无 # 标题、无加粗句），摘要会把它整段丢掉 ——
+        # 那是「项目记忆丢失」的行为回归（判据：记忆层级那条自检曾因此变红）。
+        # 这种文件退回首段散文（截断），宁可多付点 token 也不能丢规则。
+        _flat = " ".join(x.strip() for x in str(body or "").splitlines() if x.strip())
+        out = [_flat[:400]] if _flat else []
+    txt = "\n".join(out)
+    if len(txt) > cap:
+        txt = txt[:cap].rsplit("\n", 1)[0] + "\n…（摘要截断，全文用 read_file 读）"
+    return txt
+
+
 def _memory_prompt_lines(ctx):
     files = _memory_files(ctx.get("root"))
     if not files:
         return []
     lines = ["项目记忆（自 AGENTS.md / AGENTOS.md 层级读入，其中的约束照办）："]
     for name, body in files:
-        lines.append("<<<%s>>>" % name)
-        lines.append(body)
+        lines.append("<<<%s 摘要>>>" % name)
+        lines.append(_memory_digest(body))
+        lines.append(
+            "（要细则自己 read_file 读 %s 的全文；上面是结构与硬规则）" % name
+        )
         lines.append("<<<END %s>>>" % name)
     return lines
 

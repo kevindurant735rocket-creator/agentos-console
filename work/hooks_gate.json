@@ -7,8 +7,8 @@
       "ok": true
     },
     {
-      "detail": "rc=0 actual='AGENT_CORE OK 169/169' expected='AGENT_CORE OK 169/169'",
-      "gate": "D2 --check 末行逐字 AGENT_CORE OK 169/169",
+      "detail": "rc=0 actual='AGENT_CORE OK 170/170' expected='AGENT_CORE OK 170/170'",
+      "gate": "D2 --check 末行逐字 AGENT_CORE OK 170/170",
       "ok": true
     },
     {
@@ -27,7 +27,7 @@
       "ok": true
     },
     {
-      "detail": "len=2354",
+      "detail": "len=1460",
       "gate": "D6 注入：hook_context 真进 system prompt",
       "ok": true
     },

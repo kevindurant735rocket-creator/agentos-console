@@ -1,0 +1,111 @@
+{
+ "tool": "token_gate",
+ "chars_per_token": 2.68,
+ "budget": {
+  "fixed": 9000,
+  "tools": 7000,
+  "system": 2200,
+  "one_tool": 800
+ },
+ "measured": {
+  "mode": "full",
+  "system_chars": 1902,
+  "tools_chars": 6595,
+  "fixed_chars": 8497,
+  "tool_count": 18,
+  "per_tool": [
+   {
+    "name": "todo",
+    "desc": 116,
+    "schema": 674
+   },
+   {
+    "name": "subagent",
+    "desc": 82,
+    "schema": 553
+   },
+   {
+    "name": "edit_file",
+    "desc": 42,
+    "schema": 328
+   },
+   {
+    "name": "search",
+    "desc": 23,
+    "schema": 323
+   },
+   {
+    "name": "gh_search",
+    "desc": 45,
+    "schema": 277
+   },
+   {
+    "name": "read_file",
+    "desc": 40,
+    "schema": 276
+   },
+   {
+    "name": "run_cmd",
+    "desc": 19,
+    "schema": 260
+   },
+   {
+    "name": "gh_file_read",
+    "desc": 33,
+    "schema": 234
+   },
+   {
+    "name": "skills",
+    "desc": 43,
+    "schema": 196
+   },
+   {
+    "name": "write_file",
+    "desc": 36,
+    "schema": 185
+   },
+   {
+    "name": "gh_read",
+    "desc": 21,
+    "schema": 181
+   },
+   {
+    "name": "list_dir",
+    "desc": 23,
+    "schema": 174
+   },
+   {
+    "name": "health",
+    "desc": 39,
+    "schema": 120
+   },
+   {
+    "name": "gh_repo_view",
+    "desc": 31,
+    "schema": 113
+   },
+   {
+    "name": "git_log",
+    "desc": 24,
+    "schema": 113
+   },
+   {
+    "name": "web_fetch",
+    "desc": 26,
+    "schema": 111
+   },
+   {
+    "name": "git_diff",
+    "desc": 15,
+    "schema": 113
+   },
+   {
+    "name": "git_status",
+    "desc": 29,
+    "schema": 36
+   }
+  ]
+ },
+ "estimated_fixed_tokens": 3170,
+ "live": {}
+}

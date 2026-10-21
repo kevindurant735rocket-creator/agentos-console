@@ -93,6 +93,36 @@ def render_section(items, per=PER_ITEM, total=TOTAL_BUDGET):
     return "\n".join(out)
 
 
+def render_index(items, total=1200):
+    """**目录式**技能段：只给名字 + 4 词提示；正文靠 skills 工具按需取。
+
+    为什么（2026-10-22 的 token 账）：技能段原来把每条 description 全量注入
+    system prompt（本机 6 个技能 = 1,027 字符 ≈ 380 token，**每轮**都付），
+    而正文本来就是「按需注入」的（/skill <名> 或 triggers 命中）。
+    真正要补的是**索引**：名字在、描述短，具体做法让模型自己拉。
+
+    摘要**确定性**（截断 description，不调模型）。
+    """
+    if not items:
+        return ""
+    out = ["可用技能（skills 工具可读正文）："]
+    used = len(out[0])
+    omitted = 0
+    for it in items:
+        d = str(it.get("description") or "").strip().split("—")[0].strip()
+        words = d.split()
+        hint = " ".join(words[:4])
+        line = "- %s%s" % (it["name"], (": " + hint) if hint else "")
+        if used + len(line) + 1 > total:
+            omitted += 1
+            continue
+        out.append(line)
+        used += len(line) + 1
+    if omitted:
+        out.append("（其余 %d 个技能未列出，用 skills 工具查）" % omitted)
+    return "\n".join(out)
+
+
 def auto_trigger(text, items, limit=2, budget=4000):
     """按 triggers 词命中自动挑技能。返回 [(name, body)]（≤limit 个、总长
     ≤budget）。没有 triggers 的技能不参与自动触发 —— 只认显式词，不猜。"""

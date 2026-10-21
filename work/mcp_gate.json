@@ -7,8 +7,8 @@
       "ok": true
     },
     {
-      "detail": "rc=0 actual='AGENT_CORE OK 169/169' expected='AGENT_CORE OK 169/169'",
-      "gate": "D2 --check 末行逐字 AGENT_CORE OK 169/169",
+      "detail": "rc=0 actual='AGENT_CORE OK 170/170' expected='AGENT_CORE OK 170/170'",
+      "gate": "D2 --check 末行逐字 AGENT_CORE OK 170/170",
       "ok": true
     },
     {

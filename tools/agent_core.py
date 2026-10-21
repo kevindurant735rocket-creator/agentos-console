@@ -457,12 +457,12 @@ def tool_defs():
 _S_LISTDIR = {
     "type": "object",
     "properties": {
-        "path": {"type": "string", "description": "项目根内的相对路径，默认 '.'"},
+        "path": {"type": "string", "description": "仓库内相对路径，默认 ."},
         "depth": {
             "type": "integer",
-            "description": "1 或 2，默认 1",
             "minimum": 1,
             "maximum": 2,
+            "description": "默认 1",
         },
     },
 }
@@ -471,7 +471,7 @@ _S_LISTDIR = {
 @_tool(
     "list_dir",
     RISK_READ,
-    "列目录：名字/是否目录/字节数。只看项目根内，隐藏文件跳过。",
+    "列目录：名字/是否目录/字节数。只看项目根内。",
     _S_LISTDIR,
 )
 def _t_list_dir(a, ctx):
@@ -520,17 +520,13 @@ def _t_list_dir(a, ctx):
 _S_READ = {
     "type": "object",
     "properties": {
-        "path": {"type": "string", "description": "项目根内的相对路径"},
-        "offset": {
-            "type": "integer",
-            "description": "起始行号（1 起），默认 1",
-            "minimum": 1,
-        },
+        "path": {"type": "string", "description": "仓库内相对路径"},
+        "offset": {"type": "integer", "minimum": 1, "description": "起始行号，默认 1"},
         "limit": {
             "type": "integer",
-            "description": "最多读多少行，默认 2000",
             "minimum": 1,
             "maximum": 2000,
+            "description": "最多读几行，默认 2000",
         },
     },
     "required": ["path"],
@@ -540,7 +536,7 @@ _S_READ = {
 @_tool(
     "read_file",
     RISK_READ,
-    "按行读一个文本文件，带回显行号。超 256 KiB 拒读并要求先 search 定位。",
+    "按行读文本文件，带回显行号。超 256 KiB 拒读（先 search 定位）。",
     _S_READ,
 )
 def _t_read_file(a, ctx):
@@ -588,7 +584,7 @@ _S_SEARCH = {
     "type": "object",
     "properties": {
         "pattern": {"type": "string", "description": "正则（rg 语法）"},
-        "path": {"type": "string", "description": "搜索起点，默认项目根"},
+        "path": {"type": "string", "description": "搜索起点，默认仓库根"},
         "glob": {"type": "string", "description": "文件过滤，如 *.py"},
         "max_results": {
             "type": "integer",
@@ -611,7 +607,7 @@ def _find_rg():
 @_tool(
     "search",
     RISK_READ,
-    "正则搜索（rg 优先，grep -E 兜底），回 文件:行号:内容。",
+    "正则搜索（rg 优先），回 文件:行号:内容。",
     _S_SEARCH,
 )
 def _t_search(a, ctx):
@@ -662,9 +658,7 @@ _S_RUNCMD = {
         "argv": {
             "type": "array",
             "items": {"type": "string"},
-            "description": '如 ["ls","-1","tools"]；第一项是命令名，'
-            "没有 shell（默认自由面任意命令；显式 "
-            "cmd_gate 时收窄为只读白名单）",
+            "description": "如 [\"ls\",\"-1\",\"tools\"]；首项是命令名，无 shell",
         },
         "timeout": {
             "type": "integer",
@@ -680,8 +674,7 @@ _S_RUNCMD = {
 @_tool(
     "run_cmd",
     RISK_WRITE,
-    "跑一条命令（默认自由面任意命令；显式 cmd_gate 收窄为只读白名单），"
-    "回真实 rc 与真实输出。",
+    "跑一条命令，回真实 rc 与真实输出。",
     _S_RUNCMD,
 )
 def _t_run_cmd(a, ctx):
@@ -808,7 +801,7 @@ def _snap_before_write(real, ctx):
 @_tool(
     "write_file",
     RISK_WRITE,
-    "写一个文件（整文件覆盖或新建）。只限项目根内，回 sha256 前后值。",
+    "写一个文件（整文件覆盖或新建）；只限项目根内，回 sha256 前后值。",
     _S_WRITE,
 )
 def _t_write_file(a, ctx):
@@ -845,15 +838,12 @@ def _t_write_file(a, ctx):
 _S_EDIT = {
     "type": "object",
     "properties": {
-        "path": {"type": "string", "description": "项目根内的相对路径"},
-        "old_string": {
-            "type": "string",
-            "description": "要被替换掉的原文（必须在文件里唯一）",
-        },
+        "path": {"type": "string", "description": "仓库内相对路径"},
+        "old_string": {"type": "string", "description": "被替换的原文（须唯一）"},
         "new_string": {"type": "string", "description": "替换成什么"},
         "replace_all": {
             "type": "boolean",
-            "description": "出现多次时是否全部替换，默认 false",
+            "description": "多处全替？默认 false",
         },
     },
     "required": ["path", "old_string", "new_string"],
@@ -1003,7 +993,7 @@ def _gh_client():
 
 
 @_tool(
-    "gh_read", RISK_READ, "跑一条只读 gh 命令；写向量在 gh_client 里结构上被拒。", _S_GH
+    "gh_read", RISK_READ, "跑一条只读 gh 命令；写向量结构上被拒。", _S_GH
 )
 def _t_gh_read(a, ctx):
     argv = a.get("argv")
@@ -1080,12 +1070,17 @@ _S_FETCH = {
 _S_GH_SEARCH = {
     "type": "object",
     "properties": {
-        "query": {"type": "string", "description": "搜索词，如 terminal agent"},
+        "query": {"type": "string", "description": "搜索词"},
         "kind": {
             "type": "string",
             "description": "repos|issues|code|commits|prs，默认 repos",
         },
-        "limit": {"type": "integer", "description": "1-100，默认 10"},
+        "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "默认 10",
+        },
     },
     "required": ["query"],
 }
@@ -1352,8 +1347,9 @@ def _skills_section():
     """skills 段（进程内缓存；无技能目录 = 空串 = 零改动）。"""
     if not _SKILLS_CACHE:
         try:
+            # 目录式（2026-10-22 token 账）：技能正文按需取，索引只给名字。
             _SKILLS_CACHE.append(
-                _skills_mod().render_section(_skills_mod().discover(_skill_roots()))
+                _skills_mod().render_index(_skills_mod().discover(_skill_roots()))
             )
         except Exception:  # noqa: BLE001
             _SKILLS_CACHE.append("")
@@ -1436,8 +1432,7 @@ def _gh_file_read_argv(repo, path, ref):
 @_tool(
     "gh_search",
     RISK_READ,
-    "搜 GitHub 成熟实现（repos/issues/code/commits/prs）——任务先看别人"
-    "怎么做的，能参考绝不从零写。",
+    "搜 GitHub 成熟实现（repos/issues/code/commits/prs）。",
     _S_GH_SEARCH,
 )
 def _t_gh_search(a, ctx):
@@ -1538,12 +1533,18 @@ def _t_gh_search(a, ctx):
 
 
 _S_TODO = {
+    # 账本 schema（瘦身版，2026-10-22）：纪律文字归系统提示与 runtime 错误，
+    # schema 只留**决策必需的最小信息**（参数名/类型/枚举/必填）。
     "type": "object",
     "properties": {
+        "action": {
+            "type": "string",
+            "enum": ["set", "update", "add", "list"],
+            "description": "set=整表覆盖 update=只改点名项 add=追加 list=读清单",
+        },
         "items": {
             "type": "array",
-            "description": "任务清单（整体覆盖式写：把当前完整清单给出来）。"
-            "每项 {id?, text, state}，state ∈ pending/doing/done/dropped",
+            "description": "action=set 时给完整清单",
             "items": {
                 "type": "object",
                 "properties": {
@@ -1556,45 +1557,24 @@ _S_TODO = {
                     "depends_on": {
                         "type": "array",
                         "items": {"type": "integer"},
-                        "description": "依赖的项 id（先做依赖项再做这件；成环会被拒）",
+                        "description": "依赖的项 id",
                     },
                     "priority": {
                         "type": "string",
                         "enum": ["high", "medium", "low"],
-                        "description": "优先级（就绪项里 high 先做）",
                     },
                 },
                 "required": ["text"],
             },
         },
-        "note": {"type": "string", "description": "给用户看的一行说明（可选）"},
+        # 注：action=update/add 时**用 items 字段**带变更项
+        # （[{id?,text?,state?}]）；没有单独的 changes 字段 —— 两个同形结构
+        # 只会让模型选错，还多付一份 schema 的 token。
         "reopen": {
             "type": "string",
-            "description": "要把**已完成**的项重开，写一句理由（默认拒绝："
-            "陈旧写入不许抹掉已完成的进度）。理由会记进账本并在面板上标出"
-            "「重开过」，不许无脑重开。",
+            "description": "重开已完成项的理由（不写就拒）",
         },
-        "action": {
-            "type": "string",
-            "enum": ["set", "update", "add", "list"],
-            "description": "set=整表覆盖（默认）· update=只改点名的项（**推荐**："
-            "不会抹掉别的项的进度）· add=追加一项 · list=读回当前清单",
-        },
-        "changes": {
-            "type": "array",
-            "description": "action=update/add 时用：[{id?, text?, state?}]",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "integer"},
-                    "text": {"type": "string"},
-                    "state": {
-                        "type": "string",
-                        "enum": ["pending", "doing", "done", "dropped"],
-                    },
-                },
-            },
-        },
+        "note": {"type": "string"},
     },
 }
 
@@ -1602,13 +1582,9 @@ _S_TODO = {
 @_tool(
     "todo",
     RISK_WRITE,
-    "任务账本：把要做的事列成清单并逐项更新（pending/doing/done/dropped）。"
-    "任务超过三步就先列清单，做完一项改一项；"
-    "**改单项用 action=update（只改点名的项）**，别用整表覆盖（会抹掉别的项进度）；"
-    "项可带 depends_on（依赖别的项的 id，做完依赖再做这件）与 priority；"
-    "**已完成的项不许打回未完成**（陈旧写入会抹掉进度）——真要重开就写 "
-    "reopen=\"<理由>\"（要留痕，不写就拒）；"
-    "清单里还有没结的项时，说「做完了」会被交付闸挡回。",
+    "任务账本：列清单并逐项更新。action=set 整表覆盖 / update 只改点名项 / "
+    "add 追加 / list 读。项可带 depends_on、priority；已完成的项不许打回未完成"
+    "（重开要写 reopen 理由）。",
     _S_TODO,
 )
 def _t_todo(a, ctx):
@@ -1687,6 +1663,63 @@ def _t_todo(a, ctx):
 
 
 @_tool(
+    "skills",
+    RISK_READ,
+    "查可用技能：action=list 列名字，action=read 读某个技能的正文。",
+    {
+        "type": "object",
+        "properties": {
+            "action": {
+                "type": "string",
+                "enum": ["list", "read"],
+                "description": "list=列全部技能 read=读某个技能正文",
+            },
+            "name": {"type": "string", "description": "action=read 时的技能名"},
+        },
+    },
+)
+def _t_skills(a, ctx):
+    """技能目录 / 正文（技能是「怎么做」的操作手册，按需拉取）。"""
+    try:
+        _sk = _skills_mod()
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "error": "技能模块不可用：%s" % str(e)[:120]}
+    try:
+        items = _sk.discover(_skill_roots())
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "error": "技能目录读不了：%s" % str(e)[:120]}
+    act = str(a.get("action") or "list").strip().lower()
+    if act == "read":
+        name = str(a.get("name") or "").strip()
+        for it in items:
+            if str(it.get("name")) == name:
+                return {
+                    "ok": True,
+                    "name": name,
+                    "body": str(it.get("body") or "")[:8000],
+                    "triggers": it.get("triggers") or [],
+                }
+        return {
+            "ok": False,
+            "error": "没有这个技能：%r（可用：%s）"
+            % (name, ", ".join(str(i.get("name")) for i in items)),
+        }
+    return {
+        "ok": True,
+        "skills": [
+            {
+                "name": str(it.get("name") or ""),
+                "hint": " ".join(
+                    str(it.get("description") or "").strip().split("—")[0].split()[:6]
+                ),
+                "triggers": it.get("triggers") or [],
+            }
+            for it in items
+        ],
+    }
+
+
+@_tool(
     "gh_repo_view",
     RISK_READ,
     "看一个 GitHub 仓库的概况（描述/星/语言/更新时间）。",
@@ -1726,7 +1759,7 @@ def _t_gh_repo_view(a, ctx):
 @_tool(
     "gh_file_read",
     RISK_READ,
-    "读一个 GitHub 仓库里的文件内容（经 contents API，只读）——参考实现细节用。",
+    "读一个 GitHub 仓库里的文件内容（只读）——参考实现细节用。",
     _S_GH_FILE,
 )
 def _t_gh_file_read(a, ctx):
@@ -1772,8 +1805,7 @@ _S_GH_DEPLOY = {
 @_tool(
     "web_fetch",
     RISK_READ,
-    "GET 一个 URL 的文本。回环直接放行；非回环按当前闸门裁决"
-    "（默认自由面直连；显式 mode_gate 时需审批）。",
+    "GET 一个 URL 的文本；非回环按当前闸门裁决。",
     _S_FETCH,
 )
 def _t_web_fetch(a, ctx):
@@ -2082,36 +2114,29 @@ _S_SUBAGENT = {
     "properties": {
         "prompt": {
             "type": "string",
-            "description": "子任务：一句话说清目标与验收；子代理没有本会话"
-            "历史，需要的信息都要写进 prompt",
-        },
-        "max_steps": {
-            "type": "integer",
-            "description": "步数预算 1..%d，默认 8" % SUBAGENT_MAX_STEPS,
-        },
-        "tools": {
-            "type": "array",
-            "items": {"type": "string"},
-            "description": "允许子代理使用的工具名子集；缺省=除 subagent "
-            "外全部。写类工具仍逐条走外层同款审批矩阵",
+            "description": "子任务：目标+验收；子代理没有本会话历史，要给的信息都写进来",
         },
         "prompts": {
             "type": "array",
             "items": {"type": "string"},
-            "description": "并行批量（与 prompt 二选一）：一次派最多 "
-            "%d 个子任务同时跑，按输入序返回 results" % SUBAGENT_PARALLEL_MAX,
+            "description": "并行批量（与 prompt 二选一），≤4 个",
+        },
+        "max_steps": {
+            "type": "integer",
+            "description": "步数预算 1..12，默认 8",
+        },
+        "tools": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "允许子代理用的工具名子集（只可收窄）",
         },
         "chain": {
             "type": "array",
-            "description": "顺序交接链（≤%d 段）：段可是字符串，或"
-            "{prompt, needs}（needs 是本段开工前必须已在黑板里的钥匙，"
-            "缺钥匙不开工）；段结论进共享黑板，自动带进后面各段；"
-            "任一段失败即停并如实报 stopped_at" % SUBAGENT_PARALLEL_MAX,
+            "description": "顺序交接链（≤4 段）：字符串或 {prompt,needs}",
         },
         "merge": {
             "type": "boolean",
-            "description": "prompts 批量时置 true：全部完成后额外一次汇总"
-            "调用产出 digest（失败如实留空）",
+            "description": "prompts 批量时置 true：结束后再汇总一次",
         },
     },
     "required": ["prompt"],
@@ -2121,9 +2146,8 @@ _S_SUBAGENT = {
 @_tool(
     "subagent",
     RISK_READ,
-    "派子代理做独立研究子任务（禁再嵌套；无会话历史；工具子集可收窄"
-    "不可放宽；写操作照走外层审批矩阵）。单发 prompt 或 prompts 批量"
-    "并行（≤4）。返回 {summary, steps, rc} 或批量 {results}。",
+    "派子代理做独立子任务（无会话历史；工具子集只可收窄；禁再嵌套）。"
+    "单发 prompt 或 prompts 批量并行（≤4），回 {summary,steps,rc}。",
     _S_SUBAGENT,
 )
 def _t_subagent(a, ctx):
@@ -2546,7 +2570,8 @@ def build_system_prompt(ctx):
                 else "· 非回环地址的 web_fetch 需要审批，headless 下按拒绝处理。"
             ),
             "",
-            "可用工具：%s" % " ".join(sorted(TOOLS)),
+            # 工具名**不在**这里重复列：tools 数组里每个工具都带名字与
+            # schema，重复一遍就是白花每轮的 token（2026-10-22 实测）。
         ]
     )
     extra = _evo_prompt_lines(ctx.get("evo_rules_path")) + _memory_prompt_lines(ctx)
@@ -2703,6 +2728,26 @@ def run_agent(
             ctx["full_access"] = _full_access(_read_agentos_config())
         except Exception:
             ctx["full_access"] = False
+    # 安全闸标志的缺省来源统一（2026-10-22 实测事故）：
+    # 以前只有 CLI 入口（REPL / headless）带 plan_lock_off / mode_gate_off /
+    # cmd_gate_off，**库入口 run_agent(ctx={...}) 不会带** —— ctx.get() 取到
+    # None（falsy）→ 计划锁/模式闸/命令白名单**静默全上**。实测：A/B 脚本
+    # 自己拼 ctx，写工具被「计划未审批」挡死，而配置里明明 plan_lock=false。
+    # 现在缺省从同一份配置补齐：手搓 ctx 不会悄悄改掉权限语义。
+    try:
+        _sf8 = _safety_flags(_read_agentos_config())
+    except Exception:  # noqa: BLE001
+        _sf8 = {}
+    for _k8 in ("plan_lock_off", "mode_gate_off", "cmd_gate_off"):
+        if _k8 not in ctx and _k8 in _sf8:
+            ctx[_k8] = _sf8[_k8]
+    # 有效权限回写给调用方（像 history 一样）—— 调用方能看见「这次到底
+    # 是什么权限在跑」，而不是猜。
+    if _outer is not None:
+        for _k8 in ("plan_lock_off", "mode_gate_off", "cmd_gate_off",
+                    "full_access"):
+            if _k8 in ctx:
+                _outer[_k8] = ctx[_k8]
     text = (prompt or "").strip()
     if not text:
         raise AgentError("usage", "空需求：run_agent 需要一句非空的任务描述")

@@ -1,0 +1,69 @@
+{
+ "approved": false,
+ "bind_sha": "76c573586b50251d95f474b6f01948e49e9b1b648410d1d273398fcfc8222d45",
+ "created": 1792607739.044,
+ "goal": "在当前目录建 ab_test.txt，内容写 hello；用 todo 工具列一条清单（text=写 ab_test.txt，state=pending），写完后用 action=update 把它标成 done；最后跑 cat ab_te",
+ "tasks": [
+  {
+   "accept": "关键文件已读 + 现状一句话 + rc=0",
+   "depends": [],
+   "evidence": [
+    "rc=0 ",
+    "rc=1 计划未审批：write_file 未执行（/tasks 看计划，/approve 通过后才放行写操作）",
+    "rc=0 ",
+    "rc=0 ",
+    "rc=1 计划未审批：write_file 未执行（/tasks 看计划，/approve 通过后才放行写操作）",
+    "rc=0 "
+   ],
+   "id": "t1",
+   "status": "done",
+   "steps_used": 6,
+   "title": "侦察：读关键文件、确认现状",
+   "tools": [
+    "list_dir",
+    "read_file",
+    "search",
+    "gh_search",
+    "gh_repo_view",
+    "gh_file_read"
+   ]
+  },
+  {
+   "accept": "改动落盘 + 验证命令 rc=0（证据行）",
+   "depends": [
+    "t1"
+   ],
+   "evidence": [],
+   "id": "t2",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "动手：按判据改代码",
+   "tools": [
+    "read_file",
+    "search",
+    "write_file",
+    "edit_file",
+    "run_cmd",
+    "git_diff"
+   ]
+  },
+  {
+   "accept": "自检 rc=0 + 回执含真实 rc",
+   "depends": [
+    "t2"
+   ],
+   "evidence": [],
+   "id": "t3",
+   "status": "todo",
+   "steps_used": 0,
+   "title": "收尾：自检 + 回执",
+   "tools": [
+    "run_cmd",
+    "git_diff",
+    "git_status",
+    "git_log"
+   ]
+  }
+ ],
+ "version": 1
+}

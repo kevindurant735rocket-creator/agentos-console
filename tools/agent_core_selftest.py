@@ -2428,6 +2428,35 @@ def _selftest_body(case, jc, tmp):
         and _sf3 == _sf,
         "free=%s lock=%s str=%s" % (_sf, _sf2, _sf3),
     )
+    # (2026-10-22) 库入口的权限语义不许被「手搓 ctx」悄悄改掉：
+    # 以前只有 CLI 入口带安全闸标志，run_agent(ctx=...) 不带 → ctx.get()
+    # 取到 None（falsy）→ 计划锁/模式闸/命令白名单静默全上（实测：A/B 脚本
+    # 自拼 ctx，写工具被「计划未审批」挡死，而配置里 plan_lock=false）。
+    _ctx_probe = {"root": tmp, "mode": "full", "sid": "st-ctxflags"}
+    class _PProbe:
+        def chat(self, *a, **k):
+            raise AgentError("provider", "夹具：只验 ctx 标志，不真调模型")
+    try:
+        run_agent(
+            "夹具",
+            ctx=_ctx_probe,
+            provider=_PProbe(),
+            max_steps=1,
+        )
+    except Exception:  # noqa: BLE001
+        pass
+    case(
+        "库入口：手搓 ctx 也会补齐安全闸标志（权限语义不被静默改掉）",
+        all(
+            isinstance(_ctx_probe.get(k), bool)
+            for k in ("plan_lock_off", "mode_gate_off", "cmd_gate_off")
+        ),
+        "flags=%s"
+        % {
+            k: _ctx_probe.get(k)
+            for k in ("plan_lock_off", "mode_gate_off", "cmd_gate_off")
+        },
+    )
     _ssid = "st-safety-%d" % os.getpid()
     _dsp9 = _dsp()
     _dsp9.save_plan(
@@ -2922,12 +2951,35 @@ def _selftest_body(case, jc, tmp):
     ptext4 = build_system_prompt({"root": mem_root, "mode": "plan"})
     _base_len = len(build_system_prompt({"root": tmp, "mode": "plan"}))
     case(
-        "记忆层级：AGENTS.md 注入且超 4KB 截断封顶",
+        "记忆层级：AGENTS.md 注入且**按摘要**封顶（不再整段注入）",
         "MEMMARK" in ptext4
         and "项目记忆" in ptext4
-        and "（截断，单文件上限 4KB）" in ptext4
-        and len(ptext4) - _base_len < 4096 + 600,
+        and "read_file" in ptext4
+        and len(ptext4) - _base_len < 1200,
         "len_delta=%d" % (len(ptext4) - _base_len),
+    )
+    # 记忆摘要不许把「结构化规则」丢掉：标题 + 每节首条加粗句都要在。
+    _mem_root2 = os.path.join(tmp, "memrepo2")
+    os.makedirs(_mem_root2, exist_ok=True)
+    with open(os.path.join(_mem_root2, "AGENTS.md"), "w", encoding="utf-8") as f:
+        f.write(
+            "# 仓库纪律\n"
+            "## 1. 永不上传\n"
+            "**铁律**：自有内容一律不推 GitHub。\n"
+            "这里是叙述性铺垫，摘要不该注入。\n"
+            "## 2. 三证\n"
+            "**三证**：日志 + 账本 + 真树 diff。\n"
+        )
+    _p5 = build_system_prompt({"root": _mem_root2, "mode": "plan"})
+    case(
+        "记忆层级：摘要保留全部小节标题与每节首条硬规则（叙述不注入）",
+        "## 1. 永不上传" in _p5
+        and "## 2. 三证" in _p5
+        and "一律不推 GitHub" in _p5
+        and "日志 + 账本 + 真树 diff" in _p5
+        and "叙述性铺垫" not in _p5
+        and len(_p5) < len(_p5) + 1,
+        "len=%d" % (len(_p5),),
     )
     # (GH) GitHub 一等能力：工具注册 + argv 全落只读白名单 + 纪律注入 ----
     gh_tools_ok = all(t in TOOLS for t in ("gh_search", "gh_repo_view", "gh_file_read"))
