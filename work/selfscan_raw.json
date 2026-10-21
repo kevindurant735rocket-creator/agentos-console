@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2026-10-21T16:05:49Z",
+  "generated_at": "2026-10-21T16:38:10Z",
   "metrics": {
     "_totals": {
       "CONFIDENCE.HIGH": 183,
@@ -11,7 +11,7 @@
       "SEVERITY.LOW": 189,
       "SEVERITY.MEDIUM": 10,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 29697,
+      "loc": 29756,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -687,7 +687,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 311,
+      "loc": 334,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -700,7 +700,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 98,
+      "loc": 134,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -4413,7 +4413,7 @@
       "test_name": "blacklist"
     },
     {
-      "code": "175     try:\n176         p = subprocess.run(\n177             [sys.executable, core_path, \"--check\"],\n178             capture_output=True,\n179             text=True,\n180             timeout=900,\n181         )\n182         # \u62a5\u544a**\u5b9e\u9645\u672b\u884c**\uff08\u4e0d\u662f\u53ea\u62a5 OK \u90a3\u884c\u7684 grep \u7ed3\u679c\uff09\uff1a\u81ea\u68c0\u5931\u8d25\u65f6\n",
+      "code": "192     try:\n193         p = subprocess.run(\n194             [sys.executable, core_path, \"--check\"],\n195             capture_output=True,\n196             text=True,\n197             timeout=900,\n198         )\n199         # \u62a5\u544a**\u5b9e\u9645\u672b\u884c**\uff08\u4e0d\u662f\u53ea\u62a5 OK \u90a3\u884c\u7684 grep \u7ed3\u679c\uff09\uff1a\u81ea\u68c0\u5931\u8d25\u65f6\n",
       "col_offset": 12,
       "end_col_offset": 9,
       "filename": "tools/rewind_gate.py",
@@ -4424,14 +4424,14 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 176,
+      "line_number": 193,
       "line_range": [
-        176,
-        177,
-        178,
-        179,
-        180,
-        181
+        193,
+        194,
+        195,
+        196,
+        197,
+        198
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
@@ -4458,7 +4458,7 @@
       "test_name": "blacklist"
     },
     {
-      "code": "58 def run_gate(core_path, out_path, timeout=900):\n59     return subprocess.run([sys.executable, GATE, \"--core\", core_path,\n60                            \"--out\", out_path],\n61                           capture_output=True, text=True, timeout=timeout)\n62 \n",
+      "code": "98 def run_gate(core_path, out_path, timeout=900):\n99     return subprocess.run([sys.executable, GATE, \"--core\", core_path,\n100                            \"--out\", out_path],\n101                           capture_output=True, text=True, timeout=timeout)\n102 \n",
       "col_offset": 11,
       "end_col_offset": 74,
       "filename": "tools/rewind_selftest.py",
@@ -4469,11 +4469,11 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 59,
+      "line_number": 99,
       "line_range": [
-        59,
-        60,
-        61
+        99,
+        100,
+        101
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",

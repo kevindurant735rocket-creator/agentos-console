@@ -1600,7 +1600,10 @@ def _t_todo(a, ctx):
         return {"ok": False, "error": "账本模块不可用：%s" % str(e)[:120]}
     sid = str(ctx.get("sid") or "default")
     _items = a.get("items")
-    if _items is None:
+    _changes = a.get("changes")
+    _action = str(a.get("action") or "").strip().lower()
+
+    def _read():
         _cur = _todo_mod.load(sid, ctx.get("root"))
         return {
             "ok": True,
@@ -1609,21 +1612,23 @@ def _t_todo(a, ctx):
             "next": _todo_mod.next_item(_cur),
             "panel": _todo_mod.render(_cur),
         }
-    _action = str(a.get("action") or "set").strip().lower()
+
+    # 分派顺序：**先看 action，再看有没有 items**。
+    # 2026-10-22 实测踩过的坑：早先写成「items 缺了就当读」，
+    # 于是 `todo(action="update", changes=[...])`（**不带 items**，
+    # 正是增量写该有的形状）被当成读请求 → 工具返回旧清单、更新被吞，
+    # 模型连试三次都看不到效果，只好退回整表覆盖（并把缺陷报了出来）。
+    # 现在：update/add 不要求 items；只有「没 action 且没 items/changes」才是读。
     if _action == "list":
-        _cur = _todo_mod.load(sid, ctx.get("root"))
-        return {
-            "ok": True,
-            "items": _cur,
-            "counts": _todo_mod.counts(_cur),
-            "next": _todo_mod.next_item(_cur),
-            "panel": _todo_mod.render(_cur),
-        }
+        return _read()
     if _action in ("update", "add"):
         _cur = _todo_mod.load(sid, ctx.get("root"))
-        _norm = _todo_mod.update(_cur, a.get("changes") or a.get("items") or [])
+        _chg = _changes if _changes is not None else _items
+        _norm = _todo_mod.update(_cur, _chg or [])
+    elif _items is None and not _changes:
+        return _read()
     else:
-        _norm = _todo_mod._norm(_items)
+        _norm = _todo_mod._norm(_items or [])
     _p = _todo_mod.save(_norm, sid, ctx.get("root"))
     if not _p:
         return {"ok": False, "error": "账本落盘失败（work/todos 不可写？）"}

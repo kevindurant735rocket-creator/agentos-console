@@ -119,7 +119,7 @@
     "op": "converge_tune"
    },
    "advice": "本机历史：连续多步没有产出（只读/只查不动手）。先动手改一处再继续，别把时间花在读完再读上",
-   "count": 11,
+   "count": 12,
    "created": "2026-10-19 21:26:38",
    "id": "evo-converge-stall",
    "notified": true,
@@ -129,7 +129,7 @@
   },
   {
    "advice": "查 stderr 里 [失败 kind] 的原文；同类失败连续出现会在此聚成经验规则",
-   "count": 7,
+   "count": 8,
    "created": "2026-10-20 18:03:30",
    "id": "evo-contract-generic",
    "notified": true,

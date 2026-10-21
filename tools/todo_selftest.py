@@ -120,6 +120,41 @@ case(
     repr(_upd3),
 )
 
+# ── 3c. 工具层：action=update 不带 items 也必须回写 ──────────────
+# 2026-10-22：agent 真机跑里**自己报出来**的缺陷 ——
+# `todo(action="update", changes=[...])`（**不带 items**，正是增量写该有
+# 的形状）被工具当成「读清单」→ 返回旧清单、更新被吞，模型连试三次都
+# 看不到效果，只好退回整表覆盖。这条判据钉住「action 分派在 items 判断之前」。
+import agent_core as _ac  # noqa: E402
+
+_troot = tempfile.mkdtemp()
+_tctx = {"sid": "toolselftest", "root": _troot}
+_ac._t_todo(
+    {"items": [{"text": "甲", "state": "pending"},
+               {"text": "乙", "state": "pending"}]},
+    _tctx,
+)
+_ac._t_todo({"action": "update", "changes": [{"id": 2, "state": "done"}]}, _tctx)
+_tgot = _ac._t_todo({"action": "list"}, _tctx)["items"]
+case(
+    "工具层：action=update 只带 changes（不带 items）也必须回写",
+    len(_tgot) == 2
+    and _tgot[0]["state"] == "pending"
+    and _tgot[1]["state"] == "done",
+    repr(_tgot),
+)
+_ac._t_todo({"action": "add", "changes": [{"text": "丙"}]}, _tctx)
+_tgot2 = _ac._t_todo({"action": "list"}, _tctx)["items"]
+case(
+    "工具层：action=add 追加一项且不动别的项",
+    len(_tgot2) == 3
+    and _tgot2[0]["state"] == "pending"
+    and _tgot2[1]["state"] == "done"
+    and _tgot2[2]["state"] == "pending"
+    and _tgot2[2]["text"] == "丙",
+    repr(_tgot2),
+)
+
 # ── 4. 面板可读 ─────────────────────────────────────────────────
 _panel = T.render(_items)
 case(
