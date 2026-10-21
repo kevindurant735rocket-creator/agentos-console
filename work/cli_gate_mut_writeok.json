@@ -3,9 +3,9 @@
  "ok": false,
  "pre_ok": true,
  "prefail": "",
- "elapsed": 2.93,
+ "elapsed": 2.3,
  "cli": [
-  "/var/folders/3p/m9ntmpmn5z34b3my27hrjdmm0000gn/T/cli_gate_mut-kg4pr9nh/writeok.py"
+  "/var/folders/3p/m9ntmpmn5z34b3my27hrjdmm0000gn/T/cli_gate_mut-y6twvy08/writeok.py"
  ],
  "dest": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/cli_gate_dest",
  "skip_install": false,
@@ -155,7 +155,7 @@
   {
    "gate": "tty-noarg-enters-agent",
    "ok": false,
-   "detail": "首行='' elapsed=0.02s",
+   "detail": "首行='' elapsed=0.01s",
    "cmd": "agentos   # 真 PTY、无参数、零送键",
    "rc": null
   },
@@ -318,13 +318,13 @@
   "zero_write": [
    {
     "tools/agentos.py": "ab000f6f31b28146c3d80959c44933adeec8ac7ee5629ef7a8b65f6f8d70b3a0",
-    "tools/agent_core.py": "8620278de30be60d2b6c2f52aba8aea7e97fe9da9dd75a7be453eb289d3d3ea3",
+    "tools/agent_core.py": "a5088eaebeba2c57d0d5391529b6d5ea7b9df93f9568411aa45cba18f68946df",
     "bin/agentos": "041119e9439a803285e1a4325e8b94d90dc0cded0e19152769cc8bb3ef867dc1",
     "tools/gates.sh": "f6031b27d3698f02dcf70a9c580a9bf54fa6143b693fe77d25eb6afab15e6a28"
    },
    {
     "tools/agentos.py": "ab000f6f31b28146c3d80959c44933adeec8ac7ee5629ef7a8b65f6f8d70b3a0",
-    "tools/agent_core.py": "8620278de30be60d2b6c2f52aba8aea7e97fe9da9dd75a7be453eb289d3d3ea3",
+    "tools/agent_core.py": "a5088eaebeba2c57d0d5391529b6d5ea7b9df93f9568411aa45cba18f68946df",
     "bin/agentos": "041119e9439a803285e1a4325e8b94d90dc0cded0e19152769cc8bb3ef867dc1",
     "tools/gates.sh": "f6031b27d3698f02dcf70a9c580a9bf54fa6143b693fe77d25eb6afab15e6a28"
    }
