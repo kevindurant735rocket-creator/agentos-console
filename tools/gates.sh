@@ -467,10 +467,18 @@ if [ "$#" -eq 0 ]; then
   exit 2
 fi
 
+# 2026-10-21（TASK2 障碍 1）：本仓只剩终端面，链上 41 道门**没有一道需要浏览器**。
+# 原来这里强制「必须找到带 playwright 的解释器」，找不到就整条链 exit 3
+# （no-interpreter-with-playwright）—— 结果一条干净 clone（没有 .venv-pw）连自己的
+# 门都跑不了：为一套用不上的浏览器栈把整条链开不了工。
+# 现在的口径（两层）：
+#   1) 优先选带 playwright 的解释器（真需要浏览器的门/手工复验仍拿到它）；
+#   2) 没有就退回任意可用 python3，并打一行如实的兜底说明（不是硬失败）。
+# 真需要 playwright 的门自己报缺依赖（点名是哪个模块），不再让整条链陪葬。
 pick_python() {
   local c
   for c in "$ROOT/.venv-pw/bin/python" "$HOME/.codex/capvenv/bin/python" \
-           /opt/homebrew/bin/python3 python3; do
+           /opt/homebrew/bin/python3 python3 /usr/bin/python3; do
     [ -x "$c" ] || command -v "$c" >/dev/null 2>&1 || continue
     if "$c" -c "import playwright" >/dev/null 2>&1; then
       echo "$c"; return 0
@@ -479,10 +487,27 @@ pick_python() {
   return 1
 }
 
+pick_any_python() {
+  local c
+  for c in "$ROOT/.venv-pw/bin/python" /opt/homebrew/bin/python3 python3 \
+           /usr/local/bin/python3 /usr/bin/python3; do
+    [ -x "$c" ] || command -v "$c" >/dev/null 2>&1 || continue
+    if "$c" -c "import sys" >/dev/null 2>&1; then
+      echo "$c"; return 0
+    fi
+  done
+  return 1
+}
+
 PY="$(pick_python)" || {
-  echo "GATES_FAIL no-interpreter-with-playwright" >&2
-  echo "  fix: $ROOT/.venv-pw/bin/python -m pip install playwright" >&2
-  exit 3
+  PY="$(pick_any_python)" || {
+    echo "GATES_FAIL no-python-interpreter" >&2
+    echo "  fix: 装一个 python3（本链所有门都只要 stdlib）" >&2
+    exit 3
+  }
+  echo "GATES-NOTE 没找到带 playwright 的解释器，退回 $PY（纯 stdlib 门照跑；" >&2
+  echo "  若某道门真的需要浏览器，它会自己报缺依赖并点名模块）" >&2
+  echo "  opt-in: $ROOT/.venv-pw/bin/python -m pip install playwright" >&2
 }
 
 # D50（2026-10-03）：**不再首红即 break**，全链跑完再汇总。
