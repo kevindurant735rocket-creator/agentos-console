@@ -765,3 +765,7 @@ task_contract_selftest 27/27 · 计数钉 11 文件同步 169 口径。
 ```
 == GATES_SUMMARY 共跑 41 门 / RC=0 计数 41 / 红门=无 ==  墙钟 2232s
 ```
+
+**bugfix 类型真机复验**：`calc.py 的 add 函数有 bug，请修好它` → 账本
+`契约=bugfix repro_fail=True repro_green=True verify=pass 闸退回=0`
+（先复现看到红 → 改 → 再验看到绿 → 交付闸一次放行；改后 `add` 正确为 `a + b`）。
