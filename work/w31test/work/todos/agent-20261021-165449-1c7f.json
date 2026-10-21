@@ -1,0 +1,21 @@
+{
+ "version": 1,
+ "updated": "2026-10-21 16:55:58",
+ "items": [
+  {
+   "id": 1,
+   "text": "在 hello.py 新增 greet(name) 返回 'hi <name>'",
+   "state": "done"
+  },
+  {
+   "id": 2,
+   "text": "cat hello.py 核对内容 + 跑一次调用验行为",
+   "state": "done"
+  },
+  {
+   "id": 3,
+   "text": "git diff 复核改动后交付",
+   "state": "done"
+  }
+ ]
+}

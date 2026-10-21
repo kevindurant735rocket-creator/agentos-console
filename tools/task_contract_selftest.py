@@ -120,7 +120,8 @@ case(
 )
 case(
     "契约：小改动不被过度约束（write_seen 而非 write_and_readback）",
-    tc.contract_for(tc.T_FEATURE, None)["hard"] == ["write_seen"],
+    "write_and_readback"
+    not in tc.contract_for(tc.T_FEATURE, None)["hard"],
     str(tc.contract_for(tc.T_FEATURE, None)["hard"]),
 )
 _c_feat = tc.contract_for(tc.T_FEATURE, {"cmdline": "make test", "why": "Makefile"})
@@ -128,6 +129,19 @@ case(
     "契约：feature 有验证命令时要求 verify_pass",
     _c_feat["hard"] == ["verify_pass"] and "make test" in _c_feat["opening"],
     str(_c_feat["hard"]),
+)
+case(
+    "契约：改代码类任务要**自审 diff**（Aider 式：改完先看改动）",
+    "diff_reviewed" in tc.contract_for(tc.T_FEATURE, None)["hard"]
+    and "diff_reviewed" in tc.contract_for(tc.T_REFACTOR, None)["hard"]
+    and "diff_reviewed" in tc.contract_for(tc.T_BUGFIX, None)["hard"],
+    repr(
+        (
+            tc.contract_for(tc.T_FEATURE, None)["hard"],
+            tc.contract_for(tc.T_REFACTOR, None)["hard"],
+            tc.contract_for(tc.T_BUGFIX, None)["hard"],
+        )
+    ),
 )
 case(
     "契约：每份契约都有 name/why（能讲清为什么）",

@@ -1,0 +1,10 @@
+set timeout 700
+log_file -a work/todotest/session.log
+spawn python3 tools/agentos.py agent --root work/todotest
+expect "> "
+sleep 1
+send -- "用 todo 工具先列三个步骤的清单（读 README、写一个 summary.md、跑 cat 核对），然后依次做完，每做完一项就把清单里那项改成 done。全做完后再交付。\r"
+expect "> "
+sleep 8
+send -- "/exit\r"
+expect eof

@@ -72,6 +72,19 @@ gate(
     (pt.stdout or pt.stderr)[-160:],
 )
 
+# D1d todo 账本自检（清单模块自身可信）
+_pt = subprocess.run(
+    [sys.executable, os.path.join(HERE, "todo_selftest.py")],
+    capture_output=True,
+    text=True,
+    timeout=300,
+)
+gate(
+    "todo_selftest 逐字绿（账本语义与落盘边界）",
+    _pt.returncode == 0 and "TODO_SELFTEST_OK" in _pt.stdout,
+    (_pt.stdout or _pt.stderr)[-160:],
+)
+
 # D2 内核真的接了收敛层（不是只有一个孤立模块）
 src = open(os.path.join(HERE, "agent_core.py"), encoding="utf-8").read()
 gate(
@@ -379,6 +392,44 @@ else:
         _ok3 is True,
         "missing=%r why=%r" % (_miss3, _why3),
     )
+
+# D9l 自审 diff / 失败核对：改了没看 diff、核对红着却要交付 → 都得挡住
+# 「自审 diff」是**契约里的一条要求**（改代码类任务才有），所以这里要
+# 带上契约来问 —— 不带契约就等于「这类任务不要求看 diff」。
+_git = cv.Converge(
+    require_diff_review=True,
+    contract={"type": "feature", "hard": ["write_seen", "diff_reviewed"]},
+)
+_git.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+_ok1, _miss1, _why1 = _git.evidence_ok("改完了")
+gate(
+    "自审：改了没看 diff → 不算交付证据",
+    not _ok1 and "diff_reviewed" in _miss1,
+    "missing=%r" % (_miss1,),
+)
+_git.observe("run_cmd", {"argv": ["git", "diff", "--stat"]}, ok=True, rc=0)
+_ok2, _miss2, _why2 = _git.evidence_ok("改完了")
+gate(
+    "自审：看过 git diff → 证据成立",
+    _ok2 and "diff_reviewed" not in _miss2,
+    "missing=%r" % (_miss2,),
+)
+_fail = cv.Converge()
+_fail.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=1)
+_ok3, _miss3, _why3 = _fail.evidence_ok("应该没问题")
+gate(
+    "失败核对：刚跑过的检查是红的 → 不许当没发生就交付",
+    not _ok3 and "no_failed_check" in _miss3,
+    "missing=%r" % (_miss3,),
+)
+_nogit = cv.Converge(require_diff_review=False)
+_nogit.observe("write_file", {"path": "a.py", "content": "x"}, ok=True)
+_ok4, _miss4, _why4 = _nogit.evidence_ok("改完了")
+gate(
+    "自审：非 git 仓库不要求 diff（没有 diff 可看，硬要就是永远红）",
+    "diff_reviewed" not in _miss4,
+    "missing=%r" % (_miss4,),
+)
 
 # D9k 变异体：摘掉契约检查 → 门必须判红
 tmp5 = tempfile.mkdtemp(prefix="converge_mut5_")

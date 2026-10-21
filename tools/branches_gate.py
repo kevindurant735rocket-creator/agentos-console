@@ -6,7 +6,7 @@
   分支可以"拷了但断了链"（原文件被改、轮数不对），自验收可以"done 了就
   算完成"（不查证据）。本门站在外面认这些事实（纯离线）：
     D1  branches 可导入 + fork/verify 两原语齐
-    D2  `--check` 末行逐字 `AGENT_CORE OK 166/166`（数漂移即红）
+    D2  `--check` 末行逐字 `AGENT_CORE OK 169/169`（数漂移即红）
     D3  源码锚点：/branch 分支 / /verify 分支 / 补全表两条 各就位
     D4  fork 对账（行为）：原文件不动 + 新文件多注记 + 轮数对
     D5  verify 五态（行为）：done/pending/缺证据/对不上/无 accept 全分得开
@@ -34,7 +34,7 @@ ROOT = os.path.dirname(HERE)
 DEFAULT_CORE = os.path.join(HERE, "agent_core.py")
 DEFAULT_BRANCHES = os.path.join(HERE, "branches.py")
 DEFAULT_OUT = os.path.join(ROOT, "work", "branches_gate.json")
-EXPECT_CHECK = "AGENT_CORE OK 166/166"
+EXPECT_CHECK = "AGENT_CORE OK 169/169"
 
 results = []
 

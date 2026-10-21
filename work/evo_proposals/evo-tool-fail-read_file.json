@@ -1,0 +1,9 @@
+{
+ "advice": "read_file 失败多为路径不存在或越界：先 list_dir 确认结构再读，路径以项目根为基准",
+ "count": 6,
+ "created": "2026-10-21 16:56:03",
+ "id": "evo-tool-fail-read_file",
+ "kind": "tool-hint",
+ "sig": "tool-fail:read_file",
+ "status": "pending-human"
+}

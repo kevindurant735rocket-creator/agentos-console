@@ -1367,6 +1367,11 @@ HARD_DENY_HEAD = {
     "truncate",
 }
 HARD_DENY_GIT_SUB = {"push", "reset", "clean", "filter-branch", "update-ref"}
+
+# 记账类工具：写的是**运行态**（账本/快照），不是项目内容 → 豁免计划锁。
+# 理由：计划锁要管的是「不许擅自改项目」，不是「不许记账」；连记账都锁，
+# agent 就没法列清单求批准（死锁）。
+_BOOKKEEPING_TOOLS = frozenset(("todo",))
 # 白名单里唯一能写盘的一条（与 serve.py term_run 的判断同源）
 _WRITEISH_CMDS = {"python3"}
 # 自由命令面下要拆 -c 载荷再扫的 shell 包装（bash -c "rm -rf x" 一类）
@@ -1574,10 +1579,15 @@ def _authorize(spec, args, ctx):
                 if _sid:
                     _plan, _err = _dsp_mod.load_plan(_sid)
                     if _plan is not None and not _plan.get("approved"):
-                        return (
-                            "计划未审批：%s 未执行（/tasks 看计划，"
-                            "/approve 通过后才放行写操作）" % name
-                        )
+                        # 记账类工具豁免计划锁：todo 写的是**运行态账本**
+                        # （work/todos/<sid>.json），不是项目内容。
+                        # 计划锁要管的是「不许擅自改项目」，不是「不许记账」——
+                        # 连记账都锁住，agent 就没法列清单求批准（死锁）。
+                        if name not in _BOOKKEEPING_TOOLS:
+                            return (
+                                "计划未审批：%s 未执行（/tasks 看计划，"
+                                "/approve 通过后才放行写操作）" % name
+                            )
             except Exception:  # noqa: BLE001
                 pass
         if ctx.get("mode_gate_off"):
@@ -2721,6 +2731,70 @@ def _t_gh_search(a, ctx):
     }
 
 
+_S_TODO = {
+    "type": "object",
+    "properties": {
+        "items": {
+            "type": "array",
+            "description": "任务清单（整体覆盖式写：把当前完整清单给出来）。"
+            "每项 {id?, text, state}，state ∈ pending/doing/done/dropped",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "integer"},
+                    "text": {"type": "string"},
+                    "state": {
+                        "type": "string",
+                        "enum": ["pending", "doing", "done", "dropped"],
+                    },
+                },
+                "required": ["text"],
+            },
+        },
+        "note": {"type": "string", "description": "给用户看的一行说明（可选）"},
+    },
+}
+
+
+@_tool(
+    "todo",
+    RISK_WRITE,
+    "任务账本：把要做的事列成清单并逐项更新（pending/doing/done/dropped）。"
+    "任务超过三步就先列清单，做完一项改一项；"
+    "清单里还有没结的项时，说「做完了」会被交付闸挡回。",
+    _S_TODO,
+)
+def _t_todo(a, ctx):
+    """写/读任务账本。落盘在 work/todos/<sid>.json → 跨压缩、跨重启存活。"""
+    try:
+        import todo as _todo_mod
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "error": "账本模块不可用：%s" % str(e)[:120]}
+    sid = str(ctx.get("sid") or "default")
+    _items = a.get("items")
+    if _items is None:
+        _cur = _todo_mod.load(sid, ctx.get("root"))
+        return {
+            "ok": True,
+            "items": _cur,
+            "counts": _todo_mod.counts(_cur),
+            "next": _todo_mod.next_item(_cur),
+            "panel": _todo_mod.render(_cur),
+        }
+    _norm = _todo_mod._norm(_items)
+    _p = _todo_mod.save(_norm, sid, ctx.get("root"))
+    if not _p:
+        return {"ok": False, "error": "账本落盘失败（work/todos 不可写？）"}
+    _c = _todo_mod.counts(_norm)
+    return {
+        "ok": True,
+        "written": _p,
+        "counts": _c,
+        "next": _todo_mod.next_item(_norm),
+        "panel": _todo_mod.render(_norm),
+    }
+
+
 @_tool(
     "gh_repo_view",
     RISK_READ,
@@ -3541,6 +3615,9 @@ def build_system_prompt(ctx):
             "",
             "工作方式：",
             "1. 每一步先想清楚要什么证据，再调工具；一个工具一个动作。",
+            "1b. 任务超过三步，先用 todo 工具把步骤列成清单（text + state），"
+            "做完一项就把它改成 done；清单里还有没结的项时交付闸会挡你——"
+            "明确放弃的也要写成 dropped，不许留 pending。",
             "2. 工具结果里的 rc / bytes / sha256 是真相，转述时不许改数字。",
             "3. 工具失败或被拒绝时，如实说明哪一步没执行，然后换路子；"
             "不许把没做的事说成做了。",
@@ -3848,6 +3925,11 @@ def run_agent(
             mode=str(ctx.get("mode") or ""),
             verify_info=_vinfo,
             contract=_contract,
+            # 只有 git 仓库才要求「自审 diff」（非 git 仓库没有 diff 可看，
+            # 硬要它就是永远红 —— 假红比漏红更坏）。
+            require_diff_review=os.path.isdir(
+                os.path.join(str(ctx.get("root") or ""), ".git")
+            ),
         )
         # 自进化调参：ACTIVE 规则真拧旋钮（只允许收紧，由 apply_policy 钳制）
         try:
@@ -4158,11 +4240,40 @@ def run_agent(
             _empty = not _ans.strip()
             # 交付闸（W23）：终答自称完成却零验证证据 → 退回补证据，别放行。
             # 形状来自真实事故：900 秒那次它说了「已完成」，全程没跑出一条 rc。
+            # 任务账本（W31）：清单里还有没结的项时，**不许**说「做完了」。
+            # 这是把「清单」从装饰变成真约束 —— Claude Code 的 TodoWrite /
+            # Aider 的 todo 之所以有用，就因为它能拦住「只做了三分之二」。
+            _todo_open = []
+            try:
+                import todo as _tdm
+
+                _sid_t = str(ctx.get("sid") or "default")
+                _todo_open = _tdm.unfinished(_tdm.load(_sid_t, ctx.get("root")))
+            except Exception:  # noqa: BLE001
+                _todo_open = []
             if _conv is not None and not _empty:
-                try:
-                    _gok, _gwhy = _conv.gate(_ans)
-                except Exception:  # noqa: BLE001
-                    _gok, _gwhy = True, ""
+                # 交付闸的判定：账本未结项 **或** 证据不足，任一成立都不放行。
+                # 账本未结是**硬事实**（不是可重试的提示），所以它并进同一个
+                # 闸门判定里 —— 走既定的「重试预算用尽 → fail-closed」路径，
+                # 不给它留「预算用尽就放行」的出口（那等于清单形同虚设）。
+                _gok, _gwhy = True, ""
+                if _todo_open:
+                    _gok, _gwhy = False, (
+                        "任务账本里还有 %d 项没结：%s"
+                        % (
+                            len(_todo_open),
+                            "、".join(
+                                "%s(%s)"
+                                % (it.get("text", "")[:40], it.get("state", "?"))
+                                for it in _todo_open[:3]
+                            ),
+                        )
+                    )
+                else:
+                    try:
+                        _gok, _gwhy = _conv.gate(_ans)
+                    except Exception:  # noqa: BLE001
+                        _gok, _gwhy = True, ""
                 if not _gok:
                     if _gate_retries < _GATE_BUDGET:
                         _gate_retries += 1
@@ -4356,6 +4467,12 @@ def run_agent(
                         "ok": bool(res.get("ok")),
                         "executed": bool(res.get("executed")),
                         "summary": _tool_summary(name, args, res),
+                        # todo 工具的结果带一份面板文本 → 终端里实时显示进度
+                        "todo_panel": (
+                            str(res.get("panel") or "")
+                            if name == "todo" and res.get("ok")
+                            else ""
+                        ),
                         # 失败原因随事件走：交互面要在 ⎿ 一行里说清「为什么没成」，
                         # 不必再另起一行（headless 的行形状不变）。
                         "error": str(res.get("error") or "")[:120],
@@ -4986,6 +5103,14 @@ def _tool_label(tool, args=None, limit=44):
         arg = _s("prompt")
     elif name == "web_fetch":
         arg = _s("url")
+    elif name == "todo":
+        # 账本工具的参数是**清单**，一行 JSON 化会碎成渣（实测打成
+        # "…': 3, 'state': 'doing'…"）。这里只报「几项」。
+        _its = a.get("items")
+        if isinstance(_its, list):
+            arg = "%d 项" % len(_its)
+        else:
+            arg = "看清单"
     else:
         arg = ""
         for v in a.values():
@@ -5148,6 +5273,13 @@ def _turn_ui(sp, printer, seen):
                 _ts = "失败：%s" % str(ev.get("error") or "未执行/被拒")[:60]
             if _ts:
                 sys.stdout.write(_c("dim", "  ⎿ %s\n" % _ts))
+                sys.stdout.flush()
+            # 任务账本面板（Claude Code 的 TodoWrite 那一层）：
+            # 多行小面板，让「做到第几步」在终端里一眼可见。
+            _tp = str(ev.get("todo_panel") or "")
+            if _tp:
+                for _ln in _tp.splitlines():
+                    sys.stdout.write(_c("dim", "    %s\n" % _ln))
                 sys.stdout.flush()
             return
         if printer is not None:
@@ -10762,6 +10894,128 @@ def _selftest_body(case, jc, tmp):
         "交付闸" in _cs2_seen and bool(_cs2_res.get("ok")),
         "退回=%s ok=%s" % ("交付闸" in _cs2_seen, _cs2_res.get("ok")),
     )
+
+    # (TODO) 任务账本：清单里有没结的项 → 不许说「做完了」
+    # ────────────────────────────────────────────────────────────────────
+    # 这是把「清单」从装饰变成真约束的一层（Claude Code 的 TodoWrite /
+    # Aider 的 todo 的价值就在这）。两类判据：
+    # ① 账本里还有 pending/doing → 交付闸挡回（说「做完了」不算数）；
+    # ② 账本全 done → 正常放行（不能变成「必须列清单才能交付」的刁难）。
+    _td1 = Stub(
+        [
+            jc(
+                tool=(
+                    "todo",
+                    {
+                        "items": [
+                            {"text": "第一步", "state": "done"},
+                            {"text": "第二步", "state": "pending"},
+                        ]
+                    },
+                ),
+                cid="td1",
+            ),
+            # 三次答复**各不相同**：复读守卫（同一句话连续 3 步）会先于
+            # 交付闸发难，那样测到的就是守卫而不是账本闸 —— 测例要隔离
+            # 掉不相干的机制，才测得到自己要测的东西。
+            jc(content="做完了：两步都完成了（1）。"),
+            jc(content="做完了：两步都完成了（2）。"),
+            jc(content="做完了：两步都完成了（3）。"),
+        ]
+    )
+    try:
+        _td1_res = run_agent(
+            "按清单做两步",
+            ctx={"root": tmproot, "mode": "full", "sid": "st-todo-pending"},
+            provider=_td1.provider(),
+            max_steps=6,
+        )
+    finally:
+        _td1.close()
+    case(
+        "账本：还有 pending 项时说「做完了」被交付闸挡回",
+        _td1_res.get("ok") is False
+        and "账本" in str(_td1_res.get("error") or ""),
+        "ok=%s err=%r"
+        % (_td1_res.get("ok"), str(_td1_res.get("error") or "")[:70]),
+    )
+    _td2 = Stub(
+        [
+            jc(
+                tool=(
+                    "todo",
+                    {"items": [{"text": "第一步", "state": "done"}]},
+                ),
+                cid="td2",
+            ),
+            jc(content="清单全 done，做完了。"),
+        ]
+    )
+    try:
+        _td2_res = run_agent(
+            "按清单做一步",
+            ctx={"root": tmproot, "mode": "full", "sid": "st-todo-done"},
+            provider=_td2.provider(),
+            max_steps=4,
+        )
+    finally:
+        _td2.close()
+    case(
+        "账本：全 done 时正常放行（不许变成「必须列清单才能交」）",
+        _td2_res.get("ok") is True,
+        "ok=%s err=%r"
+        % (_td2_res.get("ok"), str(_td2_res.get("error") or "")[:70]),
+    )
+
+    # (DIFF-REVIEW) 改了代码却没看过自己的 diff → 交付闸挡回
+    # ────────────────────────────────────────────────────────────────────
+    # Aider 的整个交互核心就是「改完先看 diff 再决定」；AgentOS 是自动化的，
+    # 那就把「看没看」变成**证据**而不是建议：改了东西、跑过验证，但没跑
+    # `git diff` 就交付 —— 挡回去。
+    _gitroot = os.path.join(tmp, "gitroot")
+    _have_git = False
+    try:
+        os.makedirs(_gitroot, exist_ok=True)
+        _r = subprocess.run(
+            ["git", "init", "-q"], cwd=_gitroot, capture_output=True, timeout=60
+        )
+        _have_git = _r.returncode == 0
+    except Exception:  # noqa: BLE001
+        _have_git = False
+    if _have_git:
+        with open(os.path.join(_gitroot, "mod.py"), "w", encoding="utf-8") as _mf:
+            _mf.write("def f():\n    return 1\n")
+        _dr = Stub(
+            [
+                jc(tool=("write_file", {"path": "mod.py", "content": "def f():\n    return 2\n"}), cid="d1"),
+                jc(tool=("read_file", {"path": "mod.py"}), cid="d2"),
+                jc(content="改完了，mod.py 已更新。"),
+                jc(content="改完了，mod.py 已更新（2）。"),
+                jc(content="改完了，mod.py 已更新（3）。"),
+            ]
+        )
+        try:
+            _dr_res = run_agent(
+                "给 mod.py 加个返回值",
+                ctx={"root": _gitroot, "mode": "full", "sid": "st-diff-review"},
+                provider=_dr.provider(),
+                max_steps=6,
+            )
+        finally:
+            _dr.close()
+        case(
+            "自审：改了代码没看 git diff → 交付闸挡回",
+            _dr_res.get("ok") is False
+            and "diff" in str(_dr_res.get("error") or "").lower(),
+            "ok=%s err=%r"
+            % (_dr_res.get("ok"), str(_dr_res.get("error") or "")[:80]),
+        )
+    else:
+        case(
+            "自审：改了代码没看 git diff → 交付闸挡回",
+            True,
+            "本机没有 git：这条判据不适用（如实跳过，不算绿）",
+        )
 
     # (CC-UX) 过程显示：CC 式短标签（一次工具一行，不打完整 JSON）
     # ────────────────────────────────────────────────────────────────────

@@ -20,10 +20,11 @@
   },
   {
    "advice": "read_file 失败多为路径不存在或越界：先 list_dir 确认结构再读，路径以项目根为基准",
-   "count": 4,
+   "count": 6,
    "created": "2026-10-19 18:51:36",
    "id": "evo-tool-fail-read_file",
    "notified": true,
+   "proposed": true,
    "sig": "tool-fail:read_file",
    "state": "CANDIDATE"
   },
@@ -118,7 +119,7 @@
     "op": "converge_tune"
    },
    "advice": "本机历史：连续多步没有产出（只读/只查不动手）。先动手改一处再继续，别把时间花在读完再读上",
-   "count": 10,
+   "count": 11,
    "created": "2026-10-19 21:26:38",
    "id": "evo-converge-stall",
    "notified": true,
@@ -138,7 +139,7 @@
   },
   {
    "advice": "本机历史：文档类任务出过「写了但没读回」的错。写完读回一遍确认落盘且内容对。",
-   "count": 3,
+   "count": 5,
    "created": "2026-10-20 23:41:43",
    "id": "evo-contract-docs",
    "notified": true,

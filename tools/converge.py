@@ -223,6 +223,7 @@ class Converge:
         mode="",
         verify_info=None,
         contract=None,
+        require_diff_review=False,
     ):
         self.max_explore = int(max_explore)
         self.max_stall = int(max_stall)
@@ -252,6 +253,11 @@ class Converge:
         self.fix_after_repro = False      # 红之后动过手（改过）
         self.repro_green = False          # 红→改→绿，闭环成立
         self.cmd_ran = False              # 跑过成功的命令（可复算证据）
+        # 自审 diff（Aider 式的「改完先看改动」）：改了东西却没看过自己的
+        # diff 就交付，等于闭眼提交。记在引擎里，闸门据此要证据。
+        self.diff_reviewed = False
+        # 需要自审 diff（只有 git 仓库才要：非 git 仓库没有 diff 可看）
+        self.require_diff_review = bool(require_diff_review)
         self.n_reads = 0                  # 读过的文件数（查证类证据）
         self.write_blocked = False        # 写过但没落地（被环境锁住/写失败）
         self._repro_nagged = False        # 复现提醒只发一次（不轰炸模型）
@@ -352,6 +358,15 @@ class Converge:
                 # 跑起来了就是「可复算」的证据（分析/运维类任务的硬要求）：
                 # 结论引用的 rc 与输出，别人能照着再跑一遍。
                 self.cmd_ran = True
+                # 「看过自己的 diff」也算核对（git diff / git diff --stat）
+                if isinstance(args, dict):
+                    _av = args.get("argv")
+                    if isinstance(_av, str):
+                        _av = _av.split()
+                    if isinstance(_av, (list, tuple)) and any(
+                        "diff" in str(_x) for _x in _av
+                    ):
+                        self.diff_reviewed = True
                 _vc = (rc in (0, None))
                 if _vc and (not args or _is_verify_cmd(args)):
                     self.verify_seen = True
@@ -371,6 +386,10 @@ class Converge:
                 self.verify_seen = True
                 productive = True
                 verified_now = True
+        elif tool == "git_diff" and ok:
+            self.verify_seen = True
+            verified_now = True
+            self.diff_reviewed = True
         elif tool in _VERIFY_READBACK and ok:
             self.verify_seen = True
             verified_now = True
@@ -540,6 +559,8 @@ class Converge:
             "command_ran": "没有跑过任何命令（结论不可复算）",
             "any_read": "没有读过任何东西（结论无从谈起）",
             "repro_red_then_green": "没有「先复现失败 → 再改 → 再通过」的完整链",
+            "diff_reviewed": "改了东西但没看过自己的 diff（git diff）",
+            "no_failed_check": "上一次核对没通过（rc≠0），先修好再交付",
         }
 
         def _has(kind):
@@ -560,6 +581,11 @@ class Converge:
                 return bool(self.read_paths or self.n_reads)
             if kind == "repro_red_then_green":
                 return bool(self.repro_green)
+            if kind == "diff_reviewed":
+                return bool(self.diff_reviewed)
+            if kind == "no_failed_check":
+                # 已知有一次核对没过（rc≠0）→ 不许当没发生过就交付
+                return self.verify_outcome != "fail"
             return False
 
         # 写够不着（被环境锁住）时，撤掉「必须写盘」的要求 ——
@@ -579,7 +605,16 @@ class Converge:
                 _kept.append(r)
             req = _kept
             _relaxed = ["写操作被环境锁住，契约的写类要求已撤"]
+        # 全局规则（不分任务类型）：**已知有一次核对没通过**（rc≠0）→
+        # 不许当没发生过就交付。这不是「重试提示」，是事实：
+        # 刚跑过的检查是红的。
+        if self.verify_outcome == "fail":
+            missing.append("no_failed_check")
         for r in req:
+            # 「自审 diff」只在 git 仓库里有意义：非 git 仓库根本没有 diff
+            # 可看，硬要它就是永远红（假红比漏红更坏）。
+            if r == "diff_reviewed" and not self.require_diff_review:
+                continue
             # 元组 = any-of（这一类证据拿到其中一种就算齐）
             if isinstance(r, (tuple, list)):
                 if not any(_has(k) for k in r):

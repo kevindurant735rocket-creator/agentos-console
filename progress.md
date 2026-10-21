@@ -712,3 +712,51 @@ diff/cmp/file/du），curl/wget 仍然**不算**（取回东西 ≠ 核对本轮
 **W30 真机复验**：「找 1k+ 星标的 Python 终端 agent 项目 → 读 README → 写 3 条
 设计点 → cat 核对」整条蒸馏链路跑通：gh_search 命中 ★2274/★1016 的真实仓、
 gh_repo_view 核实星标、notes.md 落盘、交付闸**放行**（7 步 38.1s / 工具 10/10）。
+
+## 第三十一波（2026-10-21）：补齐成熟 agent 的**框架级缺口**（四层）
+
+对照 Claude Code / Aider / OpenHands / SWE-agent 的结构逐层盘，AgentOS（终端）
+缺四层，全补上（详见 `docs/ARCHITECTURE.md` 的逐项对照表）：
+
+### 缺口 1：任务账本（Claude Code 的 TodoWrite / Aider 的 todo 那一层）
+
+之前**完全没有**：DSP 的计划是内核内部结构（「需求拆任务」），不是「agent 自己
+正在做的步骤」；agent 手上没有一份**用户看得见**的清单。后果：长任务进度不可见、
+不可核、不可恢复，交付闸也**无法判断**「你说做完了」是不是只做了三分之二。
+
+落地：
+- `tools/todo.py`：会话级账本（`work/todos/<sid>.json`，**跨压缩、跨重启存活**），
+  状态机 pending/doing/done/dropped；面板按 doing → pending → done 排序。
+- `todo` 工具：整体覆盖式写；终端里**实时渲染面板**（✓/▸/○/– + 「计划 2/3 完成
+  （还有 1 项没结）」）。
+- **账本有 pending → 交付闸挡回**（并入闸门判定，走 fail-closed：预算用尽判
+  「未交付」，不给「预算用尽就放行」的出口 —— 那个出口等于清单形同虚设）。
+- 撞上并修掉一个真交互问题：**DSP 计划锁把 todo 写入挡了**（"计划未审批：todo
+  未执行"）。锁要管的是「不许擅自改项目」，不是「不许记账」—— 连记账都锁，
+  agent 就没法列清单求批准（死锁）。→ 记账类工具豁免计划锁。
+
+### 缺口 2：自审 diff（Aider 的核心交互）
+
+Aider 的整个体验是「改完先看 diff 再决定」；AgentOS 是自动化的，那就把
+「看没看」变成**证据**：改代码类任务（feature/refactor/bugfix）**没跑
+`git diff` 就不许交付**。非 git 仓库不要求（没有 diff 可看，硬要就是永远红 ——
+假红比漏红更坏）。
+
+### 缺口 3：失败不许一次就交
+
+引擎记 `verify_outcome`（pass/fail）。**已知有一次核对没过（rc≠0）→ 不许当没
+发生过就交付**（全局规则，不分任务类型）。
+
+### 缺口 4：账本的调用行渲染
+
+`todo` 的参数是清单，一行 JSON 化会碎成渣（实测打成 `…': 3, 'state': 'doing'…`）
+→ 短标签只报「3 项」。
+
+**真机复验**：「给 hello.py 加一个 greet(name) 函数 → cat 核对 → 看 git diff →
+交付」—— agent **自发用了 todo 清单**（面板 3/3 ✓）、写了代码、cat 核对、
+git diff 自审，**11 步 72.1s / 工具 14/14**，交付闸放行。
+
+**门与自检**：agent_core 自检 166→**169**（新增：账本 pending 挡交付 / 全 done
+放行 / 改了没看 diff 挡交付）· todo_selftest **13/13**（新门项，已上链）·
+converge_gate 31→**36/36**（新增自审 diff 与失败核对 4 条判据）·
+task_contract_selftest 27/27 · 计数钉 11 文件同步 169 口径。
