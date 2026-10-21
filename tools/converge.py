@@ -23,6 +23,10 @@ list_dir×4 在原地打转，最后撞墙钟预算报错退出。病根不是�
 · **循环熔断**（loop）：同一 (工具, 参数指纹) 重复 ≥3 次即注入「换个做法」指令。
 · **停滞探测**（stall）：连续 N 步没有任何**产出性**调用（写盘成功 / 命令 rc=0）
   即注入「必须二选一：动手改，或立刻交付现状并说清卡点」。
+· **失败修复回路**（fix）：核对类命令 rc≠0 时，把「哪条命令失败 / rc 多少 /
+  输出尾部」记进账本，下一步给模型一条**可定位**的修复指令（蒸馏自 SWE-agent
+  的 ACI：把工具失败转成可行动的观察，而不是让模型猜）。有界：同一轮最多
+  `max_fix_hints`（默认 3）次，超过就不再催 —— 不许变成「改一次试一次」的死循环。
 · **交付闸**（gate）：最终回答前检查是否真有验证证据；没有就把「去跑一次验证」
   当作一条待办退回给模型，逼它补证据而不是空口交付。
 
@@ -160,6 +164,62 @@ def _fingerprint(tool, args):
     return "%s:%s" % (tool, h)
 
 
+def _out_tail(text, max_chars=600, max_lines=8):
+    """取输出的**尾部**（失败根因通常在最后几行）。
+
+    截断是硬要求：把整屏输出刷进上下文，等于用噪声淹掉真正的报错
+    （SWE-agent 的 ACI 也是只回可行动的片段）。
+    """
+    s = str(text or "")
+    if not s.strip():
+        return ""
+    lines = [ln.rstrip() for ln in s.splitlines() if ln.strip()]
+    tail_lines = lines[-max_lines:]
+    out = "\n".join(tail_lines)
+    if len(out) > max_chars:
+        out = "…" + out[-max_chars:]
+    return out
+
+
+def _cmdline(args):
+    """把 args 里的 argv 拼成一条人可读命令行（失败指令要指名道姓）。"""
+    if not isinstance(args, dict):
+        return ""
+    av = args.get("argv")
+    if isinstance(av, str):
+        return av
+    if isinstance(av, (list, tuple)):
+        return " ".join(str(x) for x in av)
+    return str(args.get("cmd") or "")
+
+
+def _fix_detail(f):
+    """把一条失败记录渲染成**可行动**的修复指令尾部（失败点/rc/输出尾部）。
+
+    三样东西缺一不可：哪条命令失败、rc 多少、输出长什么样。
+    少任何一样，模型就只能猜 —— 那正是「已知缺口第 1 条」。
+    """
+    f = f or {}
+    parts = [
+        "[修复指令] 上一步核对**没通过**（rc≠0）：命令 `%s` 退出码 rc=%s。"
+        % (f.get("cmd") or "(未记录)", f.get("rc"))
+    ]
+    tail = f.get("tail") or ""
+    if tail:
+        parts.append("输出尾部（已截断，只贴最后几行）：\n%s" % tail)
+    else:
+        parts.append(
+            "这条命令没有输出可看 —— 先想办法让失败**说出原因**"
+            "（加 -v/--traceback，或分成小步跑）。"
+        )
+    parts.append(
+        "先**定位**失败点再改：读上面那段报错指向的文件与行号，改那一处，"
+        "然后重跑 `%s` 直到 rc=0。别整片重写，也别换个命令绕开它。"
+        % (f.get("cmd") or "同一条命令")
+    )
+    return "\n".join(parts)
+
+
 def _is_verify_cmd(args):
     """这条命令像不像「核对」。
 
@@ -212,6 +272,7 @@ class Converge:
     max_explore：探查阶段最多容忍几步（到边界就催「去动手」）。
     max_stall  ：连续多少步没有产出性调用即判停滞。
     loop_repeat：同一指纹重复几次即熔断。
+    max_fix_hints：同一轮里「核对失败 → 修复提示」最多发几次（有界，防死循环）。
     """
 
     def __init__(
@@ -219,6 +280,7 @@ class Converge:
         max_explore=6,
         max_stall=6,
         loop_repeat=3,
+        max_fix_hints=3,
         task_text="",
         mode="",
         verify_info=None,
@@ -228,6 +290,8 @@ class Converge:
         self.max_explore = int(max_explore)
         self.max_stall = int(max_stall)
         self.loop_repeat = int(loop_repeat)
+        # 有界失败修复回路：上限只许小（默认 3），大到失去「有界」意义就钳住。
+        self.max_fix_hints = max(1, min(int(max_fix_hints), 5))
         self.task_text = str(task_text or "")
         self.mode = str(mode or "")
         # 「这个仓库跑什么命令能证明改动是对的」——由 tools/verify_cmd.py
@@ -280,6 +344,16 @@ class Converge:
         self.phase_hits = 0
         self.notes = []  # 注入过的指令（供自检/审计）
         self.hints = []  # 交付闸退回的待办
+        # ── 有界失败修复回路（已知缺口第 1 条）────────────────────────
+        # 核对类命令 rc≠0 时记一条 {cmd, rc, tail}，下一步给模型一条**可定位**
+        # 的修复指令（蒸馏自 SWE-agent 的 ACI：把工具失败转成可行动的观察）。
+        # 有界：fix_hints 是已发条数，到 max_fix_hints 就不再催 ——
+        # 「改一次试一次」的死循环比不催更坏。
+        self.fix_failures = 0     # 本轮核对失败的次数（账本要能看见）
+        self.fix_hints = 0        # 已发过的修复指令条数
+        self.fix_pending = None   # 还没告诉模型的失败（dict），None=没有
+        self.fix_suppressed = False  # 配额用完，已停止催促
+        self.last_fail = None     # 最近一次失败记录（供 snapshot 审计）
         # 任务字面像不像「要做出东西」——决定要不要强推 VERIFY
         # 需求点名要验证/测试 → 交付前必须拿出核对证据。
         self.demands_verify = any(
@@ -308,11 +382,14 @@ class Converge:
         )
 
     # ── 观测 ────────────────────────────────────────────────────────
-    def observe(self, tool, args, ok=True, rc=None):
+    def observe(self, tool, args, ok=True, rc=None, out=None):
         """喂一次工具调用结果。返回本步是否算「产出性」。
 
         ok=False（工具被拒/失败）不算产出 —— 停滞探测要区分「在动但没推动」
         和「压根没动」。
+
+        out：命令的原始输出（可选）。核对类命令 rc≠0 时用它取**输出尾部**，
+        让下一步的修复指令能带「失败长什么样」，而不是只说「失败了」。
         """
         self.steps += 1
         tool = str(tool or "")
@@ -373,6 +450,8 @@ class Converge:
                     productive = True
                     verified_now = True
                     self.verify_outcome = "pass"
+                    # 修好了：旧失败记录作废，别拿它继续催（催过期失败=噪声）
+                    self.fix_pending = None
                     if self.fix_after_repro:
                         self.repro_green = True  # 红→改→绿，闭环成立
                 elif not _vc and (not args or _is_verify_cmd(args)):
@@ -380,6 +459,7 @@ class Converge:
                     # 记下来，别让账本只留下「验过」两个字。
                     self.verify_outcome = "fail"
                     self.repro_fail_seen = True  # 这就是「红」
+                    self._record_failure(args, rc, out)
                 # rc≠0 的检查**不算**核对通过：它证明的是「还没好」，
                 # 所以既不记证据也不算产出 —— 停滞探测器会因此催它去修。
             else:  # git_diff
@@ -419,6 +499,68 @@ class Converge:
     def repeat_fps_repeat(self):
         return self.loop_repeat
 
+    # ── 有界失败修复回路 ───────────────────────────────────────────
+    def _record_failure(self, args, rc, out):
+        """记一次核对失败：命令 / rc / 输出尾部（截断）。
+
+        为什么只记尾部：失败根因几乎总在最后几行；整屏输出灌进上下文等于用
+        噪声淹掉报错（SWE-agent 的 ACI 也只回可行动的片段）。
+        """
+        cmd = _cmdline(args) or (self.verify_info or {}).get("cmdline") or ""
+        try:
+            _rc = int(rc) if rc is not None else -1
+        except (TypeError, ValueError):
+            _rc = -1
+        self.fix_failures += 1
+        self.last_fail = {
+            "cmd": cmd,
+            "rc": _rc,
+            "tail": _out_tail(out if out is not None else (args or {}).get("out")),
+            "n": self.fix_failures,
+        }
+        # 配额用完就不再排队：不再催 = 不再给模型「再试一次」的暗示。
+        if self.fix_hints >= self.max_fix_hints:
+            self.fix_suppressed = True
+            self.fix_pending = None
+            return self.last_fail
+        self.fix_pending = dict(self.last_fail)
+        return self.last_fail
+
+    def fix_directive(self):
+        """把最近一次失败转成一条**可定位**的修复指令（没有就返回 None）。
+
+        只发一次、有界（max_fix_hints）：超过上限就返回 None，不再催 ——
+        否则「改一次试一次」会变成新的死循环。
+        """
+        f = self._take_failure()
+        if f is None:
+            return None
+        msg = _fix_detail(f)
+        if self.fix_hints >= self.max_fix_hints:
+            msg += (
+                "\n（这是本轮第 %d 次也是最后一次自动提示；再用同一方式重试也不会"
+                "再被提示 —— 要么换一条真不一样的做法，要么如实报告卡在哪。）"
+                % self.fix_hints
+            )
+        self.notes.append(msg)
+        return msg
+
+    def _take_failure(self):
+        """取走「还没告诉模型」的失败记录（配额内）。
+
+        有界在这里落地：配额用完就返回 None 并置 fix_suppressed —— 不再催。
+        """
+        if not self.fix_pending:
+            return None
+        if self.fix_hints >= self.max_fix_hints:
+            self.fix_suppressed = True
+            self.fix_pending = None
+            return None
+        f = self.fix_pending
+        self.fix_pending = None
+        self.fix_hints += 1
+        return f
+
     # ── 自进化调参（根源级：规则账能改引擎行为，不只是加提示）──────
     def apply_policy(self, policy):
         """把一条自进化规则算出的参数落进引擎。返回实际生效值。
@@ -457,10 +599,18 @@ class Converge:
     def directive(self):
         """给模型的一句话方向指令（没有就返回 None）。
 
-        优先级：停滞 > 循环 > 阶段边界。三者互斥，一次只给一条，避免
-        指令噪声把模型淹掉。
+        优先级：失败修复 > 核对 > 复现 > 停滞 > 循环 > 阶段边界。互斥，一次
+        只给一条，避免指令噪声把模型淹掉。
+
+        失败修复排最前：核对刚判红时，「上一条命令为什么红、报错长什么样」是
+        信息量最大的那一句；排在「还没核对」之后就会被它盖掉，模型仍然只能猜。
         """
-        # 核对指令优先级最高：刚改完还没核对，是所有错误里最值钱的一个
+        # 失败修复回路（有界）：只对**还没告诉模型**的失败发一次，配额用完
+        # 就自然返回 None，后面的判据照常接管 —— 不会变成无限催促。
+        _fix = self.fix_directive()
+        if _fix:
+            return _fix
+        # 核对指令优先级次高：刚改完还没核对，是所有错误里最值钱的一个
         # ——其余错误（绕路、停滞）只是慢，错误改动是错。
         if self.verify_pending and not self.verify_nagged and self.verify_info:
             self.verify_nagged = True
@@ -715,6 +865,15 @@ class Converge:
             "max_stall": self.max_stall,
             "max_explore": self.max_explore,
             "loop_repeat": self.loop_repeat,
+            # 失败修复回路：账本要能看见「这一轮失败过几次 / 提示了几次 /
+            # 是不是已经催到上限停催」—— 否则自进化无法据此判「该拧哪个旋钮」。
+            "fix_failures": self.fix_failures,
+            "fix_hints": self.fix_hints,
+            "max_fix_hints": self.max_fix_hints,
+            "fix_suppressed": bool(self.fix_suppressed),
+            "fix_pending": bool(self.fix_pending),
+            "last_fail_cmd": (self.last_fail or {}).get("cmd") or "",
+            "last_fail_rc": (self.last_fail or {}).get("rc"),
         }
 
 

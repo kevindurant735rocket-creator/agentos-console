@@ -4486,6 +4486,9 @@ def run_agent(
                         args if isinstance(args, dict) else {},
                         ok=bool(res.get("ok")) and bool(res.get("executed", True)),
                         rc=res.get("rc"),
+                        # 输出尾部：核对类命令 rc≠0 时，修复指令要能说清
+                        # 「失败长什么样」（否则模型只能猜 —— 已知缺口第 1 条）。
+                        out=res.get("out"),
                     )
                 except Exception:  # noqa: BLE001
                     pass
