@@ -884,3 +884,56 @@ python3 并**如实说明**（GATES-NOTE），真需要浏览器的门自己报�
   provider/session 三块）；门链 41 道；worktree 与两个特性分支已清
 - **不弹窗**：`~/.agent-os/keeper.sh` 改空操作；launchd 无 agentos 项；
   8320/8321 无监听
+
+## W34（2026-10-22）学 ruvnet/ruflo：把账本从「列表」升级成「任务域模型」
+
+用户指定学习 `https://github.com/ruvnet/ruflo.git`。读了它的 v3 域模型
+（`v3/src/task-execution/domain/Task.ts`、`v3/src/agent-lifecycle/domain/Agent.ts`、
+`v3/src/task-execution/application/WorkflowEngine.ts`、`v3/src/memory/domain/Memory.ts`）
+与 MCP/验证目录后，**只搬纪律，不搬代码**（它是 TS+Rust 的巨型工程，我方是纯 stdlib
+Python 终端 agent）。
+
+### 学了什么、怎么落地的
+
+| ruflo v3 的设计 | AgentOS 原来 | 现在（W34） |
+|---|---|---|
+| **带守卫的状态迁移**：`start()` 只在 pending 生效、`complete()` 只在 in-progress 生效、`cancel()` 不许动已完成的任务 | 账本**任意状态可跳** → 2026-10-21 实测：陈旧整表写入把 7 项 done 打回 pending，账本不可信（账本是交付闸判据来源） | `TRANSITIONS` 迁移表 + `can_transition()`：**回退默认拒绝**；要重开必须 `reopen="<理由>"`，理由**记进账本**（`reopened` 计数）并在面板标「重开过 N 次」 |
+| **依赖 + 就绪判定 + 环检测**：`Task.dependencies` / `areDependenciesResolved()` / `resolveExecutionOrder()`（拓扑排序遇环即抛） | 账本是**扁平列表**：没有依赖、没有「哪件该做」、面板不说「在等谁」 | `depends_on` + `ready_items()`/`blocked_items()` + `detect_cycle()`（**成环的变更直接拒**）+ 面板标「（等 #2）」 |
+| **优先级**：`getPriorityValue()`（high=3/medium=2/low=1）+ `sortByPriority()` | 无 | `priority` 字段；就绪项按 high→medium→low 排 |
+
+### 真机暴露的两个真问题（不是我猜的，是跑出来的）
+
+1. **布尔 reopen 开关形同虚设**：真机第一轮里，模型看到工具描述有 `reopen=true`
+   就**直接带上**把已完成的项打回 pending —— 守卫被绕过。改成
+   **只认非空理由字符串**，理由进账本、面板标「重开过」，回退从「静默」变「有痕」。
+   （真机第二轮：模型改写成理由 → 放行 → 账本 `重开=1` + 理由文本 ✓）
+2. **悬空依赖会把账本卡死**：模型写 `depends_on:[99]`（不存在的 id）→ 若严格等
+   它，这项永远 blocked 且看不出为什么。改成**悬空依赖忽略**（与环检测同口径）。
+
+### 判据（todo_selftest 18 → 34/34）
+
+新增 16 条：守卫 6 条（回退被拒/写理由才放行/布尔无效/整表覆盖同样拦/
+done→dropped 合法/非法状态名规整）、依赖 5 条（未结不算就绪/结了才就绪/
+悬空忽略/成环被拒/优先级排序）、面板 1 条（说清在等谁）、**变异体自证 4 条**
+（把 `todo.py` 拷一份 → 摘掉守卫 → 回退被放行；摘掉环检测 → 成环被放行 ——
+两次都放行 = 证明判据咬的确实是那两个函数，不是碰巧）。
+
+### 真机证据（终端，合并前）
+
+- 依赖生效：面板 `○ 上层（等 #1）`；`next` 不给被卡的项
+- 优先级生效：面板 `✓ 写 c.txt 内容 C（高优）`
+- 守卫生效：agent 想重开 → 必须给理由 → 放行后账本 `重开=1` + 理由文本
+- **交付闸仍然拦得住**：终答时账本有 1 项 pending → 「交付闸：终答缺证据
+  （任务账本里还有 1 项没结…）」→ 本轮不按完成交付
+
+### 明确**没有**采纳的（以及为什么）
+
+- **Swarm / Hive-Mind / 联邦**：多 agent 编排。我方是**单 agent + 子代理**，先不引
+  分布式调度（会把「一个能落地的终端 agent」变成一个平台）。
+- **AgentDB / RVF 向量记忆 + Hybrid/SQLite 后端**：需要常驻服务与 embedding
+  依赖，与「只保留终端面、纯 stdlib」冲突。跨会话记忆检索仍是已知缺口
+  （本轮不碰；下一步可用**词面相关性**做零依赖版）。
+- **WorkflowEngine 的事件总线 / 插件扩展点 / 回滚**：我方已有 hooks（hooks 门）
+  与收敛引擎的阶段机，重复引入只会多一套状态。
+- **SPARC 方法论（spec→pseudocode→…）**：与本仓「任务契约 + 交付闸」的既有做法
+  重叠，暂不叠加。

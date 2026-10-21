@@ -1553,11 +1553,27 @@ _S_TODO = {
                         "type": "string",
                         "enum": ["pending", "doing", "done", "dropped"],
                     },
+                    "depends_on": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "description": "依赖的项 id（先做依赖项再做这件；成环会被拒）",
+                    },
+                    "priority": {
+                        "type": "string",
+                        "enum": ["high", "medium", "low"],
+                        "description": "优先级（就绪项里 high 先做）",
+                    },
                 },
                 "required": ["text"],
             },
         },
         "note": {"type": "string", "description": "给用户看的一行说明（可选）"},
+        "reopen": {
+            "type": "string",
+            "description": "要把**已完成**的项重开，写一句理由（默认拒绝："
+            "陈旧写入不许抹掉已完成的进度）。理由会记进账本并在面板上标出"
+            "「重开过」，不许无脑重开。",
+        },
         "action": {
             "type": "string",
             "enum": ["set", "update", "add", "list"],
@@ -1589,6 +1605,9 @@ _S_TODO = {
     "任务账本：把要做的事列成清单并逐项更新（pending/doing/done/dropped）。"
     "任务超过三步就先列清单，做完一项改一项；"
     "**改单项用 action=update（只改点名的项）**，别用整表覆盖（会抹掉别的项进度）；"
+    "项可带 depends_on（依赖别的项的 id，做完依赖再做这件）与 priority；"
+    "**已完成的项不许打回未完成**（陈旧写入会抹掉进度）——真要重开就写 "
+    "reopen=\"<理由>\"（要留痕，不写就拒）；"
     "清单里还有没结的项时，说「做完了」会被交付闸挡回。",
     _S_TODO,
 )
@@ -1621,24 +1640,49 @@ def _t_todo(a, ctx):
     # 现在：update/add 不要求 items；只有「没 action 且没 items/changes」才是读。
     if _action == "list":
         return _read()
+    # reopen 只认**非空理由字符串**：布尔 true 会被当成「没给理由」→ 拒绝。
+    # 真机实测：布尔开关模型会直接带上，守卫形同虚设（2026-10-22）。
+    _reopen = a.get("reopen")
+    if not isinstance(_reopen, str) or not _reopen.strip():
+        _reopen = None
+    _rejected = []
     if _action in ("update", "add"):
         _cur = _todo_mod.load(sid, ctx.get("root"))
         _chg = _changes if _changes is not None else _items
-        _norm = _todo_mod.update(_cur, _chg or [])
+        _norm, _rejected = _todo_mod.apply_changes(
+            _cur, _chg or [], reopen=_reopen
+        )
     elif _items is None and not _changes:
         return _read()
     else:
-        _norm = _todo_mod._norm(_items or [])
+        # 整表覆盖也要过守卫：2026-10-21 实测，agent 一次陈旧的整表写入
+        # 把 7 项 done 打回 pending，账本从此不可信（账本是交付闸的判据来源）。
+        _cur = _todo_mod.load(sid, ctx.get("root"))
+        _norm, _rejected = _todo_mod.apply_set(
+            _cur, _items or [], reopen=_reopen
+        )
     _p = _todo_mod.save(_norm, sid, ctx.get("root"))
     if not _p:
         return {"ok": False, "error": "账本落盘失败（work/todos 不可写？）"}
     _c = _todo_mod.counts(_norm)
+    _panel = _todo_mod.render(_norm)
+    if _rejected:
+        _panel = "⚠ 拒绝了 %d 处改动（%s）\n%s" % (
+            len(_rejected),
+            _rejected[0].get("why", ""),
+            _panel,
+        )
     return {
         "ok": True,
         "written": _p,
         "counts": _c,
         "next": _todo_mod.next_item(_norm),
-        "panel": _todo_mod.render(_norm),
+        "panel": _panel,
+        "rejected": _rejected,
+        "blocked": [
+            {"id": it["id"], "text": it["text"]}
+            for it in _todo_mod.blocked_items(_norm)
+        ],
     }
 
 

@@ -1,0 +1,29 @@
+{
+ "version": 1,
+ "updated": "2026-10-22 01:27:00",
+ "items": [
+  {
+   "id": 1,
+   "text": "写 a.txt 内容 A",
+   "state": "pending",
+   "depends_on": [],
+   "priority": "medium"
+  },
+  {
+   "id": 2,
+   "text": "写 b.txt 内容 B",
+   "state": "done",
+   "depends_on": [
+    1
+   ],
+   "priority": "medium"
+  },
+  {
+   "id": 3,
+   "text": "写 c.txt 内容 C",
+   "state": "done",
+   "depends_on": [],
+   "priority": "high"
+  }
+ ]
+}

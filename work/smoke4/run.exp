@@ -1,0 +1,13 @@
+set timeout 900
+log_file -a work/smoke4/session.log
+spawn python3 tools/agentos.py agent --root work/smoke4
+expect "> "
+sleep 1
+send -- "用 todo 工具列三条清单：第一条 id=1 写 a.txt 内容 A；第二条 id=2 写 b.txt 内容 B，depends_on 依赖 id=1；第三条 id=3 写 c.txt 内容 C，priority=high。然后把它们都做成 done（用 action=update）。\r"
+expect "> "
+sleep 5
+send -- "现在把第 1 条（已完成的）改回 pending。\r"
+expect "> "
+sleep 5
+send -- "/exit\r"
+expect eof
