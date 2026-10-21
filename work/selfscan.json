@@ -11,29 +11,29 @@
     {
       "name": "D1-loc>0",
       "ok": true,
-      "detail": "loc=51181"
+      "detail": "loc=29697"
     },
     {
       "name": "D2-no-HIGH",
-      "ok": false,
-      "detail": "2 条 HIGH：B324@tools/converge.py"
+      "ok": true,
+      "detail": "0 条 HIGH"
     },
     {
       "name": "D3-no-new-MEDIUM",
       "ok": false,
-      "detail": "新增：tools/converge.py|B324 +1（基线 0）；tools/selfscan2/selfscan2.py|B602 +1（基线 0）"
+      "detail": "新增：tools/agent_provider.py|B310 +3（基线 0）"
     }
   ],
   "totals": {
-    "CONFIDENCE.HIGH": 375,
+    "CONFIDENCE.HIGH": 183,
     "CONFIDENCE.LOW": 0,
-    "CONFIDENCE.MEDIUM": 30,
+    "CONFIDENCE.MEDIUM": 16,
     "CONFIDENCE.UNDEFINED": 0,
-    "SEVERITY.HIGH": 2,
-    "SEVERITY.LOW": 359,
-    "SEVERITY.MEDIUM": 44,
+    "SEVERITY.HIGH": 0,
+    "SEVERITY.LOW": 189,
+    "SEVERITY.MEDIUM": 10,
     "SEVERITY.UNDEFINED": 0,
-    "loc": 51181,
+    "loc": 29697,
     "nosec": 0,
     "skipped_tests": 0
   }

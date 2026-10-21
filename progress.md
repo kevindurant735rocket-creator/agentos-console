@@ -790,3 +790,68 @@ task_contract_selftest 27/27 · 计数钉 11 文件同步 169 口径。
 (b) 有界 3 次、(c) 通过时不误伤 + 修好作废旧失败 共 12 条）；`converge_gate`
 36→**43/43**（新增判据 4 条 + 变异体 2 个：摘掉失败记账 → 指令消失、拆掉配额
 钳制 → 催 10 次，都必须翻红）。
+
+## W33（2026-10-22）agent 自主完成的两件障碍 + 合入时补的集成伤
+
+**这一波是 agent 自己干的**（终端 agent 在自己的 worktree `/tmp/agentos-dev`
+里开发，任务书 `TASK2.md`，账本 `work/todos/`，我全程不插手实现）：
+
+**障碍 1：干净环境跑不了自己的门**（`tools/gates.sh`）
+原来 `pick_python` 强制要一个装了 playwright 的解释器，找不到就整条链
+`exit 3`。但本仓只剩终端面，链上 41 道门**没有一道需要浏览器** → 一条干净
+clone 连自己的门都跑不了。改成两层：优先选带 playwright 的；没有就退回任意
+python3 并**如实说明**（GATES-NOTE），真需要浏览器的门自己报缺依赖。
+
+**障碍 2：agent 读不了自己的主文件**（451KB > read_file 上限 256KB）
+`tools/agent_core.py` 451KB / 11,272 行，agent 在任务里自己撞上了这个错
+（"文件 451291 字节 > 上限 262144"）。拆成三块：
+
+| 文件 | 字节 | 装什么 |
+|---|---|---|
+| `tools/agent_core.py` | 222,998 | 内核主文件（原来 451,291） |
+| `tools/agent_core_selftest.py` | 146,539 | `--check` 自检正文（只被 `_selftest` 调用） |
+| `tools/agent_provider.py` | 53,456 | provider / 端点层 |
+| `tools/agent_session.py` | 37,085 | 会话 / 压缩 / rewind 层 |
+
+拆法经 AST 复核（区间顶格定义只有 `_selftest_body` 一个 → 自洽），
+**行为一字不变**：自检条数仍 169/169。agent 还自己发现并修好了拆分引入的
+自检假红（压缩用例的补丁原本打在 `__globals__`，搬家后须打 `vars(_core)`）。
+
+**合入时我补的集成伤**（拆分打破了「补丁/变异打在哪」这类假设）——**这 4 处
+都是我自己撞出来的，agent 自己的 20 门链没抓到**：
+
+1. `agent_core.py` 的自检懒导入改成按**本文件所在目录**找模块（`append` 不抢前）：
+   否则负向门拷出的变异副本会导入**原版**自检 → 变异咬不到 → 门假绿。
+2. `neg_agent_core.py` 暂存副本改成「整棵 `tools/` 树摆成 `<dir>/tools/*`」：
+   内核按 `ROOT/tools` 的**绝对路径**加载子模块（dsp.py 等），目录形状错了就
+   `FileNotFoundError`。
+3. `neg_agent_core.py` 的掏空补丁与**还原**都打在函数**真正所在模块**：
+   `_norm_completion` 搬到了 `agent_provider`，补丁打 `agent_core` 咬不到；
+   还原打错模块会把掏空版**永久留在** `agent_provider` 里 → 后面所有用例失真
+   （不写文件、没有 tool_call_id…）。实测就栽在这。
+4. `rewind_gate.py` / `rewind_selftest.py` 同步改造：被测对象从「一个文件」
+   变成「**一棵树**」——
+   - `load_core()` 把 core 所在目录顶到 `sys.path[0]`，兄弟模块从被测树解析；
+   - D3 源码锚点扫 **core 所在目录**（内核拆多模块后锚点不再全在 agent_core.py；
+     搬家 ≠ 功能消失，所以数**整个内核模块集**）；
+   - `rewind_selftest` 的 4 个变异体**跟着函数走**（`_compact_history_v2` /
+     `_rewind_replay` 现在住 `agent_session.py`），并暂存整棵树再打补丁 →
+     `REWIND_GATE_SELFTEST 3/7 → 7/7`（4 个变异体分别咬中 D5/D6/D4/D4）。
+
+**selfscan 基线**：基线按文件记，3 处已审过的 B310（同一份 urlopen 代码）跟着
+拆分从 `agent_core.py` 搬到 `agent_provider.py`，按文件看就成了"新增"→
+外科式改两条（`agent_core.py|B310 5→2`、`agent_provider.py|B310 0→3`），
+**不整体重建**（整体重建会掩盖真新增），并在基线 `_doc` 里写明这次搬家。
+
+**账本增量更新**（`tools/todo.py`）：原来账本只有"整表覆盖"一种写法，agent 一次
+陈旧的整表写入就把 7 项 done 打回 pending —— 账本是交付闸的判据来源，不可信
+的账本 = 不可信的交付闸。现在支持 `action=update/add`（只改点名的项）。
+
+**结论（agent 能不能当主力）**：**能，但要有人盯门**。
+两轮真实开发任务（实现有界失败修复回路 / 拆主文件）都是 agent 自己设计、自己
+实现、自己写自检与门、自己跑验收；我的角色是**出题 + 独立复核**。它做对的：
+用 todo 账本、后台跑长命令（前台 20s 超时后自己学会 background + poll）、
+用 AST 找自洽边界、自己发现并修好拆分引入的自检假红、文档诚实写明"仍缺什么"。
+它做不成的：一次会话干不完（第二轮 ~2h 仍在拆），**不自己 commit**
+（两轮都是我替它提交 + 补集成伤），以及它自己的验收清单会漏门
+（20 门 vs 41 门 —— 漏掉的负向门正好是抓出集成伤的那一道）。

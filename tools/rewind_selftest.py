@@ -55,6 +55,46 @@ MUTANTS = [
 ]
 
 
+# 内核已拆成多模块：变异锚点会搬家（_compact_history_v2 / _rewind_replay
+# 现在住在 agent_session.py），所以「打在哪」必须**跟着函数走**。
+KERNEL_MODS = ("agent_core.py", "agent_session.py", "agent_provider.py")
+
+
+def stage_tree(tmp, tag):
+    """把整棵 tools/ 树拷到 <tmp>/<tag>/tools/，返回该目录。
+
+    为什么必须整棵：被测的 agent_core.py 会 import 同一棵树里的兄弟模块
+    （agent_session / agent_provider）；只拷一个文件 → ModuleNotFound，
+    只拷到一半 → 变异咬不到（门假绿）。
+    目录形状必须是 <dir>/tools/*：内核按 ROOT/tools 的绝对路径加载子模块
+    （dsp.py 等），ROOT = dirname(dirname(__file__))，形状不对就指空。
+    """
+    d = os.path.join(tmp, tag)
+    os.makedirs(d, exist_ok=True)
+    shutil.copytree(
+        HERE,
+        os.path.join(d, "tools"),
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.bak*"),
+    )
+    return os.path.join(d, "tools")
+
+
+def find_owner(anchor):
+    """返回 (模块名, 命中数)：锚点在**哪个模块**、全树共命中几处。"""
+    hits = {}
+    for mod in KERNEL_MODS:
+        try:
+            with open(os.path.join(HERE, mod), encoding="utf-8") as f:
+                n = f.read().count(anchor)
+        except OSError:
+            continue
+        if n:
+            hits[mod] = n
+    if not hits:
+        return None, 0
+    return list(hits)[0], sum(hits.values())
+
+
 def run_gate(core_path, out_path, timeout=900):
     return subprocess.run([sys.executable, GATE, "--core", core_path,
                            "--out", out_path],
@@ -78,24 +118,31 @@ def main():
 
         src = open(CORE, encoding="utf-8").read()
         # 每个变异体：拷副本、单点替换（锚点必须恰 1 处）、跑门、要红
-        for name, anchor, repl, want in MUTANTS:
-            mut_path = os.path.join(tmp, "agent_core_mut.py")
-            n = src.count(anchor)
-            if n != 1:
+        for mi, (name, anchor, repl, want) in enumerate(MUTANTS, 1):
+            owner, total = find_owner(anchor)
+            if total != 1:
                 case(name, False, "锚点命中 %d 处（须恰 1）——变异体无效"
-                     % n)
+                     % total)
                 continue
-            with open(mut_path, "w", encoding="utf-8") as f:
-                f.write(src.replace(anchor, repl, 1))
+            # 变异要打在**函数真正所在的那个模块**上（内核拆多模块后
+            # 锚点会搬家；打在 agent_core.py 上 = 变异体无效）。
+            stage = stage_tree(tmp, "mut%d" % mi)
+            target = os.path.join(stage, owner)
+            with open(target, encoding="utf-8") as f:
+                t = f.read()
+            with open(target, "w", encoding="utf-8") as f:
+                f.write(t.replace(anchor, repl, 1))
             try:
-                r = run_gate(mut_path, os.path.join(tmp, "mut.json"))
+                r = run_gate(os.path.join(stage, "agent_core.py"),
+                             os.path.join(tmp, "mut%d.json" % mi))
             except subprocess.TimeoutExpired:
                 case(name, False, "门超时")
                 continue
             hit = ("FAIL %s" % want) in r.stdout
             case(name, r.returncode != 0 and hit,
-                 "rc=%d 期望红「%s」→%s"
-                 % (r.returncode, want, "命中" if hit else "未命中"))
+                 "rc=%d 变异模块=%s 期望红「%s」→%s"
+                 % (r.returncode, owner, want,
+                    "命中" if hit else "未命中"))
 
         # 双自查 1：生产 JSON 字节不变
         prod_after = b""

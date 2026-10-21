@@ -1,41 +1,42 @@
 {
-  "_doc": "selfscan 基线：只收人工审过的 MEDIUM 误报，键=文件路径|规则id，值=允许条数。HIGH 永不入基线（出现即红）。改码后若不新增条数，基线不需要动。",
-  "allowed": {
-    "tools/a11y_served.py|B310": 2,
-    "tools/abort_e2e.py|B108": 1,
-    "tools/abort_e2e.py|B310": 2,
-    "tools/abort_gate.py|B108": 3,
-    "tools/abort_gate.py|B310": 2,
-    "tools/act_gate.py|B310": 6,
-    "tools/agent_core.py|B310": 5,
-    "tools/capability_gate.py|B310": 1,
-    "tools/cli_gate.py|B103": 1,
-    "tools/cli_gate.py|B310": 1,
-    "tools/close_gate.py|B310": 1,
-    "tools/env_gate.py|B310": 2,
-    "tools/evolution_gate.py|B310": 1,
-    "tools/flake_retry_selftest.py|B102": 1,
-    "tools/gh_client.py|B310": 1,
-    "tools/gh_gate.py|B103": 1,
-    "tools/headroom_gate.py|B310": 1,
-    "tools/layout_gate.py|B310": 1,
-    "tools/neg_a11y_predicate_teeth.py|B102": 1,
-    "tools/neg_agent_core.py|B108": 1,
-    "tools/neg_at_selftest.py|B102": 1,
-    "tools/projspace_gate.py|B310": 1,
-    "tools/resident_gate.py|B310": 1,
-    "tools/retro_gate.py|B310": 1,
-    "tools/round_gate.py|B310": 1,
-    "tools/tui_walk_gate.py|B310": 1,
-    "tools/web_gate.py|B310": 1,
-    "tools/webface.py|B104": 1,
-    "tools/webface.py|B323": 1
-  },
-  "targets": [
-    "tools"
-  ],
-  "tool": {
-    "name": "bandit",
-    "version": "1.9.4"
-  }
+ "_doc": "selfscan 基线：只收人工审过的 MEDIUM 误报，键=文件路径|规则id，值=允许条数。HIGH 永不入基线（出现即红）。改码后若不新增条数，基线不需要动。 2026-10-22：agent_core.py 拆分出 agent_provider.py 后，3 处已审过的 B310（同一份 urlopen 代码）随之搬家：agent_core.py 5→2，agent_provider.py 0→3。按文件记的基线看不出「搬家」，所以这次是外科式改这两条，不是整体重建。",
+ "allowed": {
+  "tools/a11y_served.py|B310": 2,
+  "tools/abort_e2e.py|B108": 1,
+  "tools/abort_e2e.py|B310": 2,
+  "tools/abort_gate.py|B108": 3,
+  "tools/abort_gate.py|B310": 2,
+  "tools/act_gate.py|B310": 6,
+  "tools/agent_core.py|B310": 2,
+  "tools/agent_provider.py|B310": 3,
+  "tools/capability_gate.py|B310": 1,
+  "tools/cli_gate.py|B103": 1,
+  "tools/cli_gate.py|B310": 1,
+  "tools/close_gate.py|B310": 1,
+  "tools/env_gate.py|B310": 2,
+  "tools/evolution_gate.py|B310": 1,
+  "tools/flake_retry_selftest.py|B102": 1,
+  "tools/gh_client.py|B310": 1,
+  "tools/gh_gate.py|B103": 1,
+  "tools/headroom_gate.py|B310": 1,
+  "tools/layout_gate.py|B310": 1,
+  "tools/neg_a11y_predicate_teeth.py|B102": 1,
+  "tools/neg_agent_core.py|B108": 1,
+  "tools/neg_at_selftest.py|B102": 1,
+  "tools/projspace_gate.py|B310": 1,
+  "tools/resident_gate.py|B310": 1,
+  "tools/retro_gate.py|B310": 1,
+  "tools/round_gate.py|B310": 1,
+  "tools/tui_walk_gate.py|B310": 1,
+  "tools/web_gate.py|B310": 1,
+  "tools/webface.py|B104": 1,
+  "tools/webface.py|B323": 1
+ },
+ "targets": [
+  "tools"
+ ],
+ "tool": {
+  "name": "bandit",
+  "version": "1.9.4"
+ }
 }

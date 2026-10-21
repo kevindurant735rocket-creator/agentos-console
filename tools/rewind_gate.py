@@ -52,9 +52,26 @@ def gate(name, ok, detail=""):
 
 
 def load_core(path):
+    """载入被测内核。
+
+    内核已拆成多模块（agent_core.py + agent_session.py + agent_provider.py），
+    所以「被测对象」其实是**一棵树**，不是单个文件：被测的 agent_core.py 会
+    `from agent_session import ...`，兄弟模块若从**原版**目录解析，
+    变异副本就咬不到（变异体自证会假绿：变异改了东西，门却还绿）。
+
+    所以 exec 前把 core 所在目录顶到 sys.path[0]，让内核的兄弟模块从
+    **被测的那棵树**解析；exec 后恢复现场。
+    """
+    d = os.path.dirname(os.path.abspath(path))
     spec = importlib.util.spec_from_file_location("agent_core_g", path)
     mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    saved = list(sys.path)
+    if d not in sys.path:
+        sys.path.insert(0, d)
+    try:
+        spec.loader.exec_module(mod)
+    finally:
+        sys.path[:] = saved
     return mod
 
 
@@ -194,15 +211,28 @@ def main():
         gate("D2 --check 末行逐字 %s" % EXPECT_CHECK, False, repr(e)[:120])
 
     # D3 源码锚点六元（防漂：结构断言，不钉行为真源）
-    v2_src = _sec(src, "def _compact_history_v2", "def _rewind_replay")
-    n_v2 = src.count("def _compact_history_v2")
-    n_rp = src.count("def _rewind_replay")
-    n_chat = v2_src.count("provider.chat(")
-    n_fb = v2_src.count("_compact_history(history, keep)")
-    n_rw = src.count('if cmd == "/rewind":')
+    #
+    # 2026-10-22：内核已拆成多模块（agent_core.py + agent_session.py +
+    # agent_provider.py），锚点**不再全在 agent_core.py 里**。只数一个文件
+    # 会把「搬家」当成「功能消失」→ 门恒红。所以这里数**整个内核模块集**：
+    # 判据的意图是「这些能力在内核里各存在一次」，拆成几个文件不影响意图。
     import re as _re
 
-    n_tbl = len(_re.findall(r'"/sessions",\s*"/rewind",', src))
+    _core_dir = os.path.dirname(os.path.abspath(core_path))
+    _kernel_src = src
+    for _mod in ("agent_session.py", "agent_provider.py", "agent_core_selftest.py"):
+        try:
+            with open(os.path.join(_core_dir, _mod), encoding="utf-8") as _fh:
+                _kernel_src += "\n" + _fh.read()
+        except OSError:
+            pass
+    v2_src = _sec(_kernel_src, "def _compact_history_v2", "def _rewind_replay")
+    n_v2 = _kernel_src.count("def _compact_history_v2")
+    n_rp = _kernel_src.count("def _rewind_replay")
+    n_chat = v2_src.count("provider.chat(")
+    n_fb = v2_src.count("_compact_history(history, keep)")
+    n_rw = _kernel_src.count('if cmd == "/rewind":')
+    n_tbl = len(_re.findall(r'"/sessions",\s*"/rewind",', _kernel_src))
     gate(
         "D3 源码锚点（v2/replay/chat/回退/分支/补全表 各恰 1）",
         (n_v2, n_rp, n_chat, n_fb, n_rw, n_tbl) == (1, 1, 1, 1, 1, 1),

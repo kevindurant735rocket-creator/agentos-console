@@ -9,12 +9,12 @@
     {
       "gate": "D2-baseline-present",
       "ok": true,
-      "detail": "29 个基线键"
+      "detail": "30 个基线键"
     },
     {
       "gate": "D2-production-green",
       "ok": true,
-      "detail": "真树 200 条结果：D1-loc>0=绿 D2-no-HIGH=绿 D3-no-new-MEDIUM=绿"
+      "detail": "真树 199 条结果：D1-loc>0=绿 D2-no-HIGH=绿 D3-no-new-MEDIUM=绿"
     },
     {
       "gate": "D3-bites-HIGH",
