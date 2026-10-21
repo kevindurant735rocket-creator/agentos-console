@@ -2752,6 +2752,27 @@ _S_TODO = {
             },
         },
         "note": {"type": "string", "description": "给用户看的一行说明（可选）"},
+        "action": {
+            "type": "string",
+            "enum": ["set", "update", "add", "list"],
+            "description": "set=整表覆盖（默认）· update=只改点名的项（**推荐**："
+            "不会抹掉别的项的进度）· add=追加一项 · list=读回当前清单",
+        },
+        "changes": {
+            "type": "array",
+            "description": "action=update/add 时用：[{id?, text?, state?}]",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "integer"},
+                    "text": {"type": "string"},
+                    "state": {
+                        "type": "string",
+                        "enum": ["pending", "doing", "done", "dropped"],
+                    },
+                },
+            },
+        },
     },
 }
 
@@ -2761,6 +2782,7 @@ _S_TODO = {
     RISK_WRITE,
     "任务账本：把要做的事列成清单并逐项更新（pending/doing/done/dropped）。"
     "任务超过三步就先列清单，做完一项改一项；"
+    "**改单项用 action=update（只改点名的项）**，别用整表覆盖（会抹掉别的项进度）；"
     "清单里还有没结的项时，说「做完了」会被交付闸挡回。",
     _S_TODO,
 )
@@ -2781,7 +2803,21 @@ def _t_todo(a, ctx):
             "next": _todo_mod.next_item(_cur),
             "panel": _todo_mod.render(_cur),
         }
-    _norm = _todo_mod._norm(_items)
+    _action = str(a.get("action") or "set").strip().lower()
+    if _action == "list":
+        _cur = _todo_mod.load(sid, ctx.get("root"))
+        return {
+            "ok": True,
+            "items": _cur,
+            "counts": _todo_mod.counts(_cur),
+            "next": _todo_mod.next_item(_cur),
+            "panel": _todo_mod.render(_cur),
+        }
+    if _action in ("update", "add"):
+        _cur = _todo_mod.load(sid, ctx.get("root"))
+        _norm = _todo_mod.update(_cur, a.get("changes") or a.get("items") or [])
+    else:
+        _norm = _todo_mod._norm(_items)
     _p = _todo_mod.save(_norm, sid, ctx.get("root"))
     if not _p:
         return {"ok": False, "error": "账本落盘失败（work/todos 不可写？）"}

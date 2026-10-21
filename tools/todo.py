@@ -178,6 +178,54 @@ def render(items, max_rows=12):
     return "\n".join([head] + summary_lines(items, max_rows))
 
 
+def update(items, changes):
+    """**增量**更新账本：只改点名的项，其余原样保留。
+
+    为什么要有增量形式：整体覆盖式写（items=[…]）看着简单，但 agent 一次
+    陈旧的整表写入就会**抹掉已完成的进度** —— 2026-10-21 实测：agent 第一轮
+    把 7 项全标 done 之后，又一次整表写入把状态打回 pending，账本从此不可信
+    （而账本是交付闸的判据来源 → 不可信的账本 = 不可信的交付闸）。
+    增量写让「只改我刚做完的那一项」成为可能。
+    """
+    items = _norm(items)
+    out = list(items)
+    by_id = {it["id"]: i for i, it in enumerate(out)}
+    if not isinstance(changes, (list, tuple)):
+        changes = [changes]
+    for ch in changes:
+        if not isinstance(ch, dict):
+            continue
+        try:
+            cid = int(ch.get("id"))
+        except (TypeError, ValueError):
+            cid = None
+        if cid is not None and cid in by_id:
+            i = by_id[cid]
+            it = dict(out[i])
+            if "text" in ch and str(ch.get("text") or "").strip():
+                it["text"] = str(ch["text"]).strip()[:200]
+            st = str(ch.get("state") or "").strip().lower()
+            if st in STATES:
+                it["state"] = st
+            out[i] = it
+            continue
+        # 新项（没给 id 或 id 不存在）→ 追加
+        txt = str(ch.get("text") or "").strip()
+        if txt:
+            out.append(
+                {
+                    "id": cid if cid is not None else (max(by_id) + 1 if by_id else 1),
+                    "text": txt[:200],
+                    "state": (
+                        str(ch.get("state")).strip().lower()
+                        if str(ch.get("state") or "").strip().lower() in STATES
+                        else "pending"
+                    ),
+                }
+            )
+    return _norm(out)
+
+
 def unfinished(items):
     """还没结的项（pending/doing）——交付闸问的就是它。"""
     return [it for it in _norm(items) if it["state"] in ("pending", "doing")]

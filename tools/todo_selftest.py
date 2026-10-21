@@ -92,6 +92,34 @@ with open(_bad, "w", encoding="utf-8") as f:
 case("落盘：坏账本文件读成空表（不许让一次写坏搞崩 agent）",
      T.load("broken", _root) == [], "")
 
+# ── 3b. 增量更新：只改点名的项，不抹掉别的进度 ────────────────────
+_base = T._norm([
+    {"id": 1, "text": "第一步", "state": "done"},
+    {"id": 2, "text": "第二步", "state": "pending"},
+])
+_upd = T.update(_base, [{"id": 2, "state": "done"}])
+case(
+    "增量：只改点名的项，其余原样（不抹掉已完成的进度）",
+    len(_upd) == 2
+    and _upd[0]["state"] == "done"
+    and _upd[1]["state"] == "done",
+    repr(_upd),
+)
+_upd2 = T.update(_upd, [{"text": "新的一项"}])
+case(
+    "增量：没给 id 的变更算追加（新项落在末尾、默认 pending）",
+    len(_upd2) == 3
+    and _upd2[2]["text"] == "新的一项"
+    and _upd2[2]["state"] == "pending",
+    repr(_upd2),
+)
+_upd3 = T.update(_base, [{"id": 99, "state": "done"}])
+case(
+    "增量：id 不存在且没给 text → 不产生垃圾项",
+    len(_upd3) == 2,
+    repr(_upd3),
+)
+
 # ── 4. 面板可读 ─────────────────────────────────────────────────
 _panel = T.render(_items)
 case(
