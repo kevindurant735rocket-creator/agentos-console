@@ -769,3 +769,24 @@ task_contract_selftest 27/27 · 计数钉 11 文件同步 169 口径。
 **bugfix 类型真机复验**：`calc.py 的 add 函数有 bug，请修好它` → 账本
 `契约=bugfix repro_fail=True repro_green=True verify=pass 闸退回=0`
 （先复现看到红 → 改 → 再验看到绿 → 交付闸一次放行；改后 `add` 正确为 `a + b`）。
+
+## W32（2026-10-21）缺口 1 收口：有界失败修复回路
+
+**做了什么**：`tools/converge.py` 新增失败修复回路（蒸馏自 SWE-agent 的 ACI：
+把工具失败转成**可行动的观察**，而不是让模型猜）——
+
+- `observe(..., out=...)` 收命令输出；核对类命令 rc≠0 时 `_record_failure()`
+  记 `{cmd, rc, tail}`，`tail` 由 `_out_tail()` 取**尾部**（≤8 行 / 600 字）。
+- `directive()` 优先级改为「失败修复 > 核对 > 复现 > 停滞 > 循环 > 阶段边界」；
+  `_fix_detail()` 渲染出的指令含三样：哪条命令、rc 多少、输出尾部（没有输出
+  就明说「先让失败说出原因」）。
+- **有界**：`max_fix_hints`（默认 3，钳在 1..5）；配额用尽置 `fix_suppressed`
+  并停止排队 —— 「改一次再试一次」的死循环比不催更坏。修好后旧失败作废。
+- 账本：`snapshot()` 新增 `fix_failures / fix_hints / max_fix_hints /
+  fix_suppressed / fix_pending / last_fail_cmd / last_fail_rc`。
+- 内核接线：`tools/agent_core.py` 的 `_conv.observe(...)` 多传 `out=res.get("out")`。
+
+**怎么验的**：`converge_selftest` 41→**70/70**（新增 (a) 可行动指令含 rc+尾部、
+(b) 有界 3 次、(c) 通过时不误伤 + 修好作废旧失败 共 12 条）；`converge_gate`
+36→**43/43**（新增判据 4 条 + 变异体 2 个：摘掉失败记账 → 指令消失、拆掉配额
+钳制 → 催 10 次，都必须翻红）。

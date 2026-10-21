@@ -460,6 +460,116 @@ try:
 finally:
     shutil.rmtree(tmp5, ignore_errors=True)
 
+# D11 有界失败修复回路（已知缺口第 1 号：失败要说清「哪条命令 / rc / 报错」）
+_FX_OUT = (
+    "collected 3 items\nE   assert 1 == 2\nE     tools/x.py:41: AssertionError\n"
+    "1 failed, 2 passed"
+)
+_f1 = cv.Converge()
+_f1.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=2, out=_FX_OUT)
+_fd = _f1.directive()
+gate(
+    "修复回路：核对失败 → 可行动指令（含命令 + rc + 输出尾部）",
+    _fd is not None
+    and "修复指令" in _fd
+    and "pytest -q" in _fd
+    and "rc=2" in _fd
+    and "AssertionError" in _fd,
+    repr(_fd)[:160],
+)
+gate(
+    "修复回路：失败记录进 snapshot（失败次数/rc/命令可查）",
+    _f1.snapshot().get("fix_failures") == 1
+    and _f1.snapshot().get("last_fail_rc") == 2
+    and _f1.snapshot().get("last_fail_cmd") == "pytest -q",
+    "snap=%r" % (_f1.snapshot(),),
+)
+_f2 = cv.Converge()
+_hints = 0
+for _ in range(10):
+    _f2.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=1, out="boom")
+    _d = _f2.directive()
+    # 只数**修复**指令：停滞/循环指令也是 directive() 的返回值，
+    # 算进去就等于没在数「失败→提示」这一路（会假红）。
+    if _d is not None and "修复指令" in _d:
+        _hints += 1
+gate(
+    "修复回路：有界（10 次失败最多催 %d 次）" % _f2.max_fix_hints,
+    _hints == _f2.max_fix_hints == 3
+    and _f2.snapshot().get("fix_suppressed") is True
+    and _f2.snapshot().get("fix_failures") == 10,
+    "hints=%d snap=%r" % (_hints, _f2.snapshot()),
+)
+_f3 = cv.Converge()
+_f3.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=0, out="3 passed")
+gate(
+    "修复回路：核对通过 → 不产生修复指令（不误伤）",
+    _f3.directive() is None and _f3.snapshot().get("fix_failures") == 0,
+    "snap=%r" % (_f3.snapshot(),),
+)
+gate(
+    "修复回路：内核把命令输出传给收敛层（observe(..., out=...)）",
+    "out=res.get(\"out\")" in src,
+    "内核没传 out → 修复指令只能是空话",
+)
+
+# D11b 变异体：摘掉「核对失败就记账」→ 修复指令不再出现（门判红）
+tmp6 = tempfile.mkdtemp(prefix="converge_mut6_")
+try:
+    s7 = open(os.path.join(HERE, "converge.py"), encoding="utf-8").read()
+    s7 = s7.replace(
+        "                    self._record_failure(args, rc, out)", "                    pass"
+    )
+    mut6 = os.path.join(tmp6, "converge_mut6.py")
+    open(mut6, "w", encoding="utf-8").write(s7)
+    sys.path.insert(0, tmp6)
+    import importlib
+
+    try:
+        m6 = importlib.import_module("converge_mut6")
+    finally:
+        sys.path.remove(tmp6)
+        sys.modules.pop("converge_mut6", None)
+    fm6 = m6.Converge()
+    fm6.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=2, out=_FX_OUT)
+    gate(
+        "变异体：摘掉失败记账 → 修复指令消失（门判红）",
+        fm6.directive() is None,
+        "变异体仍出修复指令 = 判据摘不干净",
+    )
+finally:
+    shutil.rmtree(tmp6, ignore_errors=True)
+
+# D11c 变异体：拆掉有界配额 → 无限制催促（门判红）
+tmp7 = tempfile.mkdtemp(prefix="converge_mut7_")
+try:
+    s8 = open(os.path.join(HERE, "converge.py"), encoding="utf-8").read()
+    s8 = s8.replace("self.fix_hints >= self.max_fix_hints", "False")
+    mut7 = os.path.join(tmp7, "converge_mut7.py")
+    open(mut7, "w", encoding="utf-8").write(s8)
+    sys.path.insert(0, tmp7)
+    import importlib
+
+    try:
+        m7 = importlib.import_module("converge_mut7")
+    finally:
+        sys.path.remove(tmp7)
+        sys.modules.pop("converge_mut7", None)
+    fm7 = m7.Converge()
+    _h7 = 0
+    for _ in range(10):
+        fm7.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=1, out="boom")
+        _d7 = fm7.directive()
+        if _d7 is not None and "修复指令" in _d7:
+            _h7 += 1
+    gate(
+        "变异体：拆掉配额钳制 → 催了 %d 次（无界，门判红）" % _h7,
+        _h7 > 3,
+        "变异体仍被限住 = 配额判据摘不干净",
+    )
+finally:
+    shutil.rmtree(tmp7, ignore_errors=True)
+
 # D10 零污染：门跑完 work/ 下不留本门专属残留
 gate(
     "零污染：门不写生产账",

@@ -399,6 +399,107 @@ case(
     repr(_d5)[:120],
 )
 
+# ── 15. 有界失败修复回路（已知缺口第 1 号）────────────────────────
+# (a) 失败后必须产出「带 rc + 输出尾部」的可行动指令
+_fx1 = cv.Converge()
+_fx1.observe(
+    "run_cmd",
+    {"argv": ["pytest", "-q"]},
+    ok=True,
+    rc=2,
+    out="collected 3 items\n\nE   assert 1 == 2\nE     tools/x.py:41: AssertionError\n1 failed, 2 passed",
+)
+_fd1 = _fx1.directive()
+case(
+    "修复回路：核对失败 → 产出一条可行动指令",
+    _fd1 is not None and "修复指令" in _fd1,
+    repr(_fd1)[:160],
+)
+case(
+    "修复回路：指令里含哪条命令 + rc",
+    _fd1 is not None and "pytest -q" in _fd1 and "rc=2" in _fd1,
+    repr(_fd1)[:160],
+)
+case(
+    "修复回路：指令里含输出尾部（报错原文）",
+    _fd1 is not None and "AssertionError" in _fd1 and "tools/x.py:41" in _fd1,
+    repr(_fd1)[:200],
+)
+case(
+    "修复回路：输出尾部被截断（不把整屏刷进上下文）",
+    _fd1 is not None and len(_fd1) < 1200,
+    "len=%d" % (len(_fd1 or ""),),
+)
+case(
+    "修复回路：失败记录进 snapshot（账本能看见失败次数）",
+    _fx1.snapshot().get("fix_failures") == 1
+    and _fx1.snapshot().get("last_fail_rc") == 2
+    and _fx1.snapshot().get("last_fail_cmd") == "pytest -q",
+    "snap=%r" % (_fx1.snapshot(),),
+)
+case(
+    "修复回路：同一条失败只提示一次（不连发）",
+    _fx1.directive() is None,
+    "连发了",
+)
+
+# (b) 有界：超过 N 次就不再催
+_fx2 = cv.Converge()
+_hints = 0
+for _i in range(10):
+    _fx2.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=1, out="boom")
+    _d2 = _fx2.directive()
+    # 只数修复指令（directive() 也可能返回停滞/循环指令，算进去就是假绿）
+    if _d2 is not None and "修复指令" in _d2:
+        _hints += 1
+_snap2 = _fx2.snapshot()
+case(
+    "修复回路：提示有界（10 次失败只催 %d 次上限）" % _fx2.max_fix_hints,
+    _hints == _fx2.max_fix_hints and _fx2.max_fix_hints == 3,
+    "hints=%d max=%d" % (_hints, _fx2.max_fix_hints),
+)
+case(
+    "修复回路：到上限后置 fix_suppressed 且不再排队",
+    _snap2.get("fix_suppressed") is True and _snap2.get("fix_pending") is False,
+    "snap=%r" % (_snap2,),
+)
+case(
+    "修复回路：失败次数仍照实记账（6 次失败都记下）",
+    _snap2.get("fix_failures") >= 6,
+    "snap=%r" % (_snap2,),
+)
+case(
+    "修复回路：上限被钳住（传 99 也只有 5）",
+    cv.Converge(max_fix_hints=99).max_fix_hints == 5
+    and cv.Converge(max_fix_hints=0).max_fix_hints == 1,
+    "钳制失效",
+)
+
+# (c) 不误伤：核对通过时不产生修复指令
+_fx3 = cv.Converge()
+_fx3.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=0, out="3 passed")
+case(
+    "修复回路：核对通过 → 不产生修复指令",
+    _fx3.directive() is None and _fx3.snapshot().get("fix_failures") == 0,
+    "snap=%r" % (_fx3.snapshot(),),
+)
+_fx4 = cv.Converge()
+_fx4.observe("run_cmd", {"argv": ["curl", "-O", "x"]}, ok=True, rc=1, out="curl: (7) failed")
+case(
+    "修复回路：非核对类命令失败不算「核对失败」（不误报）",
+    _fx4.directive() is None and _fx4.snapshot().get("fix_failures") == 0,
+    "snap=%r" % (_fx4.snapshot(),),
+)
+_fx5 = cv.Converge()
+_fx5.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=1, out="boom")
+_fx5.directive()
+_fx5.observe("run_cmd", {"argv": ["pytest", "-q"]}, ok=True, rc=0, out="3 passed")
+case(
+    "修复回路：修好了 → 旧失败记录作废（不拿过期失败催）",
+    _fx5.fix_pending is None and _fx5.snapshot().get("fix_pending") is False,
+    "snap=%r" % (_fx5.snapshot(),),
+)
+
 bad = [c for c in CASES if not c[1]]
 for name, ok, detail in CASES:
     print("%s %s%s" % ("PASS" if ok else "FAIL", name, ("  -- " + detail) if detail else ""))
