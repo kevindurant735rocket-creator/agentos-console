@@ -3,7 +3,7 @@
  "ok": true,
  "pre_ok": true,
  "prefail": "",
- "elapsed": 6.17,
+ "elapsed": 9.01,
  "cli": [
   "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/tools/agentos.py"
  ],
@@ -334,15 +334,15 @@
   "zero_write": [
    {
     "tools/agentos.py": "ab000f6f31b28146c3d80959c44933adeec8ac7ee5629ef7a8b65f6f8d70b3a0",
-    "tools/agent_core.py": "7e1ea8a057e8ac0d1842e10cc903fabf50d55834067c72fbe505e126178b1cce",
+    "tools/agent_core.py": "c20d182c34023771259faa6f5d7caf8bc85ee73c144050944351caf16209acf9",
     "bin/agentos": "041119e9439a803285e1a4325e8b94d90dc0cded0e19152769cc8bb3ef867dc1",
-    "tools/gates.sh": "39ff51fff946f60608dd3e28492e677ee5319191bb0090437535bfdf29b683ef"
+    "tools/gates.sh": "9c42a7f1091f041eb4122961f0fc8a93fde368c92e950bdb5cbafa2ab64e1733"
    },
    {
     "tools/agentos.py": "ab000f6f31b28146c3d80959c44933adeec8ac7ee5629ef7a8b65f6f8d70b3a0",
-    "tools/agent_core.py": "7e1ea8a057e8ac0d1842e10cc903fabf50d55834067c72fbe505e126178b1cce",
+    "tools/agent_core.py": "c20d182c34023771259faa6f5d7caf8bc85ee73c144050944351caf16209acf9",
     "bin/agentos": "041119e9439a803285e1a4325e8b94d90dc0cded0e19152769cc8bb3ef867dc1",
-    "tools/gates.sh": "39ff51fff946f60608dd3e28492e677ee5319191bb0090437535bfdf29b683ef"
+    "tools/gates.sh": "9c42a7f1091f041eb4122961f0fc8a93fde368c92e950bdb5cbafa2ab64e1733"
    }
   ]
  }

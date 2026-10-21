@@ -7614,6 +7614,23 @@ def _selftest():
     return 0
 
 
+def _clean_plans(*sids):
+    """清掉自检用例的 DSP 计划残留。
+
+    自检里带 sid 的用例可能触发 DSP 自启（建计划落 work/plans/<sid>-*），
+    用完必须清 —— dsp_gate 的 D12「work/plans 无自检残留」会当场抓红
+    （2026-10-21 实测踩到：不是产品有残留，是自检自己留下的）。
+    """
+    for _sid in sids:
+        for _suf in ("-plan.json", "-chain.jsonl"):
+            try:
+                os.unlink(
+                    os.path.join(ROOT, "work", "plans", _sid + _suf)
+                )
+            except OSError:
+                pass
+
+
 def _selftest_body(case, jc, tmp):
     """自检正文。拆出来只为让 _selftest 的 finally 清理保持简单。"""
     # (1) 终端白名单：工具层自己的真相。
@@ -10932,6 +10949,7 @@ def _selftest_body(case, jc, tmp):
         )
     finally:
         _td1.close()
+        _clean_plans("st-todo-pending")
     case(
         "账本：还有 pending 项时说「做完了」被交付闸挡回",
         _td1_res.get("ok") is False
@@ -10960,6 +10978,7 @@ def _selftest_body(case, jc, tmp):
         )
     finally:
         _td2.close()
+        _clean_plans("st-todo-done")
     case(
         "账本：全 done 时正常放行（不许变成「必须列清单才能交」）",
         _td2_res.get("ok") is True,
@@ -11003,6 +11022,7 @@ def _selftest_body(case, jc, tmp):
             )
         finally:
             _dr.close()
+            _clean_plans("st-diff-review")
         case(
             "自审：改了代码没看 git diff → 交付闸挡回",
             _dr_res.get("ok") is False

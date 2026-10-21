@@ -1,7 +1,7 @@
 {
  "tool": "cli_gate_selftest.py",
  "ok": true,
- "elapsed": 16.1,
+ "elapsed": 18.92,
  "mutants": [
   "silent0",
   "writeok"
