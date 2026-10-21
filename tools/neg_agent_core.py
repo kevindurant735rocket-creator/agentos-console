@@ -19,6 +19,7 @@
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -84,10 +85,18 @@ def jc(tool=None, content="", cid="c1"):
 
 
 def _norm_tooth(normfn, entry):
-    """拿指定 _norm_completion 去跑一次桩请求，看是否归 provider。"""
+    """拿指定 _norm_completion 去跑一次桩请求，看是否归 provider。
+
+    补丁要打在**函数真正所在的模块**上：内核拆分后 _norm_completion 搬到了
+    agent_provider 模块，Provider 调的是那边模块的全局 —— 补丁打在
+    agent_core 上根本咬不到（实测：掏空版与真函数行为一样，判据假绿）。
+    """
     stub = ac.Stub([entry])
-    old = ac._norm_completion
-    ac._norm_completion = normfn
+    _mod = sys.modules.get(
+        getattr(ac._norm_completion, "__module__", "") or "", ac
+    )
+    old = getattr(_mod, "_norm_completion", None)
+    setattr(_mod, "_norm_completion", normfn)
     try:
         try:
             stub.provider().chat([{"role": "user", "content": "x"}])
@@ -97,7 +106,11 @@ def _norm_tooth(normfn, entry):
         except Exception:  # noqa: BLE001
             return False
     finally:
-        ac._norm_completion = old
+        # 还原必须还原到**打补丁的那个模块**：补丁打在 agent_provider 上，
+        # 还原到 agent_core 会把掏空版**永久留在** agent_provider 里 ——
+        # 后面所有用例都拿到掏空的归一化函数（工具调用被丢弃 → 不写文件、
+        # 没有 tool_call_id…）。实测就栽在这（2026-10-21）。
+        setattr(_mod, "_norm_completion", old)
         stub.close()
 
 
@@ -505,10 +518,45 @@ def main():
 
     # ── J. 源码级变异体：正向门必须对它们判红 --------------------
     src = open(ac.__file__, encoding="utf-8").read()
-    ctl = os.path.join(WORK, "_neg_ctl_agent_core.py")
-    with open(ctl, "w", encoding="utf-8") as f:
-        f.write(src)
-    made.append(ctl)
+    _selftest_mod = os.path.join(
+        os.path.dirname(ac.__file__), "agent_core_selftest.py"
+    )
+
+    _tools_dir = os.path.dirname(ac.__file__)
+
+    def _stage(tag, content=None):
+        """把**整个 tools/ 树**拷进一个独立目录，再把 agent_core.py 换成
+        （可带补丁的）副本。
+
+        为什么必须整树：自检正文已搬到 agent_core_selftest.py，内核也拆出了
+        agent_provider.py —— 副本要 import 它们。少拷一个就是 ModuleNotFound。
+
+        为什么必须独立目录且**按原名**：自检模块 `import agent_core`，
+        副本目录不在 sys.path 前面的话，它导入的是**原版**内核 → 变异咬不到
+        → 本门假绿（变异体改了东西，正向门却还绿）。所以副本就叫
+        agent_core.py，放在自己的目录里跑。
+        """
+        d = os.path.join(tmpdir, tag)
+        if os.path.isdir(d):
+            shutil.rmtree(d, ignore_errors=True)
+        # 目录形状必须是 <dir>/tools/*：内核按 ROOT/tools/… 的**绝对路径**
+        # 加载子模块（dsp.py 等），ROOT = dirname(dirname(__file__))，
+        # 目录摆成 <dir>/tools 才对得上；直接摆成 <dir>/* 会让那些
+        # 绝对路径全部指空（实测：FileNotFoundError dsp.py）。
+        os.makedirs(d, exist_ok=True)
+        shutil.copytree(
+            _tools_dir,
+            os.path.join(d, "tools"),
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.bak*"),
+        )
+        dst = os.path.join(d, "tools", "agent_core.py")
+        if content is not None:
+            with open(dst, "w", encoding="utf-8") as f:
+                f.write(content)
+        made.append(d)
+        return dst
+
+    ctl = _stage("ctl")
     cp = _run_copy(ctl)
     case(
         "对照：原样拷贝也能 --check 绿（证明变异红不是搬运造成的）",
@@ -517,7 +565,6 @@ def main():
     )
 
     for i, (label, anchor, repl, want_fail) in enumerate(MUTANTS, 1):
-        mp = os.path.join(WORK, "_neg_mut%d_agent_core.py" % i)
         n_hit = src.count(anchor)
         if n_hit != 1:
             case(
@@ -534,9 +581,7 @@ def main():
                 out.append(repl + "\n")
             else:
                 out.append(ln)
-        with open(mp, "w", encoding="utf-8") as f:
-            f.write("".join(out))
-        made.append(mp)
+        mp = _stage("mut%d" % i, "".join(out))
         try:
             r = _run_copy(mp)
         except subprocess.TimeoutExpired:
@@ -560,11 +605,6 @@ def main():
         else:
             os.unlink(path)
 
-    for p in made:
-        try:
-            os.unlink(p)
-        except OSError:
-            pass
     try:
         _wipe(tmpdir)
     except OSError:
