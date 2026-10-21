@@ -1,11 +1,11 @@
 {
  "tool": "dsp_gate_selftest.py",
- "rc": 2,
+ "rc": 0,
  "cases": [
   {
    "name": "BASE 生产 dsp_gate 绿（DSP_GATE OK 18/18）",
-   "ok": false,
-   "detail": "rc=2 尾行=['DSP_GATE FAIL 17/18']"
+   "ok": true,
+   "detail": "rc=0 尾行=['DSP_GATE OK 18/18']"
   },
   {
    "name": "变异体 D7 锁被摘（未审批也放行） 必红（门有牙）",
@@ -35,7 +35,7 @@
   {
    "name": "生产 work/dsp_gate.json 字节不变（零污染）",
    "ok": true,
-   "detail": "before=2150 after=2150"
+   "detail": "before=2037 after=2037"
   }
  ]
 }

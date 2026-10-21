@@ -3,7 +3,7 @@
  "ok": true,
  "pre_ok": true,
  "prefail": "",
- "elapsed": 9.01,
+ "elapsed": 17.13,
  "cli": [
   "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/tools/agentos.py"
  ],
@@ -155,7 +155,7 @@
   {
    "gate": "tty-noarg-enters-agent",
    "ok": true,
-   "detail": "首行='Traceback (most recent call last):' elapsed=0.06s",
+   "detail": "首行='Traceback (most recent call last):' elapsed=0.17s",
    "cmd": "agentos   # 真 PTY、无参数、零送键",
    "rc": null
   },
@@ -334,13 +334,13 @@
   "zero_write": [
    {
     "tools/agentos.py": "ab000f6f31b28146c3d80959c44933adeec8ac7ee5629ef7a8b65f6f8d70b3a0",
-    "tools/agent_core.py": "c20d182c34023771259faa6f5d7caf8bc85ee73c144050944351caf16209acf9",
+    "tools/agent_core.py": "e7ccc319579fc14922a346e37bf9aea1f6ebca30599d262cbb37ca428a5f5992",
     "bin/agentos": "041119e9439a803285e1a4325e8b94d90dc0cded0e19152769cc8bb3ef867dc1",
     "tools/gates.sh": "9c42a7f1091f041eb4122961f0fc8a93fde368c92e950bdb5cbafa2ab64e1733"
    },
    {
     "tools/agentos.py": "ab000f6f31b28146c3d80959c44933adeec8ac7ee5629ef7a8b65f6f8d70b3a0",
-    "tools/agent_core.py": "c20d182c34023771259faa6f5d7caf8bc85ee73c144050944351caf16209acf9",
+    "tools/agent_core.py": "e7ccc319579fc14922a346e37bf9aea1f6ebca30599d262cbb37ca428a5f5992",
     "bin/agentos": "041119e9439a803285e1a4325e8b94d90dc0cded0e19152769cc8bb3ef867dc1",
     "tools/gates.sh": "9c42a7f1091f041eb4122961f0fc8a93fde368c92e950bdb5cbafa2ab64e1733"
    }

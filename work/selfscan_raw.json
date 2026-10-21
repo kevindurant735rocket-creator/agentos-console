@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2026-10-21T09:32:55Z",
+  "generated_at": "2026-10-21T10:08:40Z",
   "metrics": {
     "_totals": {
       "CONFIDENCE.HIGH": 184,
@@ -11,7 +11,7 @@
       "SEVERITY.LOW": 190,
       "SEVERITY.MEDIUM": 10,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 28971,
+      "loc": 28988,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -24,7 +24,7 @@
       "SEVERITY.LOW": 33,
       "SEVERITY.MEDIUM": 5,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 10022,
+      "loc": 10039,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1671,7 +1671,7 @@
       "test_name": "try_except_pass"
     },
     {
-      "code": "10711                     pass\n10712     except Exception:  # noqa: BLE001\n10713         pass\n10714     case(\n",
+      "code": "10728                     pass\n10729     except Exception:  # noqa: BLE001\n10730         pass\n10731     case(\n",
       "col_offset": 4,
       "end_col_offset": 12,
       "filename": "tools/agent_core.py",
@@ -1682,17 +1682,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 10712,
+      "line_number": 10729,
       "line_range": [
-        10712,
-        10713
+        10729,
+        10730
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "10978         os.makedirs(_gitroot, exist_ok=True)\n10979         _r = subprocess.run(\n10980             [\"git\", \"init\", \"-q\"], cwd=_gitroot, capture_output=True, timeout=60\n10981         )\n10982         _have_git = _r.returncode == 0\n",
+      "code": "10997         os.makedirs(_gitroot, exist_ok=True)\n10998         _r = subprocess.run(\n10999             [\"git\", \"init\", \"-q\"], cwd=_gitroot, capture_output=True, timeout=60\n11000         )\n11001         _have_git = _r.returncode == 0\n",
       "col_offset": 13,
       "end_col_offset": 9,
       "filename": "tools/agent_core.py",
@@ -1703,18 +1703,18 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Starting a process with a partial executable path",
-      "line_number": 10979,
+      "line_number": 10998,
       "line_range": [
-        10979,
-        10980,
-        10981
+        10998,
+        10999,
+        11000
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
       "test_id": "B607",
       "test_name": "start_process_with_partial_path"
     },
     {
-      "code": "10978         os.makedirs(_gitroot, exist_ok=True)\n10979         _r = subprocess.run(\n10980             [\"git\", \"init\", \"-q\"], cwd=_gitroot, capture_output=True, timeout=60\n10981         )\n10982         _have_git = _r.returncode == 0\n",
+      "code": "10997         os.makedirs(_gitroot, exist_ok=True)\n10998         _r = subprocess.run(\n10999             [\"git\", \"init\", \"-q\"], cwd=_gitroot, capture_output=True, timeout=60\n11000         )\n11001         _have_git = _r.returncode == 0\n",
       "col_offset": 13,
       "end_col_offset": 9,
       "filename": "tools/agent_core.py",
@@ -1725,11 +1725,11 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 10979,
+      "line_number": 10998,
       "line_range": [
-        10979,
-        10980,
-        10981
+        10998,
+        10999,
+        11000
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
