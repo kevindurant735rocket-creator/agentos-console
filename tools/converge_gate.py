@@ -570,6 +570,66 @@ try:
 finally:
     shutil.rmtree(tmp7, ignore_errors=True)
 
+# D9f 收尾证据：改了代码没提交 → 交付闸必须判红（2026-10-22）
+_c1 = cv.Converge(contract={"hard": ["write_seen", "committed"]})
+_c1.observe("write_file", {"path": "a.py"}, ok=True, rc=0)
+_c1_ok, _c1_missing, _c1_why = _c1.evidence_ok("改了 a.py")
+gate(
+    "D9f 收尾：改了代码没提交 → 交付闸判红（缺 committed）",
+    (not _c1_ok) and "committed" in (_c1_missing or []),
+    "ok=%s missing=%r" % (_c1_ok, _c1_missing),
+)
+_c2 = cv.Converge(contract={"hard": ["write_seen", "committed"]})
+_c2.observe("write_file", {"path": "a.py"}, ok=True, rc=0)
+_c2.observe("commit", {"files": ["a.py"]}, ok=True, rc=0)
+_c2_ok, _c2_missing, _c2_why = _c2.evidence_ok("改了 a.py")
+gate(
+    "D9f 收尾：改了代码且提交过 → 交付闸放行",
+    _c2_ok and not _c2_missing,
+    "ok=%s missing=%r" % (_c2_ok, _c2_missing),
+)
+_c3 = cv.Converge(contract={"hard": ["committed"]})
+_c3_ok, _c3_missing, _c3_why = _c3.evidence_ok("只读任务")
+gate(
+    "D9f 收尾：没改过东西 → 无需提交（vacuously 放行，不卡死只读任务）",
+    _c3_ok,
+    "ok=%s missing=%r" % (_c3_ok, _c3_missing),
+)
+# 变异体：把「commit 工具成功 → commit_seen」这条摘掉 → 上面那条必须翻红
+_tmp9f = tempfile.mkdtemp(prefix="converge_mut9f_")
+try:
+    _s9f = open(os.path.join(HERE, "converge.py"), encoding="utf-8").read()
+    _anchor9f = "            self.commit_seen = True"
+    _n9f = _s9f.count(_anchor9f)
+    gate(
+        "D9f 变异体锚点恰 1 处（变异体才有效）",
+        _n9f == 1,
+        "命中 %d 处" % _n9f,
+    )
+    _m9f = os.path.join(_tmp9f, "converge_mut9f.py")
+    open(_m9f, "w", encoding="utf-8").write(
+        _s9f.replace(_anchor9f, "            self.commit_seen = False  # MUT 摘掉提交记账")
+    )
+    sys.path.insert(0, _tmp9f)
+    import importlib
+
+    try:
+        _m9 = importlib.import_module("converge_mut9f")
+    finally:
+        sys.path.remove(_tmp9f)
+        sys.modules.pop("converge_mut9f", None)
+    _mm = _m9.Converge(contract={"hard": ["write_seen", "committed"]})
+    _mm.observe("write_file", {"path": "a.py"}, ok=True, rc=0)
+    _mm.observe("commit", {"files": ["a.py"]}, ok=True, rc=0)
+    _mm_ok, _mm_missing, _ = _mm.evidence_ok("改了 a.py")
+    gate(
+        "D9f 变异体：摘掉提交记账 → 提交后仍判红（判据有牙）",
+        (not _mm_ok) and "committed" in (_mm_missing or []),
+        "变异后 ok=%s missing=%r" % (_mm_ok, _mm_missing),
+    )
+finally:
+    shutil.rmtree(_tmp9f, ignore_errors=True)
+
 # D10 零污染：门跑完 work/ 下不留本门专属残留
 gate(
     "零污染：门不写生产账",

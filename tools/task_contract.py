@@ -224,7 +224,8 @@ def _cmdline(verify_info):
     return verify_info.get("cmdline") or ""
 
 
-def contract_for(task_type, verify_info=None, task_text=""):
+def contract_for(task_type, verify_info=None, task_text="", git_repo=False,
+                 require_commit=True):
     """给任务类型配一份契约。
 
     返回 dict：
@@ -247,6 +248,18 @@ def contract_for(task_type, verify_info=None, task_text=""):
 
     def _cited_or_read():
         return [("cited", "any_read")]
+
+    # 收尾硬要求的**判定**（施加在所有类型分支之后 —— 分支会整体改写
+    # c["hard"]，提前追加会被覆盖掉）。
+    # 起因（2026-10-22 实测）：agent 干活干得不错，但**自己不收尾** ——
+    # 两轮真实开发任务的改动都留在工作区，是人替它 commit 的。「干完就自己
+    # 收尾」写在提示里没用（模型会忘），得进**交付闸的硬要求**才作数。
+    # 非 git 仓库不适用（没 .git 提交不了）；agent.require_commit=false 可关。
+    _need_commit = bool(git_repo) and bool(require_commit) and task_type in (
+        T_BUGFIX,
+        T_FEATURE,
+        T_REFACTOR,
+    )
 
     if task_type == T_BUGFIX:
         c["name"] = "缺陷修复"
@@ -371,6 +384,15 @@ def contract_for(task_type, verify_info=None, task_text=""):
             )
             if cmd
             else "本次任务契约：改了东西要**读回**确认，并用真实 rc/文件行号交付。\n"
+        )
+    if _need_commit:
+        # 收尾硬要求（在所有类型分支之后施加）：改代码 → 必须提交。
+        c["hard"] = list(c.get("hard") or []) + ["committed"]
+        c["commit_required"] = True
+        c["opening"] = (
+            str(c.get("opening") or "")
+            + "收尾：改完 → 跑核对命令 → 看自己的 diff → 用 **commit 工具**"
+            "提交（只提交你动过的文件；**绝不 push**）。不提交不算完成。\n"
         )
     return c
 

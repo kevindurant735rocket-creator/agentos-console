@@ -331,6 +331,9 @@ class Converge:
         self.since_productive = 0
         self.write_seen = False
         self.verify_seen = False
+        # 收尾证据（2026-10-22）：提交过一次（commit 工具成功）→ 树是干净的
+        self.commit_seen = False
+        self.commit_files = []
         self.productive_seen = False
         self.last_fps = None
         self.repeat_fps = None
@@ -470,6 +473,14 @@ class Converge:
             self.verify_seen = True
             verified_now = True
             self.diff_reviewed = True
+        elif tool == "commit" and ok:
+            # 收尾证据：commit 工具成功 → 改动进了真树（不是只躺在工作区）。
+            # 交付闸据此要求「改了就得提交」。
+            self.commit_seen = True
+            if isinstance(args, dict):
+                self.commit_files = list(
+                    args.get("files") or args.get("paths") or []
+                )
         elif tool in _VERIFY_READBACK and ok:
             self.verify_seen = True
             verified_now = True
@@ -710,12 +721,18 @@ class Converge:
             "any_read": "没有读过任何东西（结论无从谈起）",
             "repro_red_then_green": "没有「先复现失败 → 再改 → 再通过」的完整链",
             "diff_reviewed": "改了东西但没看过自己的 diff（git diff）",
+            "committed": "改了代码但没提交（真树还脏）——用 commit 工具提交"
+            "你动过的文件（绝不 push）",
             "no_failed_check": "上一次核对没通过（rc≠0），先修好再交付",
         }
 
         def _has(kind):
             if kind == "verify_pass":
                 return bool(self.write_seen and self.verify_seen)
+            if kind == "committed":
+                # 改了 → 必须真提交过；**没改** → 无需提交（vacuously 满足）。
+                # 否则纯只读/纯分析类任务会被一条用不上的要求卡死。
+                return bool(self.commit_seen) or (not self.write_seen)
             if kind == "write_and_readback":
                 return bool(self.write_paths & self.read_paths)
             if kind == "write_seen":

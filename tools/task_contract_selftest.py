@@ -166,6 +166,31 @@ case(
     tc.contract_summary(_c_bug),
 )
 
+# 收尾硬要求（2026-10-22）：改代码类任务在 git 仓库里必须提交
+_c_feat_git = tc.contract_for(tc.T_FEATURE, None, "加个功能", git_repo=True)
+_c_feat_nogit = tc.contract_for(tc.T_FEATURE, None, "加个功能", git_repo=False)
+_c_read_git = tc.contract_for(tc.T_RESEARCH, None, "查一下", git_repo=True)
+case(
+    "契约：git 仓库里的改代码任务 → 硬要求含 committed（改了就得提交）",
+    "committed" in (_c_feat_git.get("hard") or []),
+    repr(_c_feat_git.get("hard")),
+)
+case(
+    "契约：非 git 仓库 → 不要求 committed（没 .git 提交不了）",
+    "committed" not in (_c_feat_nogit.get("hard") or []),
+    repr(_c_feat_nogit.get("hard")),
+)
+case(
+    "契约：只读类任务在 git 仓库里也不要求 committed（不卡死只读任务）",
+    "committed" not in (_c_read_git.get("hard") or []),
+    repr(_c_read_git.get("hard")),
+)
+case(
+    "契约：提交要求写进了任务开场白（模型开工前就知道要提交）",
+    "commit 工具" in str(_c_feat_git.get("opening") or ""),
+    str(_c_feat_git.get("opening") or "")[-90:],
+)
+
 bad = [c for c in CASES if not c[1]]
 for name, ok, detail in CASES:
     print("%s %s%s" % ("PASS" if ok else "FAIL", name, ("  -- " + detail) if detail else ""))

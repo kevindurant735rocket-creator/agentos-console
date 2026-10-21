@@ -944,6 +944,106 @@ _S_DIFF = {
 }
 
 
+@_tool(
+    "commit",
+    RISK_WRITE,
+    "把**本会话改动过的文件**提交成一个 commit（只 add 自己动过的路径，"
+    "不碰别人的未提交改动；绝不 push）。",
+    {
+        "type": "object",
+        "properties": {
+            "message": {
+                "type": "string",
+                "description": "commit 说明（写清做了什么、为什么）",
+            },
+            "paths": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "要提交哪些路径（默认=本会话动过的文件）",
+            },
+        },
+        "required": ["message"],
+    },
+)
+def _t_commit(a, ctx):
+    """收尾提交：**只**提交本会话动过的路径。
+
+    为什么要有这个工具（2026-10-22 实测）：agent 干活干得不错，但**自己不
+    收尾** —— 两轮真实开发任务，改动都留在工作区，是人替它 commit 的。
+    「干完就自己收尾」写在提示里没用（模型会忘、会偷懒），得**有工具** +
+    **交付闸会查**。
+
+    为什么只提交「本会话动过的路径」：`git add -A` 会把**别人**的未提交
+    改动一起提交（用户自己改到一半的东西被 agent 一把带走 = 事故）。这里
+    只 stage 内核记下的本会话写过的路径。
+    """
+    msg = str(a.get("message") or "").strip()
+    if not msg:
+        return {"ok": False, "error": "缺 message（commit 要有一句说明）"}
+    root = ctx.get("root") or ROOT
+    _st = _git(a, ctx, ["rev-parse", "--show-toplevel"])
+    if not _st.get("ok"):
+        return {
+            "ok": False,
+            "error": "不是 git 仓库（git rev-parse 失败），没法提交",
+            "rc": _st.get("rc"),
+        }
+    _top = (_st.get("out") or "").strip().splitlines()
+    repo = os.path.realpath(_top[0]) if _top else os.path.realpath(root)
+    _sess = [str(x) for x in (ctx.get("session_write_paths") or [])]
+    _want = [str(x) for x in (a.get("paths") or []) if str(x).strip()]
+    if _want:
+        # paths 只能**收窄**本会话写过的集合，**不能扩大** ——
+        # 否则模型可以把用户自己改到一半的文件（user_wip.md 之类）一起
+        # 提交进去，那是对用户工作区的一次越权操作。
+        _outside = [p for p in _want if p not in _sess]
+        if _outside:
+            return {
+                "ok": False,
+                "error": "只能提交本会话写过的文件；这些没写过，不许提交：%s"
+                % ", ".join(_outside[:5]),
+            }
+        paths = _want
+    else:
+        paths = list(_sess)
+    if not paths:
+        return {
+            "ok": False,
+            "error": "本会话没有改动可提交（没写过文件；先干活再提交）",
+        }
+    for _p in paths:
+        _real = os.path.realpath(os.path.join(root, _p))
+        if not (_real == repo or _real.startswith(repo + os.sep)):
+            return {"ok": False, "error": "路径不在仓库内，拒绝提交：%s" % _p}
+    # 只 add 这些路径（**不用 -A**：不碰别人的未提交改动）
+    _add = _git(a, ctx, ["add", "--"] + paths)
+    if not _add.get("ok"):
+        return {"ok": False, "error": "git add 失败：%s" % str(_add.get("error") or "")[:160]}
+    _stat = _git(a, ctx, ["diff", "--cached", "--stat"])
+    _cm = _git(a, ctx, ["commit", "-m", msg])
+    if not _cm.get("ok"):
+        _out = str(_cm.get("error") or "")
+        if "nothing to commit" in _out or "no changes added" in _out:
+            return {
+                "ok": True,
+                "committed": False,
+                "note": "没有可提交的改动（工作区与索引一致）",
+                "files": paths,
+                "stat": (_stat.get("out") or "").strip()[:400],
+            }
+        return {"ok": False, "error": "git commit 失败：%s" % _out[:200]}
+    _sha = _git(a, ctx, ["rev-parse", "HEAD"])
+    _sh = (_sha.get("out") or "").strip().splitlines()
+    return {
+        "ok": True,
+        "committed": True,
+        "commit": _sh[0] if _sh else "",
+        "message": msg,
+        "files": paths,
+        "stat": (_stat.get("out") or "").strip()[:400],
+    }
+
+
 @_tool("git_diff", RISK_READ, "git diff（真实 rc）", _S_DIFF)
 def _t_git_diff(a, ctx):
     argv = ["diff", "--no-color"]
@@ -2536,8 +2636,9 @@ def build_system_prompt(ctx):
             "2. 工具结果里的 rc / bytes / sha256 是真相，转述时不许改数字。",
             "3. 工具失败或被拒绝时，如实说明哪一步没执行，然后换路子；"
             "不许把没做的事说成做了。",
-            "4. **干完就自己收尾**：改了就把改动落在仓里（该 commit 就 commit，"
-            "该接门链就接），跑一遍该跑的验证，然后用真实 rc 交付。"
+            "4. **干完就自己收尾**：改了就把改动落在仓里 —— 跑一遍该跑的验证、"
+            "看自己的 diff，然后用 **commit 工具**提交你动过的文件"
+            "（只提交你动过的，绝不 push），再用真实 rc 交付。"
             "**不要问老板「要不要提交/要不要接门链/要不要验证」** —— "
             "全权限默认，审批摩擦是缺陷不是礼貌。",
             "5. 实现类任务先用 gh_search 参考 GitHub 成熟实现"
@@ -2806,6 +2907,26 @@ def run_agent(
         provider = Provider(resolve_provider(ctx.get("env")))
     ctx["_provider"] = provider  # subagent 工具复用它派子代理（在副本内，不外泄）
     _sauto = _skills_auto(text)
+    # 本会话写过的路径（commit 工具**只**提交这些，不碰别人的未提交改动）
+    _sess_paths = set()
+    ctx["session_write_paths"] = []
+    # 是不是 git 仓库：决定交付闸要不要「改了就得提交」这条硬要求。
+    # 探测一次（~10ms），失败当不是（不硬失败）。
+    _is_git = False
+    try:
+        _p = subprocess.run(
+            ["git", "-C", ctx["root"], "rev-parse", "--is-inside-work-tree"],
+            capture_output=True,
+            timeout=10,
+            env=_CMD_ENV,
+        )
+        _is_git = (
+            _p.returncode == 0
+            and ( _p.stdout or b"").decode("utf-8", "replace").strip() == "true"
+        )
+    except Exception:  # noqa: BLE001
+        _is_git = False
+    ctx["git_repo"] = _is_git
     # 任务契约：分类 → 契约 → 写进 ctx。
     # 位置很讲究：**在 DSP 自启之后**（计划未审批会锁写，契约必须知道）、
     # **在 system prompt 之前**（契约要写进 prompt，模型开工前就该知道
@@ -3345,6 +3466,12 @@ def run_agent(
                     # 过程可见性：工具被调用的瞬间就上报（不等结果）。
                     on_event({"type": "tool_call", "tool": name, "args": args})
                 res, _ex = exec_tool(name, args, ctx)
+                # 记账：本次会话动过的文件（commit 工具只提交这些）
+                if bool(res.get("ok")) and name in ("write_file", "edit_file"):
+                    _wp = res.get("path")
+                    if _wp:
+                        _sess_paths.add(str(_wp))
+                        ctx["session_write_paths"] = sorted(_sess_paths)
                 if (
                     bool(res.get("executed"))
                     and bool(res.get("ok"))
@@ -3511,7 +3638,19 @@ def _build_task_contract(prompt, ctx, verify_info=None):
         return None
     try:
         _kind, _why = tcm.classify(str(prompt or "")[:400])
-        _c = tcm.contract_for(_kind, verify_info, str(prompt or "")[:400])
+        # 收尾硬要求（提交）只在「是 git 仓库」时适用；开关
+        # agent.require_commit=false 可关（用户不想让 agent 自己提交时）。
+        try:
+            _rc = ((_read_agentos_config().get("agent") or {}).get("require_commit"))
+        except Exception:  # noqa: BLE001
+            _rc = None
+        _c = tcm.contract_for(
+            _kind,
+            verify_info,
+            str(prompt or "")[:400],
+            git_repo=bool(ctx.get("git_repo")),
+            require_commit=(_rc is not False),
+        )
         _c["reasons"] = _why
         _blk, _blk_why = _writes_blocked(ctx)
         if _blk:

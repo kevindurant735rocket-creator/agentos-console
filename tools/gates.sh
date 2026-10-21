@@ -13,7 +13,7 @@
 # 两侧，基准就是空门）；外加确定性判据与「两侧都关→分辨力归零」变异体。
 # 纯离线、亚秒级、不抢端口不碰浏览器，放链尾不扰动任何一门的顺序理由。
 # 正确链（2026-10-20 起只剩**终端面**：网页驾驶舱与原生 macOS app 已下线，
-# 那些门连同它们量的产物一起删了）：bash tools/gates.sh agent_core_gate neg_agent_core converge_gate converge_selftest task_contract_selftest verify_cmd_selftest gate_pollution_selftest todo_selftest replay_gate dsp_gate dsp_gate_selftest evo_merge_gate evo_merge_selftest subagent_gate subagent_selftest mcp_gate mcp_selftest hooks_gate hooks_selftest repl_ux_gate repl_ux_selftest branches_gate branches_selftest supervise_gate supervise_selftest safety_gate safety_selftest autonomy_gate autonomy_selftest boss_gate selfscan_gate cli_gate cli_gate_selftest gh_gate flake_retry_selftest rewind_gate rewind_selftest leader_gate leader_selftest verify_gate ctx_compact_selftest ctx_edit_selftest token_gate
+# 那些门连同它们量的产物一起删了）：bash tools/gates.sh agent_core_gate neg_agent_core converge_gate converge_selftest task_contract_selftest verify_cmd_selftest gate_pollution_selftest todo_selftest replay_gate dsp_gate dsp_gate_selftest evo_merge_gate evo_merge_selftest subagent_gate subagent_selftest mcp_gate mcp_selftest hooks_gate hooks_selftest repl_ux_gate repl_ux_selftest branches_gate branches_selftest supervise_gate supervise_selftest safety_gate safety_selftest autonomy_gate autonomy_selftest boss_gate selfscan_gate cli_gate cli_gate_selftest gh_gate flake_retry_selftest rewind_gate rewind_selftest leader_gate leader_selftest verify_gate ctx_compact_selftest ctx_edit_selftest commit_selftest token_gate
 # selfscan_gate 收尾（2026-10-19 第四波，71→72）：兜的是「源码里有没有埋雷」这层
 # 真空洞 —— 安全此前只有 safety_gate 的 9 条**行为**判据（运行时有没有放行），
 # 没有一条量过源码本身的静态缺陷（硬编码凭据、危险的 urlopen/反序列化/exec）。
