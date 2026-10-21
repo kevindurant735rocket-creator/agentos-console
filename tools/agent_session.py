@@ -499,6 +499,94 @@ def _memory_files(root):
     return out
 
 
+def fold_old_tool_results(messages, keep_rounds=2, min_chars=600):
+    """把**旧的**工具结果折叠成紧凑摘要（context editing 思路）。
+
+    为什么（2026-10-22 的 token 账）：长会话的成本大头不是工具面（那是固定
+    的），而是**历史里的工具结果** —— read_file 一次 2,000 行、run_cmd 一次
+    几百行输出，都在**每一轮重发**一遍。第 20 轮的 prompt 里可能躺着 3 份
+    同样的文件内容。
+
+    折叠规则（每条都有理由，不靠猜）：
+      · 只折叠**工具消息**（role=tool）—— user/assistant 原文一律不动；
+      · 只折叠**倒数第 keep_rounds 轮之前**的（最近两轮是模型正在用的，
+        折了模型就得回头重读，反而更贵）；
+      · 只折叠**超过 min_chars** 的（小结果折了没意义还添乱）；
+      · 摘要**保留事实**（ok / rc / 错误首行 / 输出首行），并明说「需要原文
+        请重新调用该工具」—— 折叠不是「信息消失」，是「变成可重取」。
+
+    返回**新列表**：原 messages 不动（会话记录要完整，折叠只发生在发请求时）。
+    """
+    if not isinstance(messages, (list, tuple)) or not messages:
+        return list(messages or [])
+    # 轮次 = 带 tool_calls 的 assistant 消息；它后面的 tool 消息属于同一轮
+    round_of = []
+    rnd = -1
+    for m in messages:
+        if isinstance(m, dict) and m.get("role") == "assistant" and m.get("tool_calls"):
+            rnd += 1
+        round_of.append(rnd)
+    total = rnd + 1
+    if total <= keep_rounds:
+        return list(messages)
+    out = []
+    for i, m in enumerate(messages):
+        if not (isinstance(m, dict) and m.get("role") == "tool"):
+            out.append(m)
+            continue
+        if round_of[i] < 0 or round_of[i] >= total - keep_rounds:
+            out.append(m)
+            continue
+        txt = m.get("content")
+        if not isinstance(txt, str) or len(txt) < min_chars:
+            out.append(m)
+            continue
+        out.append(
+            {
+                "role": "tool",
+                "tool_call_id": m.get("tool_call_id"),
+                "content": _folded_stub(txt),
+            }
+        )
+    return out
+
+
+def _folded_stub(text):
+    """旧工具结果的紧凑摘要：事实 + 「需要原文请重新调用该工具」。"""
+    facts = []
+    obj = None
+    try:
+        obj = json.loads(text)
+    except Exception:  # noqa: BLE001
+        obj = None
+    if isinstance(obj, dict):
+        if "ok" in obj:
+            facts.append("ok=%s" % obj.get("ok"))
+        if obj.get("rc") is not None:
+            facts.append("rc=%s" % obj.get("rc"))
+        err = str(obj.get("error") or "").strip()
+        if err:
+            facts.append("err=%s" % err.splitlines()[0][:80])
+        for k in ("out", "text", "content", "summary"):
+            v = obj.get(k)
+            if isinstance(v, str) and v.strip():
+                facts.append("首行=%s" % v.strip().splitlines()[0][:100])
+                break
+    else:
+        s = str(text).strip()
+        if s:
+            facts.append("首行=%s" % s.splitlines()[0][:100])
+    return json.dumps(
+        {
+            "folded": True,
+            "chars": len(text),
+            "summary": " ｜ ".join(facts)[:200],
+            "hint": "旧工具结果已折叠（省 token）；需要原文请重新调用该工具",
+        },
+        ensure_ascii=False,
+    )
+
+
 def _memory_digest(body, cap=1200):
     """把项目记忆压成**确定性摘要**：每个小节留标题 + 该节第一条粗体规则。
 

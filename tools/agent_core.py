@@ -2741,6 +2741,16 @@ def run_agent(
     for _k8 in ("plan_lock_off", "mode_gate_off", "cmd_gate_off"):
         if _k8 not in ctx and _k8 in _sf8:
             ctx[_k8] = _sf8[_k8]
+    # 上下文瘦身开关：默认**开**（省 token），要用带缓存的端点可显式关掉
+    # （agent.context_edit=false）—— 折叠会改写历史前缀，端点若做前缀缓存
+    # 就会失配，所以留个后门。
+    if "no_context_edit" not in ctx:
+        try:
+            _ace = ((_read_agentos_config().get("agent") or {}).get("context_edit"))
+        except Exception:  # noqa: BLE001
+            _ace = None
+        if _ace is False:
+            ctx["no_context_edit"] = True
     # 有效权限回写给调用方（像 history 一样）—— 调用方能看见「这次到底
     # 是什么权限在跑」，而不是猜。
     if _outer is not None:
@@ -2967,9 +2977,19 @@ def run_agent(
             on_event({"type": "step", "step": step})
         if cancel is not None and cancel():
             raise AgentError("interrupted", "已打断（Esc），上下文保留")
+        # 上下文瘦身（2026-10-22）：发给模型前，把**旧的**工具结果折叠成
+        # 紧凑摘要（保留 ok/rc/首行事实 + 「需要原文请重新调用该工具」）。
+        # 只改**发出去的那份**，会话记录（messages）保持完整 —— 折叠是
+        # 「省 token 的视图」，不是「抹掉历史」。最近两轮不折（模型正在用）。
+        _req_msgs = messages
+        if not ctx.get("no_context_edit"):
+            try:
+                _req_msgs = fold_old_tool_results(messages)
+            except Exception:  # noqa: BLE001
+                _req_msgs = messages
         try:
             comp = provider.chat(
-                messages, tools, stream=stream, on_event=on_event, cancel=cancel
+                _req_msgs, tools, stream=stream, on_event=on_event, cancel=cancel
             )
         except AgentError as e:
             if e.kind == "interrupted":
@@ -4511,6 +4531,7 @@ def _readline(tag):
 # 把两类东西读成一种。所以另起 agent- 前缀，互不接管对方的命名空间。
 # 2026-10-21（TASK2 障碍 2）：本块已搬到 tools/agent_session.py，这里 re-export。
 from agent_session import (  # noqa: F401
+    fold_old_tool_results,
     SESSION_DIR,
     TRANSCRIPT_PREFIX,
     COMPACT_KEEP,

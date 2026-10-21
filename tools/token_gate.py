@@ -199,6 +199,46 @@ def main(argv=None):
         "有" if memory_is_digest(m["system_text"]) else "无",
     )
 
+    # ── 历史侧（变量）的那笔：折叠能省多少 ─────────────────────
+    _hist = []
+    for _r in range(12):
+        _hist.append(
+            {
+                "role": "assistant",
+                "content": "",
+                "tool_calls": [
+                    {"id": "c%d" % _r, "type": "function",
+                     "function": {"name": "read_file", "arguments": "{}"}}
+                ],
+            }
+        )
+        _hist.append(
+            {
+                "role": "tool",
+                "tool_call_id": "c%d" % _r,
+                "content": json.dumps(
+                    {"ok": True, "rc": 0, "out": ("行%d " % _r) + "X" * 3000},
+                    ensure_ascii=False,
+                ),
+            }
+        )
+    try:
+        import agent_session as _S
+
+        _b = sum(len(x.get("content") or "") for x in _hist)
+        _f = sum(
+            len(x.get("content") or "") for x in _S.fold_old_tool_results(_hist)
+        )
+        _saved = (_b - _f) * 100.0 / max(_b, 1)
+        print("  历史侧（合成 12 轮大输出）：%d → %d 字符（省 %.0f%%）" % (_b, _f, _saved))
+        case(
+            "历史侧：旧工具结果折叠至少省 40%%（长会话的成本大头）",
+            _saved >= 40.0,
+            "省 %.0f%%" % _saved,
+        )
+    except Exception as e:  # noqa: BLE001
+        case("历史侧：旧工具结果折叠至少省 40%%", False, repr(e)[:120])
+
     # ── 判据有牙：把老写法塞回去，判据必须报红 ──────────────────
     case(
         "判据有牙：把「可用工具：」塞回系统提示 → 判据必须抓到",
