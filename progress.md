@@ -855,3 +855,32 @@ python3 并**如实说明**（GATES-NOTE），真需要浏览器的门自己报�
 它做不成的：一次会话干不完（第二轮 ~2h 仍在拆），**不自己 commit**
 （两轮都是我替它提交 + 补集成伤），以及它自己的验收清单会漏门
 （20 门 vs 41 门 —— 漏掉的负向门正好是抓出集成伤的那一道）。
+
+## W33 收尾：agent 真机跑自己报出的工具缺陷（已修 + 钉成判据）
+
+终态真机（合并推送后）让 agent 干一件带写入+账本+核对的活，它**如实报了一个
+真缺陷**：「`todo action=update` 不回写状态（连试三次都返回旧清单），改用
+`action=set` 整表覆盖才落地；这算工具缺陷，值得记一笔」。
+
+根因：工具里「`items` 缺了就当读」的判断排在 `action` 分派**之前**，于是
+`todo(action="update", changes=[...])`（**不带 items**，正是增量写该有的形状）
+被当成读请求 → 返回旧清单、更新被吞。
+
+修法 + 判据：分派顺序改成「先看 action，再看有没有 items」（`update`/`add`
+不要求 items；只有「没 action 且没 items/changes」才是读）；
+`todo_selftest` 16→**18/18**（新增两条**工具层**判据：update 只带 changes
+必须回写且不动别的项；add 追加且不动别的项）→ agent 报出来的缺陷从此被钉住。
+
+真机复验：同一任务重跑，agent 用增量更新把 3 项逐项标 done（3/3 完成），
+**不再报缺陷**。
+
+## W33 终态（2026-10-22）
+
+- **认证链**：`== GATES_SUMMARY 共跑 41 门 / RC=0 计数 41 / 红门=无 ==`（两次全绿：
+  拆分支合入后一次、todo 修复合入后一次）
+- **单门**：`AGENT_CORE OK 169/169`、`NEG_AGENT_CORE OK 32/32`、
+  `TODO_SELFTEST 18/18`、`REWIND_GATE_SELFTEST 7/7`、`SELFSCAN_GATE OK 10/10`
+- **仓库形态**：`agent_core.py` 451,291 → **222,998 字节**（拆出 selftest/
+  provider/session 三块）；门链 41 道；worktree 与两个特性分支已清
+- **不弹窗**：`~/.agent-os/keeper.sh` 改空操作；launchd 无 agentos 项；
+  8320/8321 无监听
