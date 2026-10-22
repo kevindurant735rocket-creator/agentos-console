@@ -43,6 +43,7 @@ def case(name, ok, detail=""):
 
 class _ModelsHandler(BaseHTTPRequestHandler):
     seen_session = []
+    MODELS = ["deepseek-v4.1-flash", "mimo-v2.6-flash", "deepseek-v4-pro"]
 
     def do_GET(self):  # noqa: N802
         if self.path.rstrip("/").endswith("/models"):
@@ -52,11 +53,7 @@ class _ModelsHandler(BaseHTTPRequestHandler):
             _body = json.dumps(
                 {
                     "object": "list",
-                    "data": [
-                        {"id": "deepseek-v4.1-flash"},
-                        {"id": "deepseek-v4-pro"},
-                        {"id": "glm-5.3"},
-                    ],
+                    "data": [{"id": m} for m in _ModelsHandler.MODELS],
                 }
             ).encode("utf-8")
             self.send_response(200)
@@ -104,6 +101,82 @@ def main():
         "protocol=%r" % (_spec.get("protocol"),),
     )
 
+    # ── 1b. 支持清单：只这两个（用户 2026-10-22 定）────────────
+    case(
+        "支持清单 = deepseek-v4.1-flash + mimo-v2.6-flash（不逐个测端点那 36 个）",
+        tuple(ap.SUPPORTED_MODELS) == ("deepseek-v4.1-flash", "mimo-v2.6-flash"),
+        repr(ap.SUPPORTED_MODELS),
+    )
+    case(
+        "默认模型在支持清单里",
+        ap.is_supported(ap.DEFAULT_MODEL) and ap.DEFAULT_MODEL == "deepseek-v4.1-flash",
+        "default=%r" % (ap.DEFAULT_MODEL,),
+    )
+    case(
+        "is_supported：清单外的名字为假（端点有也不算支持）",
+        ap.is_supported("gpt-6-luna") is False
+        and ap.is_supported("mimo-v2.6-flash") is True,
+        "gpt-6-luna=%s mimo=%s"
+        % (ap.is_supported("gpt-6-luna"), ap.is_supported("mimo-v2.6-flash")),
+    )
+    _srv0 = HTTPServer(("127.0.0.1", 0), _ModelsHandler)
+    _t0 = threading.Thread(target=_srv0.serve_forever, daemon=True)
+    _t0.start()
+    _b0 = "http://127.0.0.1:%d/v1" % _srv0.server_address[1]
+    try:
+        _P0 = _fake_provider(_b0)
+        _ok_uns, _n_uns, _e_uns = ap.check_model(_P0, "gpt-6-luna")
+        case(
+            "check_model：清单外的模型 → 拒（产品只认这两个）",
+            _ok_uns is False and "只支持" in str(_e_uns),
+            "ok=%s err=%r" % (_ok_uns, str(_e_uns)[:70]),
+        )
+        # allow_unsupported=True 只**跳过清单闸**，不跳过「端点有没有」这一关：
+        # 用一个「清单外但端点有」的名字（deepseek-v4-pro）→ 放行。
+        _ok_uns2, _n_uns2, _e_uns2 = ap.check_model(
+            _P0, "deepseek-v4-pro", allow_unsupported=True
+        )
+        case(
+            "check_model：allow_unsupported=True → 只跳清单闸，端点有才放行",
+            _ok_uns2 is True and _e_uns2 == "",
+            "ok=%s err=%r" % (_ok_uns2, _e_uns2),
+        )
+        _ok_uns3, _n_uns3, _e_uns3 = ap.check_model(
+            _P0, "gpt-6-luna", allow_unsupported=True
+        )
+        case(
+            "check_model：allow_unsupported=True 但端点没有 → 仍拒",
+            _ok_uns3 is False,
+            "ok=%s" % _ok_uns3,
+        )
+        _ok_sup, _n_sup, _e_sup = ap.check_model(_P0, "mimo-v2.6-flash")
+        case(
+            "check_model：清单内的模型 → 端点也认 → 放行",
+            _ok_sup is True and _e_sup == "",
+            "ok=%s err=%r" % (_ok_sup, _e_sup),
+        )
+        _ok_sup2, _n_sup2, _e_sup2 = ap.check_model(_P0, "deepseek-v4.1-flash")
+        case(
+            "check_model：另一个清单内模型（ds4.1flash）→ 放行",
+            _ok_sup2 is True,
+            "ok=%s" % _ok_sup2,
+        )
+        # 端点此刻**没有**清单内那个模型 → 拒（清单≠端点有）
+        _ModelsHandler.MODELS = ["deepseek-v4.1-flash"]
+        try:
+            _ok_miss, _n_miss, _e_miss = ap.check_model(_P0, "mimo-v2.6-flash")
+            case(
+                "check_model：清单内但端点此刻没有 → 拒（别换过去才 404）",
+                _ok_miss is False,
+                "ok=%s" % _ok_miss,
+            )
+        finally:
+            _ModelsHandler.MODELS = ["deepseek-v4.1-flash", "mimo-v2.6-flash",
+                                     "deepseek-v4-pro"]
+    finally:
+        _srv0.shutdown()
+        _srv0.server_close()
+
     # ── 2. 探针：列模型（本地假端点，不联网）───────────────────
     _srv = HTTPServer(("127.0.0.1", 0), _ModelsHandler)
     _t = threading.Thread(target=_srv.serve_forever, daemon=True)
@@ -114,7 +187,8 @@ def main():
         _names, _err = ap.list_models(_P)
         case(
             "list_models：拉到端点的可用模型名单",
-            set(_names) == {"deepseek-v4.1-flash", "deepseek-v4-pro", "glm-5.3"}
+            set(_names) == {"deepseek-v4.1-flash", "mimo-v2.6-flash",
+                            "deepseek-v4-pro"}
             and _names == sorted(_names),  # 名单按名字排序（可预期的顺序）
             "names=%r err=%r" % (_names, _err),
         )
@@ -126,17 +200,17 @@ def main():
         )
 
         # ── 3. 换模型先验 ─────────────────────────────────────
-        _ok, _n, _e = ap.check_model(_P, "glm-5.3")
+        _ok, _n, _e = ap.check_model(_P, "mimo-v2.6-flash")
         case(
-            "check_model：名单里的模型 → 允许换",
+            "check_model：清单里且端点有的模型 → 允许换",
             _ok is True and _e == "",
             "ok=%s err=%r" % (_ok, _e),
         )
         _ok2, _n2, _e2 = ap.check_model(_P, "no-such-model")
         case(
-            "check_model：名单里没有的 → 拒（换过去=跑到一半才 404）",
-            _ok2 is False and "no-such-model" not in ("" if _ok2 else "x"),
-            "ok=%s names=%r" % (_ok2, _n2[:3]),
+            "check_model：清单外的名字 → 拒（产品只认那两个）",
+            _ok2 is False and "只支持" in str(_e2),
+            "ok=%s err=%r" % (_ok2, str(_e2)[:60]),
         )
     finally:
         _srv.shutdown()
@@ -151,7 +225,7 @@ def main():
         _dn == [] and bool(_derr),
         "names=%r err=%r" % (_dn, _derr),
     )
-    _dok, _dn2, _derr2 = ap.check_model(_PD, "any-model")
+    _dok, _dn2, _derr2 = ap.check_model(_PD, "deepseek-v4.1-flash")
     case(
         "端点探不到 → 仍允许换（探针失败≠模型不存在），但 err 要带出去",
         _dok is True and bool(_derr2),

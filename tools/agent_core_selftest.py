@@ -1207,13 +1207,17 @@ def _selftest_body(case, jc, tmp):
     # ⑦ REPL /model 换模型必须连协议带回去：responses 端点上只换模型名，
     # 丢了 protocol 就被打回 /chat/completions，网关当场 400。
     p_proto = stub_r.provider(protocol="responses")
-    new_p = _repl_slash("/model other-model", {"root": tmproot}, p_proto, "sid-r", "x")
+    # 2026-10-22：换模型只许换到**支持清单**里的那两个（用户定的），
+    # 所以这条用例改用清单内的名字（mimo-v2.6-flash）；「换到清单外的
+    # 名字要被拒」由 model_selftest 单独钉。
+    _sup_m = "mimo-v2.6-flash"
+    new_p = _repl_slash("/model " + _sup_m, {"root": tmproot}, p_proto, "sid-r", "x")
     case(
         "REPL /model 重建 Provider 时保住 protocol 与 session_id",
         isinstance(new_p, Provider)
         and new_p.protocol == "responses"
         and new_p.session_id == p_proto.session_id
-        and new_p.model == "other-model",
+        and new_p.model == _sup_m,
         "protocol=%s session=%s/%s"
         % (
             new_p.protocol if isinstance(new_p, Provider) else "-",

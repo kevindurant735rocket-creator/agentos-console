@@ -2694,8 +2694,8 @@ def build_system_prompt(ctx):
             "3. 工具失败或被拒绝时，如实说明哪一步没执行，然后换路子；"
             "不许把没做的事说成做了。",
             "4. **干完就自己收尾**：改了就把改动落在仓里 —— 跑一遍该跑的验证、"
-            "看自己的 diff，然后用 **commit 工具**提交你动过的文件"
-            "（只提交你动过的，绝不 push），再用真实 rc 交付。"
+            "看自己的 diff；**在 git 仓库里**再用 commit 工具提交你动过的文件"
+            "（只提交你动过的，绝不 push；不是 git 仓库就别试），再用真实 rc 交付。"
             "**不要问老板「要不要提交/要不要接门链/要不要验证」** —— "
             "全权限默认，审批摩擦是缺陷不是礼貌。",
             "5. 实现类任务先用 gh_search 参考 GitHub 成熟实现"
@@ -5411,18 +5411,33 @@ def _repl_slash(text, ctx, provider, sid, tpath):
                 "模型=%s · 端点=%s · 来源=%s\n"
                 % (provider.model or "-", provider.base_url, provider.source)
             )
-            # 把端点**当前可用的模型名单**也拉出来（换模型要有依据，
-            # 不能靠猜名字）；探不到就如实说，不假装列得出。
+            # 菜单只列**支持清单**里的模型（用户 2026-10-22 定：只支持
+            # deepseek-v4.1-flash 与 mimo-v2.6-flash，不逐个测端点那 36 个），
+            # 并报它们的**在线状态**（探不到就如实说）。
             try:
                 import agent_provider as _apm
 
                 _mn, _merr = _apm.list_models(provider)
+                _sup = list(_apm.SUPPORTED_MODELS)
             except Exception as e:  # noqa: BLE001
-                _mn, _merr = [], "探不到模型列表：%r" % (e,)
+                _mn, _merr, _sup = [], "探不到模型列表：%r" % (e,), []
+            if _sup:
+                _lines = []
+                for _m2 in _sup:
+                    if _mn:
+                        _lines.append(
+                            "%s%s"
+                            % (_m2, "（在线）" if _m2 in _mn else "（端点此刻没有）")
+                        )
+                    else:
+                        _lines.append("%s（状态未知）" % _m2)
+                sys.stderr.write(
+                    "支持清单（%d 个）：%s\n" % (len(_sup), " · ".join(_lines))
+                )
             if _mn:
                 sys.stderr.write(
-                    "端点可用模型（%d 个）：%s\n"
-                    % (len(_mn), ", ".join(_mn[:40]))
+                    "（端点此刻共 %d 个模型；其余不在支持清单里，不测不换）\n"
+                    % len(_mn)
                 )
             else:
                 sys.stderr.write("（%s）\n" % (_merr or "探不到模型列表"))
@@ -5436,10 +5451,13 @@ def _repl_slash(text, ctx, provider, sid, tpath):
         except Exception as e:  # noqa: BLE001
             _ok2, _mn2, _merr2 = True, [], "探不到模型列表：%r" % (e,)
         if not _ok2:
-            sys.stderr.write(
-                "端点没有这个模型：%s\n可用：%s\n（没换）\n"
-                % (rest, ", ".join(_mn2[:40]))
-            )
+            if _mn2:
+                sys.stderr.write(
+                    "端点没有这个模型：%s\n可用：%s\n（没换）\n"
+                    % (rest, ", ".join(_mn2[:40]))
+                )
+            else:
+                sys.stderr.write("%s\n（没换）\n" % (_merr2 or "换不了"))
             return None
         if not _mn2:
             sys.stderr.write(

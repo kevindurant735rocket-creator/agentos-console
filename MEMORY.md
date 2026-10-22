@@ -27,6 +27,11 @@
   端点**只让模型调已声明的工具** → 裁工具必须配 `tool_use` 调度器（裁 schema 不裁能力）。
   固定开销（系统提示+工具面）13,084 → 7,343 字符（implement 档，-44%）；
   历史侧靠 `fold_old_tool_results` 折叠（-72%）。预算由 `tools/token_gate.py` 钉住（ratchet）。
+- **支持清单**（用户 2026-10-22 定）：产品**只认两个模型** ——
+  `deepseek-v4.1-flash`（默认，墙钟快 ~2.4x）与 `mimo-v2.6-flash`（步数更少）。
+  端点 `/models` 实际有 36 个，但**不测不列不换**；要加一个 = 在
+  `tools/agent_provider.py` 的 `SUPPORTED_MODELS` 加一行 + 补一条判据。
+  `tools/model_bench.py` 是这两个的同题对比（要真端点，不进门链）。
 - **默认模型**：`~/.agentos/config.toml` 里 `model = deepseek-v4.1-flash`（端点 `/models`
   实测共 36 个模型）。**代码里的兜底必须与之一致** —— 旧兜底
   `muse-spark-1.3-contributor` 也在端点列表里，所以旧问题不是「模型不存在」

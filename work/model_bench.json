@@ -1,0 +1,68 @@
+[
+ {
+  "task": "A 实现",
+  "model": "deepseek-v4.1-flash",
+  "ok": true,
+  "steps": 9,
+  "peak": 6343,
+  "out": 212,
+  "tools": 10,
+  "sec": 32.4,
+  "err": ""
+ },
+ {
+  "task": "A 实现",
+  "model": "mimo-v2.6-flash",
+  "ok": true,
+  "steps": 8,
+  "peak": 6511,
+  "out": 234,
+  "tools": 9,
+  "sec": 97.3,
+  "err": ""
+ },
+ {
+  "task": "B 阅读",
+  "model": "deepseek-v4.1-flash",
+  "ok": true,
+  "steps": 9,
+  "peak": 5019,
+  "out": 230,
+  "tools": 11,
+  "sec": 41.3,
+  "err": ""
+ },
+ {
+  "task": "B 阅读",
+  "model": "mimo-v2.6-flash",
+  "ok": true,
+  "steps": 6,
+  "peak": 4413,
+  "out": 170,
+  "tools": 8,
+  "sec": 44.2,
+  "err": ""
+ },
+ {
+  "task": "C 修错",
+  "model": "deepseek-v4.1-flash",
+  "ok": true,
+  "steps": 10,
+  "peak": 6539,
+  "out": 129,
+  "tools": 10,
+  "sec": 34.9,
+  "err": ""
+ },
+ {
+  "task": "C 修错",
+  "model": "mimo-v2.6-flash",
+  "ok": true,
+  "steps": 10,
+  "peak": 6560,
+  "out": 182,
+  "tools": 10,
+  "sec": 85.4,
+  "err": ""
+ }
+]

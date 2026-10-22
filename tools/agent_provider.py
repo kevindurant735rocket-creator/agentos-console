@@ -32,6 +32,26 @@ MAX_TOOL_OUT = 32768  # 单次工具回灌给模型的字节上限
 MAX_FILE_BYTES = 262144  # 单文件读上限，与 serve.py FS_MAX_BYTES 同口径
 MAX_LINES = 2000  # read_file 默认行数上限
 
+# ── 本产品**支持**的模型（2026-10-22 用户定）────────────────────────
+# 用户要求：只加入 deepseek-v4.1-flash 与 mimo-v2.6-flash，**不逐个测**端点
+# 上那 36 个模型。所以产品侧只认这两个：
+#   · 默认 = deepseek-v4.1-flash；
+#   · `/model` 的菜单只列这两个（并报它们的**在线状态**）；
+#   · 换模型只许换到这两个（换别的 → 拒，并告诉你要加去哪改）；
+#   · 端点上其余 34 个不在支持清单里（不测、不列、不换）。
+# 要加一个模型 = 在这里加一行（+ 在 model_selftest 里补一条判据）。
+SUPPORTED_MODELS = (
+    "deepseek-v4.1-flash",
+    "mimo-v2.6-flash",
+)
+DEFAULT_MODEL = "deepseek-v4.1-flash"
+
+
+def is_supported(name):
+    """这个名字在本产品的支持清单里吗？"""
+    return str(name or "").strip() in SUPPORTED_MODELS
+
+
 # 内置命名 provider：`--provider <名字>` 或 `AGENTOS_PROVIDER=<名字>` 选取。
 # 加新端点只改这张表，别在调用点再抄一遍 base_url。
 NAMED_PROVIDERS = {
@@ -43,7 +63,7 @@ NAMED_PROVIDERS = {
         # 而是**静默降级**：配置一坏/写漏 model，agent 就从 4.1-flash
         # 悄悄掉到 contributor 级小模型（能力差一档，而且没有任何提示）。
         # 兜底必须与实际默认一致。
-        "model": "deepseek-v4.1-flash",
+        "model": DEFAULT_MODEL,
         "note": "OpenCode zen 网关；需 AGENTOS_LLM_API_KEY（Bearer）",
         # opencode 网关只认 Responses 协议：实测 POST /chat/completions
         # 必回 HTTP 400 ModelProtocolUnsupported「Model does not support
@@ -500,17 +520,34 @@ def list_models(provider, timeout=20):
     return sorted(names), ""
 
 
-def check_model(provider, name):
-    """换模型前的验证：端点有没有这个模型。返回 (ok, names, err)。
+def check_model(provider, name, allow_unsupported=False):
+    """换模型前的验证：① 在不在**支持清单**里 ② 端点在不在。
 
-    口径（2026-10-22）：探不到名单时 **ok=True**（允许换，但调用方必须
-    如实说「没能验证」）—— 探针失败不等于模型不存在，不该把网络问题
-    变成「不许换」。名单拿到了就**对得上才算**。
+    返回 (ok, names, err)。
+
+    口径（2026-10-22）：
+    - 不在支持清单里 → **拒**（产品只认 SUPPORTED_MODELS 那两个；
+      要加就把名字加进那个常量）。`allow_unsupported=True` 可放行
+      （给「配置里显式写了别的模型」这种用户主动选择用）。
+    - 在清单里但**探不到**端点名单 → ok=True（探针失败≠模型不存在），
+      调用方必须如实说「没能验证」。
+    - 探到了 → 名单里对得上才算。
     """
+    _n = str(name or "").strip()
+    if not _n:
+        return False, [], "模型名不能为空"
+    if not is_supported(_n) and not allow_unsupported:
+        return (
+            False,
+            [],
+            "本产品只支持这 %d 个模型：%s（端点上还有别的，但不在支持清单里，"
+            "不测不换；要用就把它加进 SUPPORTED_MODELS）"
+            % (len(SUPPORTED_MODELS), "、".join(SUPPORTED_MODELS)),
+        )
     names, err = list_models(provider)
     if not names:
         return True, [], err
-    return (str(name) in names), names, ""
+    return (_n in names), names, ""
 
 
 def _probe_ollama(timeout=1.5):
