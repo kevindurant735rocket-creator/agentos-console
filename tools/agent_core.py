@@ -436,10 +436,18 @@ def _tool(name, risk, description, schema):
     return deco
 
 
-def tool_defs():
-    """给模型的 tools 数组（OpenAI function calling 形状）。"""
+def tool_defs(names=None):
+    """给模型的 tools 数组（OpenAI function calling 形状）。
+
+    names=None → 全量；给了集合 → **只开这些**（工具面按需披露，见
+    tools/tool_catalog.py）。没开的工具**照样能调**（用 tool_use 调度器），
+    所以裁的是 schema 的 token，不是能力。
+    """
     out = []
+    _want = None if names is None else set(names)
     for name in sorted(TOOLS):
+        if _want is not None and name not in _want:
+            continue
         s = TOOLS[name]
         out.append(
             {
@@ -1042,6 +1050,55 @@ def _t_commit(a, ctx):
         "files": paths,
         "stat": (_stat.get("out") or "").strip()[:400],
     }
+
+
+@_tool(
+    "tool_use",
+    RISK_READ,
+    "调用本次**没直接开**的工具：给工具名与参数（JSON 字符串）。"
+    "没开的工具只在这里能调，能力不丢。",
+    {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string", "description": "工具名（如 gh_search）"},
+            "args": {
+                "type": "string",
+                "description": "参数（JSON 字符串，如 {\"query\":\"x\"}）",
+            },
+        },
+        "required": ["name"],
+    },
+)
+def _t_tool_use(a, ctx):
+    """通用调度器：调到**任何**注册的工具（哪怕这次没直接开）。
+
+    为什么要有（2026-10-22 端点实测）：端点只让模型调用**已声明**的工具
+    —— 把 gh_search 从 tools 数组里去掉，模型直接说「并没有 gh_search 这个
+    工具」。所以「按需披露」必须配这个调度器：**裁的是 schema 的 token，
+    不是能力**。工具本身的权限/沙箱/审批矩阵**原样走**（不绕过闸）。
+    """
+    name = str(a.get("name") or "").strip()
+    if not name:
+        return {"ok": False, "error": "缺 name（要调哪个工具？）", "executed": False}
+    if name not in TOOLS:
+        return {
+            "ok": False,
+            "executed": False,
+            "error": "没有这个工具：%s（可用：%s）"
+            % (name, ", ".join(sorted(TOOLS))),
+        }
+    try:
+        import tool_catalog as _tc
+
+        _args, _err = _tc.parse_args(a.get("args"))
+    except Exception:  # noqa: BLE001
+        _args, _err = {}, ""
+    if _err:
+        return {"ok": False, "executed": False, "error": _err}
+    _res, _ex = exec_tool(name, _args, ctx)
+    _out = dict(_res or {})
+    _out["via"] = "tool_use"
+    return _out
 
 
 @_tool("git_diff", RISK_READ, "git diff（真实 rc）", _S_DIFF)
@@ -2675,6 +2732,16 @@ def build_system_prompt(ctx):
             # schema，重复一遍就是白花每轮的 token（2026-10-22 实测）。
         ]
     )
+    # 本次**没直接开**的工具：用一行紧凑目录告诉模型（它得知道存在），
+    # 需要时用 tool_use 调 —— 裁的是 schema 的 token，不是能力。
+    try:
+        import tool_catalog as _tcat3
+
+        _cat = _tcat3.catalog_text(ctx, ())
+        if _cat:
+            base = base + "\n本次没直接开但**能调**的工具（用 tool_use 调）：" + _cat
+    except Exception:  # noqa: BLE001
+        pass
     extra = _evo_prompt_lines(ctx.get("evo_rules_path")) + _memory_prompt_lines(ctx)
     # 任务契约段（不同任务类型的「完成证据」不一样，W26）：
     # 把「这类任务怎么算完成」在开工时就说死，模型不用自己猜标准。
@@ -2927,6 +2994,7 @@ def run_agent(
     except Exception:  # noqa: BLE001
         _is_git = False
     ctx["git_repo"] = _is_git
+    ctx["task_text"] = str(prompt or "")[:400]
     # 任务契约：分类 → 契约 → 写进 ctx。
     # 位置很讲究：**在 DSP 自启之后**（计划未审批会锁写，契约必须知道）、
     # **在 system prompt 之前**（契约要写进 prompt，模型开工前就该知道
@@ -2953,7 +3021,18 @@ def run_agent(
     if not messages or messages[0].get("role") != "system":
         messages.insert(0, sysmsg)
     messages = messages + [{"role": "user", "content": text}]
-    tools = tool_defs()
+    # 工具面按需披露（2026-10-22）：tools 数组每轮都全额付（实测 2,720
+    # token），而端点只让模型调**已声明**的工具 → 裁剪必须配 tool_use
+    # 调度器（没开的工具照样能调，能力不丢）。
+    _tool_names = None
+    try:
+        import tool_catalog as _tcat
+
+        ctx["tool_profile"] = _tcat.profile_for(ctx)
+        _tool_names = sorted(_tcat.exposed_tools(ctx, ()))
+    except Exception:  # noqa: BLE001
+        _tool_names = None
+    tools = tool_defs(names=_tool_names)
     t0 = time.time()
     usage = {}
     used = []
@@ -3108,6 +3187,21 @@ def run_agent(
                 _req_msgs = fold_old_tool_results(messages)
             except Exception:  # noqa: BLE001
                 _req_msgs = messages
+        # 工具面**每轮重算**：模型用过的情境工具**续开**（别把它藏回去，
+        # 模型知道它好用）。裁掉的只是「还没用过、这次也用不上的」那批。
+        if _tool_names is not None:
+            try:
+                import tool_catalog as _tcat2
+
+                _used_names = [
+                    str(u.get("tool") or "") for u in (used or []) if u.get("tool")
+                ]
+                _names2 = sorted(_tcat2.exposed_tools(ctx, _used_names))
+                if _names2 != _tool_names:
+                    _tool_names = _names2
+                    tools = tool_defs(names=_tool_names)
+            except Exception:  # noqa: BLE001
+                pass
         try:
             comp = provider.chat(
                 _req_msgs, tools, stream=stream, on_event=on_event, cancel=cancel

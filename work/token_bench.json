@@ -2,17 +2,17 @@
  "tool": "token_gate",
  "chars_per_token": 2.68,
  "budget": {
-  "fixed": 9000,
-  "tools": 7000,
+  "fixed": 9600,
+  "tools": 7400,
   "system": 2200,
   "one_tool": 800
  },
  "measured": {
   "mode": "full",
-  "system_chars": 1902,
-  "tools_chars": 6595,
-  "fixed_chars": 8497,
-  "tool_count": 18,
+  "system_chars": 2128,
+  "tools_chars": 7311,
+  "fixed_chars": 9439,
+  "tool_count": 20,
   "per_tool": [
    {
     "name": "todo",
@@ -45,6 +45,11 @@
     "schema": 276
    },
    {
+    "name": "commit",
+    "desc": 61,
+    "schema": 226
+   },
+   {
     "name": "run_cmd",
     "desc": 19,
     "schema": 260
@@ -53,6 +58,11 @@
     "name": "gh_file_read",
     "desc": 33,
     "schema": 234
+   },
+   {
+    "name": "tool_use",
+    "desc": 51,
+    "schema": 198
    },
    {
     "name": "skills",
@@ -106,6 +116,6 @@
    }
   ]
  },
- "estimated_fixed_tokens": 3170,
+ "estimated_fixed_tokens": 3522,
  "live": {}
 }

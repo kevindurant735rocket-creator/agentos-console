@@ -27,7 +27,7 @@
       "ok": true
     },
     {
-      "detail": "len=1460",
+      "detail": "len=1489",
       "gate": "D6 注入：hook_context 真进 system prompt",
       "ok": true
     },

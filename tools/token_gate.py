@@ -45,9 +45,16 @@ sys.path.insert(0, HERE)
 CHARS_PER_TOKEN = 2.68
 
 # 预算（ratchet：这是**上限**，涨预算必须是一次有意识的决定）
-BUDGET_FIXED = 9000     # 固定开销合计（当前 8,497）
-BUDGET_TOOLS = 7000     # 工具面（当前 6,595）
-BUDGET_SYSTEM = 2200    # 系统提示（当前 1,902）
+# 预算（ratchet：这是**上限**，涨预算必须是一次有意识的决定）
+#
+# 2026-10-22 第二次调整（9,000 → 9,600）：W37 加了 first-class `commit`
+# 工具、W38 加了 `tool_use` 调度器 —— 两个真能力的 schema 代价（+约 700
+# 字符）。**按档位裁剪后**每轮实际付的只有 7,343 字符（implement 档），
+# 全量 9,439 只是最坏档位；ratchet 逼着这次涨价变成一次有意识的决定，
+# 而不是悄悄漂过去。
+BUDGET_FIXED = 9600     # 固定开销合计（全量档位；当前 9,439）
+BUDGET_TOOLS = 7400     # 工具面（全量；当前 7,311）
+BUDGET_SYSTEM = 2200    # 系统提示（当前 2,128）
 BUDGET_ONE_TOOL = 800   # 单个工具 desc+schema（当前 todo 790）
 
 CASES = []
@@ -198,6 +205,46 @@ def main(argv=None):
         memory_is_digest(m["system_text"]),
         "有" if memory_is_digest(m["system_text"]) else "无",
     )
+
+    # ── 按档位裁剪后，每轮实际付多少 ─────────────────────────
+    try:
+        import tool_catalog as _tcat
+        import agent_core as ac
+
+        _prof_ctx = {
+            "root": ROOT,
+            "mode": "full",
+            "sid": "gate",
+            "task_text": "实现一个命令行工具",
+            "task_contract": {"name": "新增功能"},
+        }
+        _exp = sorted(_tcat.exposed_tools(_prof_ctx, ()))
+        _exp_txt = json.dumps(ac.tool_defs(names=_exp), ensure_ascii=False)
+        _prof_fixed = m["system_chars"] + len(_exp_txt)
+        print(
+            "  按档位（implement）：系统 %d + 工具面 %d（%d 个工具）= %d 字符 ≈ %d token"
+            % (
+                m["system_chars"],
+                len(_exp_txt),
+                len(_exp),
+                _prof_fixed,
+                int(_prof_fixed / CHARS_PER_TOKEN),
+            )
+        )
+        case(
+            "按档位裁剪后每轮固定开销 ≤ %d 字符（全量 %d）"
+            % (int(m["fixed_chars"] * 0.8), m["fixed_chars"]),
+            _prof_fixed <= int(m["fixed_chars"] * 0.8),
+            "%d（全量 %d）" % (_prof_fixed, m["fixed_chars"]),
+        )
+        case(
+            "裁剪不藏能力：没开的工具仍在目录里（用 tool_use 调）",
+            bool(_tcat.catalog_text(_prof_ctx, ()))
+            and "tool_use" in ac.TOOLS,
+            "目录=%r" % (_tcat.catalog_text(_prof_ctx, ())[:60],),
+        )
+    except Exception as e:  # noqa: BLE001
+        case("按档位裁剪后每轮固定开销 ≤ 全量的 80%", False, repr(e)[:120])
 
     # ── 历史侧（变量）的那笔：折叠能省多少 ─────────────────────
     _hist = []
