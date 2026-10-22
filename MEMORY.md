@@ -27,6 +27,12 @@
   端点**只让模型调已声明的工具** → 裁工具必须配 `tool_use` 调度器（裁 schema 不裁能力）。
   固定开销（系统提示+工具面）13,084 → 7,343 字符（implement 档，-44%）；
   历史侧靠 `fold_old_tool_results` 折叠（-72%）。预算由 `tools/token_gate.py` 钉住（ratchet）。
+- **默认模型**：`~/.agentos/config.toml` 里 `model = deepseek-v4.1-flash`（端点 `/models`
+  实测共 36 个模型）。**代码里的兜底必须与之一致** —— 旧兜底
+  `muse-spark-1.3-contributor` 也在端点列表里，所以旧问题不是「模型不存在」
+  而是**静默降级**（配置一坏就掉一档，无任何提示）。换模型用 `/model`：
+  先列端点可用名单、**先验后换**（`list_models` / `check_model`），探不到名单时
+  允许换但必须明说「没验证」。
 - **工作档位**（`tools/tool_catalog.py`）：implement/research/review/general 决定开哪些
   工具；**用过的工具续开**；plan/review 档不摆写类工具；没开的用 `tool_use` 调。
 - **收尾闭环**：`commit` 工具只提交**本会话写过的路径**（`paths` 只能收窄），
