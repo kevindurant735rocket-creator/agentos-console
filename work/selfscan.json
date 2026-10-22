@@ -11,7 +11,7 @@
     {
       "name": "D1-loc>0",
       "ok": true,
-      "detail": "loc=31842"
+      "detail": "loc=32067"
     },
     {
       "name": "D2-no-HIGH",
@@ -21,19 +21,19 @@
     {
       "name": "D3-no-new-MEDIUM",
       "ok": false,
-      "detail": "新增：tools/agent_provider.py|B310 +1（基线 3）"
+      "detail": "新增：tools/model_bench.py|B108 +1（基线 0）"
     }
   ],
   "totals": {
     "CONFIDENCE.HIGH": 191,
     "CONFIDENCE.LOW": 0,
-    "CONFIDENCE.MEDIUM": 16,
+    "CONFIDENCE.MEDIUM": 17,
     "CONFIDENCE.UNDEFINED": 0,
     "SEVERITY.HIGH": 0,
     "SEVERITY.LOW": 196,
-    "SEVERITY.MEDIUM": 11,
+    "SEVERITY.MEDIUM": 12,
     "SEVERITY.UNDEFINED": 0,
-    "loc": 31842,
+    "loc": 32067,
     "nosec": 0,
     "skipped_tests": 0
   }

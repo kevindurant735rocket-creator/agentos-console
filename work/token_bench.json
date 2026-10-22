@@ -9,9 +9,9 @@
  },
  "measured": {
   "mode": "full",
-  "system_chars": 2128,
+  "system_chars": 2149,
   "tools_chars": 7311,
-  "fixed_chars": 9439,
+  "fixed_chars": 9460,
   "tool_count": 20,
   "per_tool": [
    {
@@ -116,6 +116,6 @@
    }
   ]
  },
- "estimated_fixed_tokens": 3522,
+ "estimated_fixed_tokens": 3529,
  "live": {}
 }

@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2026-10-22T13:16:53Z",
+  "generated_at": "2026-10-22T14:12:11Z",
   "metrics": {
     "_totals": {
       "CONFIDENCE.HIGH": 191,
@@ -11,7 +11,7 @@
       "SEVERITY.LOW": 196,
       "SEVERITY.MEDIUM": 11,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 31842,
+      "loc": 32069,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -24,7 +24,7 @@
       "SEVERITY.LOW": 26,
       "SEVERITY.MEDIUM": 2,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 5353,
+      "loc": 5370,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -50,7 +50,7 @@
       "SEVERITY.LOW": 3,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 3480,
+      "loc": 3481,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -76,7 +76,7 @@
       "SEVERITY.LOW": 7,
       "SEVERITY.MEDIUM": 4,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 1136,
+      "loc": 1160,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -639,6 +639,19 @@
       "nosec": 0,
       "skipped_tests": 0
     },
+    "tools/model_bench.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 116,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
     "tools/model_selftest.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
@@ -648,7 +661,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 149,
+      "loc": 218,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1568,7 +1581,7 @@
       "test_name": "try_except_pass"
     },
     {
-      "code": "5721                             )\n5722             except Exception:  # noqa: BLE001\n5723                 pass\n5724         t_turn = time.time()\n",
+      "code": "5739                             )\n5740             except Exception:  # noqa: BLE001\n5741                 pass\n5742         t_turn = time.time()\n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "tools/agent_core.py",
@@ -1579,17 +1592,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 5722,
+      "line_number": 5740,
       "line_range": [
-        5722,
-        5723
+        5740,
+        5741
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "5855                 )\n5856             except Exception:  # noqa: BLE001\n5857                 pass\n5858         if _stale:\n",
+      "code": "5873                 )\n5874             except Exception:  # noqa: BLE001\n5875                 pass\n5876         if _stale:\n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "tools/agent_core.py",
@@ -1600,17 +1613,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 5856,
+      "line_number": 5874,
       "line_range": [
-        5856,
-        5857
+        5874,
+        5875
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "5871                 )\n5872             except Exception:  # noqa: BLE001\n5873                 pass\n5874         if _ans0:\n",
+      "code": "5889                 )\n5890             except Exception:  # noqa: BLE001\n5891                 pass\n5892         if _ans0:\n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "tools/agent_core.py",
@@ -1621,17 +1634,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 5872,
+      "line_number": 5890,
       "line_range": [
-        5872,
-        5873
+        5890,
+        5891
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "5935                 )\n5936         except Exception:  # noqa: BLE001\n5937             pass\n5938         _transcript_append(tpath, {\"ts\": time.time(), \"kind\": \"user\", \"text\": text})\n",
+      "code": "5953                 )\n5954         except Exception:  # noqa: BLE001\n5955             pass\n5956         _transcript_append(tpath, {\"ts\": time.time(), \"kind\": \"user\", \"text\": text})\n",
       "col_offset": 8,
       "end_col_offset": 16,
       "filename": "tools/agent_core.py",
@@ -1642,10 +1655,10 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 5936,
+      "line_number": 5954,
       "line_range": [
-        5936,
-        5937
+        5954,
+        5955
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
       "test_id": "B110",
@@ -1712,7 +1725,7 @@
       "test_name": "blacklist"
     },
     {
-      "code": "2450         )\n2451     except Exception:  # noqa: BLE001\n2452         pass\n2453     case(\n",
+      "code": "2454         )\n2455     except Exception:  # noqa: BLE001\n2456         pass\n2457     case(\n",
       "col_offset": 4,
       "end_col_offset": 12,
       "filename": "tools/agent_core_selftest.py",
@@ -1723,17 +1736,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 2451,
+      "line_number": 2455,
       "line_range": [
-        2451,
-        2452
+        2455,
+        2456
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "3266                     pass\n3267     except Exception:  # noqa: BLE001\n3268         pass\n3269     case(\n",
+      "code": "3270                     pass\n3271     except Exception:  # noqa: BLE001\n3272         pass\n3273     case(\n",
       "col_offset": 4,
       "end_col_offset": 12,
       "filename": "tools/agent_core_selftest.py",
@@ -1744,10 +1757,10 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 3267,
+      "line_number": 3271,
       "line_range": [
-        3267,
-        3268
+        3271,
+        3272
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
       "test_id": "B110",
@@ -1834,7 +1847,7 @@
       "test_name": "assert_used"
     },
     {
-      "code": "479     try:\n480         with urllib.request.urlopen(req, timeout=timeout) as resp:\n481             raw = resp.read(1 << 20)\n",
+      "code": "499     try:\n500         with urllib.request.urlopen(req, timeout=timeout) as resp:\n501             raw = resp.read(1 << 20)\n",
       "col_offset": 13,
       "end_col_offset": 57,
       "filename": "tools/agent_provider.py",
@@ -1845,16 +1858,16 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
-      "line_number": 480,
+      "line_number": 500,
       "line_range": [
-        480
+        500
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
       "test_id": "B310",
       "test_name": "blacklist"
     },
     {
-      "code": "527         req = urllib.request.Request(base + \"/models\", method=\"GET\")\n528         with urllib.request.urlopen(req, timeout=timeout) as resp:\n529             raw = resp.read(65536)\n",
+      "code": "564         req = urllib.request.Request(base + \"/models\", method=\"GET\")\n565         with urllib.request.urlopen(req, timeout=timeout) as resp:\n566             raw = resp.read(65536)\n",
       "col_offset": 13,
       "end_col_offset": 57,
       "filename": "tools/agent_provider.py",
@@ -1865,16 +1878,16 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
-      "line_number": 528,
+      "line_number": 565,
       "line_range": [
-        528
+        565
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
       "test_id": "B310",
       "test_name": "blacklist"
     },
     {
-      "code": "857         if (os.environ.get(\"AGENTOS_LLM_VIA_PROXY\") or \"\").strip():\n858             return urllib.request.urlopen(req, timeout=timeout)\n859         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))\n",
+      "code": "894         if (os.environ.get(\"AGENTOS_LLM_VIA_PROXY\") or \"\").strip():\n895             return urllib.request.urlopen(req, timeout=timeout)\n896         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))\n",
       "col_offset": 19,
       "end_col_offset": 63,
       "filename": "tools/agent_provider.py",
@@ -1885,16 +1898,16 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
-      "line_number": 858,
+      "line_number": 895,
       "line_range": [
-        858
+        895
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
       "test_id": "B310",
       "test_name": "blacklist"
     },
     {
-      "code": "869                 self._proxy_mode = True\n870                 return urllib.request.urlopen(req, timeout=timeout)\n871             raise\n",
+      "code": "906                 self._proxy_mode = True\n907                 return urllib.request.urlopen(req, timeout=timeout)\n908             raise\n",
       "col_offset": 23,
       "end_col_offset": 67,
       "filename": "tools/agent_provider.py",
@@ -1905,16 +1918,16 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
-      "line_number": 870,
+      "line_number": 907,
       "line_range": [
-        870
+        907
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
       "test_id": "B310",
       "test_name": "blacklist"
     },
     {
-      "code": "901                 raw = e.read(1024)\n902             except Exception:  # noqa: BLE001\n903                 pass\n904             raise AgentError(\n",
+      "code": "938                 raw = e.read(1024)\n939             except Exception:  # noqa: BLE001\n940                 pass\n941             raise AgentError(\n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "tools/agent_provider.py",
@@ -1925,17 +1938,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 902,
+      "line_number": 939,
       "line_range": [
-        902,
-        903
+        939,
+        940
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "973                         resp2.close()\n974                     except Exception:  # noqa: BLE001\n975                         pass\n976                 try:\n",
+      "code": "1010                         resp2.close()\n1011                     except Exception:  # noqa: BLE001\n1012                         pass\n1013                 try:\n",
       "col_offset": 20,
       "end_col_offset": 28,
       "filename": "tools/agent_provider.py",
@@ -1946,17 +1959,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 974,
+      "line_number": 1011,
       "line_range": [
-        974,
-        975
+        1011,
+        1012
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "990                 resp.close()\n991             except Exception:  # noqa: BLE001\n992                 pass\n993         try:\n",
+      "code": "1027                 resp.close()\n1028             except Exception:  # noqa: BLE001\n1029                 pass\n1030         try:\n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "tools/agent_provider.py",
@@ -1967,17 +1980,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 991,
+      "line_number": 1028,
       "line_range": [
-        991,
-        992
+        1028,
+        1029
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "1061                 resp.close()\n1062             except Exception:  # noqa: BLE001\n1063                 pass\n1064         if not content and not slots:\n",
+      "code": "1098                 resp.close()\n1099             except Exception:  # noqa: BLE001\n1100                 pass\n1101         if not content and not slots:\n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "tools/agent_provider.py",
@@ -1988,17 +2001,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 1062,
+      "line_number": 1099,
       "line_range": [
-        1062,
-        1063
+        1099,
+        1100
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "1195                 resp.close()\n1196             except Exception:  # noqa: BLE001\n1197                 pass\n1198         if final is not None:\n",
+      "code": "1232                 resp.close()\n1233             except Exception:  # noqa: BLE001\n1234                 pass\n1235         if final is not None:\n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "tools/agent_provider.py",
@@ -2009,17 +2022,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 1196,
+      "line_number": 1233,
       "line_range": [
-        1196,
-        1197
+        1233,
+        1234
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "1283                     self.wfile.write(payload)\n1284                 except Exception:  # noqa: BLE001  \u5ba2\u6237\u7aef\u5df2\u65ad\n1285                     pass\n1286 \n",
+      "code": "1320                     self.wfile.write(payload)\n1321                 except Exception:  # noqa: BLE001  \u5ba2\u6237\u7aef\u5df2\u65ad\n1322                     pass\n1323 \n",
       "col_offset": 16,
       "end_col_offset": 24,
       "filename": "tools/agent_provider.py",
@@ -2030,17 +2043,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 1284,
+      "line_number": 1321,
       "line_range": [
-        1284,
-        1285
+        1321,
+        1322
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "1319                 fn()\n1320             except Exception:  # noqa: BLE001\n1321                 pass\n1322 \n",
+      "code": "1356                 fn()\n1357             except Exception:  # noqa: BLE001\n1358                 pass\n1359 \n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "tools/agent_provider.py",
@@ -2051,10 +2064,10 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 1320,
+      "line_number": 1357,
       "line_range": [
-        1320,
-        1321
+        1357,
+        1358
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
       "test_id": "B110",

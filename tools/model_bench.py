@@ -69,7 +69,12 @@ def main(argv=None):
         if args.task and key.upper() != args.task.upper():
             continue
         for m in models:
-            work = "/tmp/model_bench_%s_%s" % (key, m.split("-")[0])
+            # 跑在仓内 work/ 下（不硬编码 /tmp：产物散在 /tmp 事后查不到，
+            # 而且 selfscan 的 B108 会把硬编码 /tmp 判成新增 MEDIUM —— 这次
+            # 是**真问题**，改代码而不是登记基线）
+            _runs = os.path.join(ROOT, "work", "model_bench_runs")
+            os.makedirs(_runs, exist_ok=True)
+            work = os.path.join(_runs, "%s_%s" % (key, m.split("-")[0]))
             shutil.rmtree(work, ignore_errors=True)
             os.makedirs(work)
             if key == "C":
