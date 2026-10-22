@@ -5411,7 +5411,41 @@ def _repl_slash(text, ctx, provider, sid, tpath):
                 "模型=%s · 端点=%s · 来源=%s\n"
                 % (provider.model or "-", provider.base_url, provider.source)
             )
+            # 把端点**当前可用的模型名单**也拉出来（换模型要有依据，
+            # 不能靠猜名字）；探不到就如实说，不假装列得出。
+            try:
+                import agent_provider as _apm
+
+                _mn, _merr = _apm.list_models(provider)
+            except Exception as e:  # noqa: BLE001
+                _mn, _merr = [], "探不到模型列表：%r" % (e,)
+            if _mn:
+                sys.stderr.write(
+                    "端点可用模型（%d 个）：%s\n"
+                    % (len(_mn), ", ".join(_mn[:40]))
+                )
+            else:
+                sys.stderr.write("（%s）\n" % (_merr or "探不到模型列表"))
             return None
+        # 换模型**先验**：端点没有这个名字就别换（换过去=跑到一半才 404，
+        # 报错还常被当成网络问题）。探不到名单时允许换，但明说没验证。
+        try:
+            import agent_provider as _apm2
+
+            _ok2, _mn2, _merr2 = _apm2.check_model(provider, rest)
+        except Exception as e:  # noqa: BLE001
+            _ok2, _mn2, _merr2 = True, [], "探不到模型列表：%r" % (e,)
+        if not _ok2:
+            sys.stderr.write(
+                "端点没有这个模型：%s\n可用：%s\n（没换）\n"
+                % (rest, ", ".join(_mn2[:40]))
+            )
+            return None
+        if not _mn2:
+            sys.stderr.write(
+                "（没能验证：%s；先换，若报 404/400 就是模型名不对）\n"
+                % (_merr2 or "探不到模型列表")
+            )
         ctx["model"] = rest
         sys.stderr.write("模型 → %s（下一轮生效）\n" % rest)
         # 换模型不等于换端点：protocol / session_id 必须原样带过去，

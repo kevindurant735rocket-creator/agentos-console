@@ -596,7 +596,12 @@ def _selftest_body(case, jc, tmp):
         )
         ok_named = (
             spec.get("base_url") == "https://opencode.ai/zen/go/v1"
-            and spec.get("model") == "muse-spark-1.3-contributor"
+            # 2026-10-22：兜底默认必须是**用户实际在用的默认**
+            # （deepseek-v4.1-flash）。旧值 muse-spark-1.3-contributor 也是
+            # 端点有的模型，但那是 contributor 级小模型 —— 配置一坏就
+            # **静默降级**（能力差一档且无任何提示）。这条钉住「兜底 ==
+            # 实际默认」。
+            and spec.get("model") == "deepseek-v4.1-flash"
             # opencode 的 /chat/completions 实测 400，协议必须跟着
             # 端点表走；这条断言红 = 有人在表里删了 protocol。
             and spec.get("protocol") == "responses"

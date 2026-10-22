@@ -37,7 +37,13 @@ MAX_LINES = 2000  # read_file 默认行数上限
 NAMED_PROVIDERS = {
     "opencode": {
         "base_url": "https://opencode.ai/zen/go/v1",
-        "model": "muse-spark-1.3-contributor",
+        # 2026-10-22：兜底默认从 muse-spark-1.3-contributor 改成
+        # **deepseek-v4.1-flash**（= 用户实际在用的默认）。实测端点确有 36
+        # 个模型，两个名字都在列里 —— 所以旧兜底不是「不存在的模型」，
+        # 而是**静默降级**：配置一坏/写漏 model，agent 就从 4.1-flash
+        # 悄悄掉到 contributor 级小模型（能力差一档，而且没有任何提示）。
+        # 兜底必须与实际默认一致。
+        "model": "deepseek-v4.1-flash",
         "note": "OpenCode zen 网关；需 AGENTOS_LLM_API_KEY（Bearer）",
         # opencode 网关只认 Responses 协议：实测 POST /chat/completions
         # 必回 HTTP 400 ModelProtocolUnsupported「Model does not support
@@ -445,6 +451,66 @@ def resolve_provider(env=None):
         "里的 model_providers 没有可用 base_url。设一个再跑，别让 agent "
         "假装有模型。",
     )
+
+
+def list_models(provider, timeout=20):
+    """列端点可用模型（GET <base>/models，带同一套会话头）。
+
+    为什么（2026-10-22）：**换模型要能验**。换一个端点没有的名字 →
+    任务跑到一半才 404/400，报错还常常被当成「网络问题」。先把可选名单
+    拉出来，换之前对一眼；换不了就**如实说探不到**（不猜、不假装）。
+
+    返回 (names, err)：names 为空且 err 非空 = 探不到。
+    """
+    base = str(getattr(provider, "base_url", "") or "").rstrip("/")
+    if not base:
+        return [], "没有 base_url"
+    req = urllib.request.Request(base + "/models", method="GET")
+    req.add_header("Accept", "application/json")
+    req.add_header("User-Agent", _DEFAULT_UA)
+    _sid = str(getattr(provider, "session_id", "") or "")
+    if _sid:
+        # opencode 网关强制要会话头（漏带连 /models 都过不了）
+        req.add_header("x-opencode-session", _sid)
+    for k, v in (getattr(provider, "headers", {}) or {}).items():
+        if str(k).lower() in ("content-length", "host", "accept-encoding"):
+            continue
+        req.add_header(str(k), str(v))
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            raw = resp.read(1 << 20)
+    except Exception as e:  # noqa: BLE001
+        return [], "探不到模型列表：%s" % str(e)[:120]
+    try:
+        obj = json.loads(raw.decode("utf-8", "replace"))
+    except ValueError as e:
+        return [], "模型列表不是合法 JSON：%s" % str(e)[:80]
+    names = []
+    _data = obj.get("data") if isinstance(obj, dict) else obj
+    if isinstance(_data, list):
+        for it in _data:
+            if isinstance(it, dict):
+                n = str(it.get("id") or it.get("name") or "").strip()
+                if n and n not in names:
+                    names.append(n)
+            elif isinstance(it, str) and it.strip() and it.strip() not in names:
+                names.append(it.strip())
+    if not names:
+        return [], "模型列表为空或形状不认识"
+    return sorted(names), ""
+
+
+def check_model(provider, name):
+    """换模型前的验证：端点有没有这个模型。返回 (ok, names, err)。
+
+    口径（2026-10-22）：探不到名单时 **ok=True**（允许换，但调用方必须
+    如实说「没能验证」）—— 探针失败不等于模型不存在，不该把网络问题
+    变成「不许换」。名单拿到了就**对得上才算**。
+    """
+    names, err = list_models(provider)
+    if not names:
+        return True, [], err
+    return (str(name) in names), names, ""
 
 
 def _probe_ollama(timeout=1.5):
