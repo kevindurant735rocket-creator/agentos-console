@@ -23,6 +23,14 @@
 ## 关键约定
 
 - **门链是唯一验收口径**；`bash tools/gates.sh <门名…>`（零参数直接 exit 2）。
+- **token 账**（2026-10-22 实测）：端点**不报前缀缓存** → tools 数组每轮全额付；
+  端点**只让模型调已声明的工具** → 裁工具必须配 `tool_use` 调度器（裁 schema 不裁能力）。
+  固定开销（系统提示+工具面）13,084 → 7,343 字符（implement 档，-44%）；
+  历史侧靠 `fold_old_tool_results` 折叠（-72%）。预算由 `tools/token_gate.py` 钉住（ratchet）。
+- **工作档位**（`tools/tool_catalog.py`）：implement/research/review/general 决定开哪些
+  工具；**用过的工具续开**；plan/review 档不摆写类工具；没开的用 `tool_use` 调。
+- **收尾闭环**：`commit` 工具只提交**本会话写过的路径**（`paths` 只能收窄），
+  交付闸对「改代码类任务 + git 仓库」硬要求 `committed`（`agent.require_commit=false` 可关）。
 - 改 `agent_core.py` 的自检条数 → 10+ 个门文件里的 `169/169` 计数钉要同步。
 - 交付闸 fail-closed：证据不足 / 账本有 pending → 判「未交付」。
 - 证据只认证据不认措辞；诚实报告失败算真交付。
