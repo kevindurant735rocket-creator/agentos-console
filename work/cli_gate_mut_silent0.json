@@ -3,9 +3,9 @@
  "ok": false,
  "pre_ok": true,
  "prefail": "",
- "elapsed": 7.23,
+ "elapsed": 6.94,
  "cli": [
-  "/var/folders/3p/m9ntmpmn5z34b3my27hrjdmm0000gn/T/cli_gate_mut-rru_ve2x/silent0.py"
+  "/var/folders/3p/m9ntmpmn5z34b3my27hrjdmm0000gn/T/cli_gate_mut-05eejoie/silent0.py"
  ],
  "dest": "/Users/zhangfengrui/Documents/Codex/2026-10-01/agentos-console/work/cli_gate_dest",
  "skip_install": false,
@@ -155,7 +155,7 @@
   {
    "gate": "tty-noarg-enters-agent",
    "ok": false,
-   "detail": "首行='' elapsed=0.02s",
+   "detail": "首行='' elapsed=0.01s",
    "cmd": "agentos   # 真 PTY、无参数、零送键",
    "rc": null
   },
