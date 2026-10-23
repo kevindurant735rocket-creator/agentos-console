@@ -1101,6 +1101,46 @@ def _t_tool_use(a, ctx):
     return _out
 
 
+@_tool(
+    "memory_search",
+    RISK_READ,
+    "按相关性检索过往会话/规则/项目记忆（查相关经验，不整段注入）。",
+    {
+        "type": "object",
+        "properties": {
+            "query": {"type": "string", "description": "检索词（任务描述/关键词）"},
+            "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20,
+                "description": "返回几条，默认 5",
+            },
+        },
+        "required": ["query"],
+    },
+)
+def _t_memory_search(a, ctx):
+    """跨会话记忆的检索（零依赖、词面相关性）。
+
+    为什么要有（已知缺口第 4 条）：记忆原来**整段注入**（AGENTS.md 全文 /
+    所有 ACTIVE 规则），不管当前任务是什么。现在只注入**最相关的几条**，
+    其余让模型按需拉。
+    """
+    try:
+        import memory_retrieval as _mr
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "error": "记忆模块不可用：%s" % str(e)[:120]}
+    q = str(a.get("query") or "").strip()
+    if not q:
+        return {"ok": False, "error": "缺 query（要检索什么？）"}
+    try:
+        _lim = int(a.get("limit") or 5)
+    except (TypeError, ValueError):
+        _lim = 5
+    _hits = _mr.search(q, root=ctx.get("root"), limit=_lim)
+    return {"ok": True, "query": q, "hits": _hits, "n": len(_hits)}
+
+
 @_tool("git_diff", RISK_READ, "git diff（真实 rc）", _S_DIFF)
 def _t_git_diff(a, ctx):
     argv = ["diff", "--no-color"]
@@ -2742,7 +2782,23 @@ def build_system_prompt(ctx):
             base = base + "\n本次没直接开但**能调**的工具（用 tool_use 调）：" + _cat
     except Exception:  # noqa: BLE001
         pass
-    extra = _evo_prompt_lines(ctx.get("evo_rules_path")) + _memory_prompt_lines(ctx)
+    extra = (
+        _evo_prompt_lines(ctx.get("evo_rules_path"))
+        + _memory_prompt_lines(ctx)
+        + _memory_retrieval_prompt_lines(ctx)
+    )
+    # 跨会话记忆检索（2026-10-22）：按相关性挑出的过去经验，只注入 top-k。
+    # 无 task_text 或没相关命中 → 零注入（不造假）。
+    try:
+        import memory_retrieval as _mr2
+
+        _tt = str(ctx.get("task_text") or "").strip()
+        if _tt:
+            _blk = _mr2.build_memory_block(_tt, root=ctx.get("root") or ROOT)
+            if _blk:
+                extra = extra + [_blk]
+    except Exception:  # noqa: BLE001
+        pass
     # 任务契约段（不同任务类型的「完成证据」不一样，W26）：
     # 把「这类任务怎么算完成」在开工时就说死，模型不用自己猜标准。
     _tc = ctx.get("task_contract")
@@ -4765,6 +4821,7 @@ def _readline(tag):
 # 2026-10-21（TASK2 障碍 2）：本块已搬到 tools/agent_session.py，这里 re-export。
 from agent_session import (  # noqa: F401
     fold_old_tool_results,
+    _memory_retrieval_prompt_lines,
     SESSION_DIR,
     TRANSCRIPT_PREFIX,
     COMPACT_KEEP,

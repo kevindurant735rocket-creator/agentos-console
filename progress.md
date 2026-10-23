@@ -1192,3 +1192,42 @@ W35 砍的是**固定开销**（工具面 + 提示，每轮都付）。这一波
 默认在清单里 / `is_supported` 对清单外为假 / 清单外的模型**换不动**（含
 allow_unsupported 也要端点真有）/ 清单内但端点此刻没有 → 拒 / 探针带会话头 /
 探不到时如实说且仍允许换 / 兜底默认 == 实际默认。
+
+## W41（2026-10-23）跨会话记忆检索（已知缺口第 4 条收口）
+
+`docs/ARCHITECTURE.md` 的已知缺口写着「记忆是整段注入，没有按相关性检索」。
+AgentOS 之前**完全不能**从过去的会话里学：会话记录（work/agent_sessions/*.jsonl）
+只是落盘，下一轮会话里谁也不读它。唯一一点「跨会话」的信息是 evo 规则账
+（ACTIVE 的那些），而且它们是**整段注入**——不管当前任务是什么，全塞进去。
+
+### 做了什么
+
+`tools/memory_retrieval.py`（新）：
+- **tokenize**：CJK 单字 + 英文/数字词 + CJK bigram（2 字窗口）—— 中文没有
+  分词器也能有可接受的相关性信号；
+- **score**：加权重叠（长 token 更具体）+ 长度归一化（长文档不白占优势）；
+- **search**：跨三类记忆源（会话记录 / ACTIVE 规则 / 项目记忆）；稳定排序
+  （分数降序 → source 名）；
+- **build_memory_block**：确定性摘要（top-k，每条 ≤ 200 字符 + 分数），
+  无相关命中 → ""（不造假注入）。
+
+系统提示：有 task_text 时注入相关性摘要（top-k）；`memory_search` 工具按需深挖。
+
+### 证据
+
+- **真机**（对本仓查「todo 账本」）：top1 = `evo-converge-explore-only`（0.066），
+  top2 = `evo-converge-stall`（0.056），top3 = AGENTS.md 的 GitHub 铁律（0.055）——
+  三类记忆源都被检索到了，相关性排序不是随机
+- **判据**：`tools/memory_selftest.py`（新增，进链）10/10 ——
+  相关命中排在不相关前面 / 空 query 不查 / nonsense 无命中 / 摘要封顶 /
+  不整段注入 transcript / 工具层能跑 + limit 生效 / **变异体自证**（把 score
+  改成常数 → top1 不再是最相关的那条 → 判据有牙）
+
+### 明确**没有**采纳的
+
+- **Embedding / 向量库检索**（ruflo 的 AgentDB）：需要端点支持或本地模型，
+  与「只保留终端面、纯 stdlib」冲突。词面相关性先用着；升级到 embedding 是
+  后续候选，需要端点支持。
+- **记忆写入 API**（agent 主动存记忆）：现在记忆的写入由 evo 规则账与
+  会话 transcript 自动完成；让 agent 主动写会引入"什么值得记"的判断复杂度，
+  先不做。

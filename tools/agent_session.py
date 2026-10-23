@@ -653,6 +653,28 @@ def _memory_prompt_lines(ctx):
     return lines
 
 
+def _memory_retrieval_prompt_lines(ctx):
+    """跨会话记忆**检索**（2026-10-22，已知缺口第 4 条）。
+
+    过去会话里可能有**直接相关的经验**（同类型的 bug、同样的工具坑），
+    全部整段注入会冲掉上下文；这里按 task_text 取 top-k 的相关片段，
+    只注入几条，其余让模型用 memory_search 工具按需拉。
+
+    无 task_text 或没相关命中 → 零注入（不造假）。
+    """
+    try:
+        import memory_retrieval as _mr
+    except Exception:  # noqa: BLE001
+        return []
+    _tt = str((ctx or {}).get("task_text") or "").strip()
+    if not _tt:
+        return []
+    _blk = _mr.build_memory_block(_tt, root=(ctx or {}).get("root"), cap=700)
+    if not _blk:
+        return []
+    return ["跨会话记忆（按相关性挑的，不是整段注入）：", _blk]
+
+
 # ── 自主力面（R3）：/ideas 机会挖掘（创造力）+ 回合回执自检行 ────────────
 _IDEA_MARK_RE = re.compile(r"\b(TODO|FIXME|XXX|HACK)\b")
 
