@@ -52,9 +52,11 @@ CHARS_PER_TOKEN = 2.68
 # 字符）。**按档位裁剪后**每轮实际付的只有 7,343 字符（implement 档），
 # 全量 9,439 只是最坏档位；ratchet 逼着这次涨价变成一次有意识的决定，
 # 而不是悄悄漂过去。
-BUDGET_FIXED = 9600     # 固定开销合计（全量档位；当前 9,439）
-BUDGET_TOOLS = 7400     # 工具面（全量；当前 7,311）
-BUDGET_SYSTEM = 2200    # 系统提示（当前 2,128）
+# 2026-10-23 第三次调整（9,600 → 10,000）：W41 加了 `memory_search` 工具
+# 与相关性记忆摘要注入（+约 353 字符）。ratchet 再次逼出一次有意识的决定。
+BUDGET_FIXED = 10000    # 固定开销合计（全量档位；当前 9,793）
+BUDGET_TOOLS = 7800     # 工具面（全量；当前 7,644）
+BUDGET_SYSTEM = 2300    # 系统提示（当前 2,149）
 BUDGET_ONE_TOOL = 800   # 单个工具 desc+schema（当前 todo 790）
 
 CASES = []

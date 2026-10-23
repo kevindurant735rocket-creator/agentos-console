@@ -7,9 +7,9 @@
       "ok": true
     },
     {
-      "detail": "rc=0 actual='AGENT_CORE OK 171/171' expected='AGENT_CORE OK 171/171'",
+      "detail": "rc=1 actual='AGENT_CORE FAIL 170/171' expected='AGENT_CORE OK 171/171'",
       "gate": "D2 --check 末行逐字 AGENT_CORE OK 171/171",
-      "ok": true
+      "ok": false
     },
     {
       "detail": "sess=1 fc=1 rb=1 tbl=1 e2=1 pre=3 bud=1",
@@ -62,6 +62,6 @@
       "ok": true
     }
   ],
-  "n_ok": 12,
+  "n_ok": 11,
   "n_total": 12
 }

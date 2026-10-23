@@ -2,17 +2,17 @@
  "tool": "token_gate",
  "chars_per_token": 2.68,
  "budget": {
-  "fixed": 9600,
-  "tools": 7400,
-  "system": 2200,
+  "fixed": 10000,
+  "tools": 7800,
+  "system": 2300,
   "one_tool": 800
  },
  "measured": {
   "mode": "full",
   "system_chars": 2149,
-  "tools_chars": 7311,
-  "fixed_chars": 9460,
-  "tool_count": 20,
+  "tools_chars": 7644,
+  "fixed_chars": 9793,
+  "tool_count": 21,
   "per_tool": [
    {
     "name": "todo",
@@ -70,6 +70,11 @@
     "schema": 196
    },
    {
+    "name": "memory_search",
+    "desc": 32,
+    "schema": 205
+   },
+   {
     "name": "write_file",
     "desc": 36,
     "schema": 185
@@ -116,6 +121,6 @@
    }
   ]
  },
- "estimated_fixed_tokens": 3529,
+ "estimated_fixed_tokens": 3654,
  "live": {}
 }
