@@ -2077,7 +2077,7 @@ def _subagent_batch(prompts, ctx, provider, subset, cap, depth, merge=False):
             "root": ctx.get("root"),
             "mode": ctx.get("mode"),
             "approver": ctx.get("approver"),
-            "sid": ctx.get("sid"),
+            "sid": "%s-sub-%d" % (str(ctx.get("sid") or "s"), depth + 1),
             "env": ctx.get("env"),
             "snap_dir": ctx.get("snap_dir"),
             "history": [],
@@ -2087,7 +2087,25 @@ def _subagent_batch(prompts, ctx, provider, subset, cap, depth, merge=False):
             "full_access": ctx.get("full_access"),
             "mode_gate_off": ctx.get("mode_gate_off"),
             "cmd_gate_off": ctx.get("cmd_gate_off"),
+            # ── 契约与账本继承（已知缺口第 2 条）────────────────────
+            # 子代理现在能看见父任务的契约（它得知道父任务怎么算完成）与
+            # 父账本的当前进度（它得知道自己在帮谁推进哪几项）。不用父
+            # 账本的 sid（避免并行子代理写竞态）—— 子代理用自己的 sid
+            # （<父>-sub-<i>），账本不串扰；父代理按需读子账本合并。
+            "parent_contract": ctx.get("task_contract"),
+            "parent_todo_items": None,   # 下面在 _one 里懒加载（避免 batch 里重复读盘）
+            "parent_sid": ctx.get("sid"),
         }
+        # 懒加载父账本（只读快照，不阻塞并行）：子代理能看见父进度，
+        # 但写自己的账本（sid 已是 <父>-sub-<i>，不串扰）。
+        try:
+            import todo as _td_sub
+
+            sub_ctx["parent_todo_items"] = _td_sub.load(
+                str(sub_ctx.get("parent_sid") or "default"), sub_ctx.get("root")
+            )
+        except Exception:  # noqa: BLE001
+            sub_ctx["parent_todo_items"] = []
         try:
             res = run_agent(
                 pr, ctx=sub_ctx, provider=_clone_provider(provider), max_steps=cap
@@ -2225,7 +2243,7 @@ def _subagent_chain(prompts, ctx, provider, subset, cap, depth):
             "root": ctx.get("root"),
             "mode": ctx.get("mode"),
             "approver": ctx.get("approver"),
-            "sid": ctx.get("sid"),
+            "sid": "%s-sub-%d" % (str(ctx.get("sid") or "s"), depth + 1),
             "env": ctx.get("env"),
             "snap_dir": ctx.get("snap_dir"),
             "history": [],
@@ -2235,6 +2253,14 @@ def _subagent_chain(prompts, ctx, provider, subset, cap, depth):
             "full_access": ctx.get("full_access"),
             "mode_gate_off": ctx.get("mode_gate_off"),
             "cmd_gate_off": ctx.get("cmd_gate_off"),
+            # ── 契约与账本继承（已知缺口第 2 条）────────────────────
+            # 子代理现在能看见父任务的契约（它得知道父任务怎么算完成）与
+            # 父账本的当前进度（它得知道自己在帮谁推进哪几项）。不用父
+            # 账本的 sid（避免并行子代理写竞态）—— 子代理用自己的 sid
+            # （<父>-sub-<i>），账本不串扰；父代理按需读子账本合并。
+            "parent_contract": ctx.get("task_contract"),
+            "parent_todo_items": None,   # 下面在 _one 里懒加载（避免 batch 里重复读盘）
+            "parent_sid": ctx.get("sid"),
         }
         try:
             res = run_agent(
@@ -2805,6 +2831,26 @@ def build_system_prompt(ctx):
     if isinstance(_tc, dict) and _tc.get("opening"):
         extra = extra + [
             "任务契约（%s）：%s" % (_tc.get("name") or _tc.get("type") or "", _tc["opening"])
+        ]
+    # 子代理继承父任务的契约与账本视图（W42）：父任务怎么算完成、父账本
+    # 现在到哪一步 —— 子代理得知道自己在帮谁推进哪几项，不然它干的活
+    # 与交付闸要的证据对不上。
+    _pc = ctx.get("parent_contract")
+    if isinstance(_pc, dict) and _pc.get("opening"):
+        extra = extra + [
+            "父任务契约（%s）：%s"
+            % (_pc.get("name") or _pc.get("type") or "", str(_pc["opening"])[:400])
+        ]
+    _pti = ctx.get("parent_todo_items")
+    if isinstance(_pti, list) and _pti:
+        extra = extra + [
+            "父账本（只读视图，%d 项）：%s"
+            % (
+                len(_pti),
+                "，".join(
+                    "%s:%s" % (it.get("id"), it.get("state")) for it in _pti[:8]
+                ),
+            )
         ]
     # DSP 计划摘要行：有计划才注入（无则零改动）；超长截断，绝不撑爆上下文。
     # 自启指令行：本轮刚自启（ctx["dsp_auto"] 有值）才追加一次，防历史回灌叠加。
